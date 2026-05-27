@@ -1,0 +1,59 @@
+[package]
+name = "chronos-engine"
+version = "0.3.0"
+edition = "2021"
+description = "A custom ECS game engine with deterministic simulation"
+
+[dependencies]
+
+[features]
+default = []
+render = ["wgpu", "winit", "bytemuck", "rand", "tokio", "image"]
+serialize = ["serde", "serde_json"]
+audio = ["rodio"]
+dev-tools = ["notify", "serde", "serde_json"]
+game = ["render"]
+full = ["render", "serialize", "audio", "dev-tools", "game"]
+
+[dependencies.wgpu]
+version = "23"
+optional = true
+
+[dependencies.winit]
+version = "0.30"
+optional = true
+
+[dependencies.bytemuck]
+version = "1"
+optional = true
+features = ["derive"]
+
+[dependencies.rand]
+version = "0.9"
+optional = true
+
+[dependencies.tokio]
+version = "1"
+optional = true
+features = ["rt", "rt-multi-thread"]
+
+[dependencies.image]
+version = "0.25"
+optional = true
+
+[dependencies.serde]
+version = "1"
+optional = true
+features = ["derive"]
+
+[dependencies.serde_json]
+version = "1"
+optional = true
+
+[dependencies.rodio]
+version = "0.20"
+optional = true
+
+[dependencies.notify]
+version = "7"
+optional = true

@@ -9,7 +9,7 @@ pub trait Component: Send + Sync + 'static {}
 impl<T: Send + Sync + 'static> Component for T {}
 
 /// Example: a 2D position component.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct Position {
     pub x: f32,
     pub y: f32,
@@ -22,7 +22,7 @@ impl Position {
 }
 
 /// Example: a velocity component.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct Velocity {
     pub x: f32,
     pub y: f32,
@@ -35,7 +35,7 @@ impl Velocity {
 }
 
 /// Example: a health component.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Health {
     pub current: u32,
     pub max: u32,
@@ -59,15 +59,15 @@ impl Health {
 }
 
 /// A tag component for damage dealing.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Damage(pub u32);
 
 /// A tag component to mark entities as dead.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Dead;
 
 /// A transform component (position + rotation + scale) for 3D-capable systems.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct Transform {
     pub x: f32,
     pub y: f32,
@@ -89,7 +89,7 @@ impl Transform {
 }
 
 /// A visual representation component (sprite/render hint).
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct Sprite {
     pub symbol: char,
     pub color: (u8, u8, u8),
@@ -107,7 +107,7 @@ impl Sprite {
 }
 
 /// Circle collision radius for narrow-phase checks.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct CircleRadius(pub f32);
 
 impl CircleRadius {
@@ -117,7 +117,7 @@ impl CircleRadius {
 }
 
 /// Rigid body with mass and restitution.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct RigidBody {
     pub mass: f32,
     pub damping: f32,
@@ -163,11 +163,11 @@ impl RigidBody {
 }
 
 /// Tag for entities on the ground.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct Grounded;
 
 /// Gravity direction component.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct Gravity {
     pub x: f32,
     pub y: f32,

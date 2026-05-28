@@ -195,6 +195,7 @@ fn quat_normalize(q: [f32; 4]) -> [f32; 4] {
     [q[0] / len, q[1] / len, q[2] / len, q[3] / len]
 }
 
+#[allow(dead_code)]
 fn quat_multiply(a: [f32; 4], b: [f32; 4]) -> [f32; 4] {
     [
         a[3] * b[0] + a[0] * b[3] + a[1] * b[2] - a[2] * b[1],
@@ -307,6 +308,7 @@ fn mat4_from_trs(translation: [f32; 3], rotation: [f32; 4], scale: [f32; 3]) -> 
     ]
 }
 
+#[allow(dead_code)]
 fn quat_to_matrix(q: [f32; 4]) -> [[f32; 4]; 4] {
     let x = q[0];
     let y = q[1];

@@ -5,24 +5,25 @@
 <h1 align="center">Chronos Engine</h1>
 
 <p align="center">
-  <strong>A genre-agnostic ECS game engine in Rust. Zero dependencies (core). Deterministic by design.</strong>
+  <strong>The open-source game engine. Rust-powered. Cross-platform. For every game.</strong>
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Rust-2021-orange?logo=rust" alt="Rust 2021">
-  <img src="https://img.shields.io/badge/lines-13_500+-blue" alt="13,500+ lines">
-  <img src="https://img.shields.io/badge/tests-110-brightgreen" alt="110 tests">
+  <img src="https://img.shields.io/badge/lines-53_000+-blue" alt="53,000+ lines">
+  <img src="https://img.shields.io/badge/tests-971-brightgreen" alt="971 tests">
   <img src="https://img.shields.io/badge/unsafe-0-red" alt="Zero unsafe">
   <img src="https://img.shields.io/badge/deps-0_(core)-success" alt="Zero core deps">
+  <img src="https://img.shields.io/badge/license-MIT-yellow" alt="MIT License">
 </p>
 
 ---
 
 > *"Write the future in the present while preserving the past."*
 
-Born from the VHS static of 1984. Forged in Rust. Designed for RTS, platformers, RPGs, shooters, sims — whatever you throw at it. Chronos Engine doesn't care about your genre. It cares about entities, components, systems, and **determinism**.
+Born from the VHS static of 1984. Forged in Rust. Chronos Engine is an **open-source alternative to Unity and Unreal** — a general-purpose game engine designed for every genre. RTS, platformer, RPG, shooter, sim, puzzle — the engine doesn't care about your genre. It gives you entities, components, systems, and **determinism**.
 
-Every byte of storage, every archetype migration, every event dispatch — hand-wired. No Bevy. No Legion. No shortcuts. The engine is **genre-agnostic**: the same core that powers an RTS lockstep simulation also handles a platformer's variable-timestep physics loop, an RPG's event-driven damage pipeline, or a sim's deterministic tick scheduler.
+Every byte of storage, every archetype migration, every event dispatch — hand-wired. No Bevy. No Legion. No shortcuts. The ECS core is **zero-dependency** (pure `std`). Subsystems are feature-gated: pull in only what you need. A 2D platformer ships without 3D physics. A puzzle game ships without audio.
 
 ---
 
@@ -33,8 +34,11 @@ Every byte of storage, every archetype migration, every event dispatch — hand-
 - [Quick Start](#quick-start)
 - [Feature Flags](#feature-flags)
 - [Project Structure](#project-structure)
-- [Systems Reference](#systems-reference)
-- [Chronos Company](#chronos-company--first-game)
+- [Chronos Company](#chronos-company--demo-game)
+- [Editor Application](#editor-application)
+- [Engine Generalization](#engine-generalization)
+- [Scripting & Modding](#scripting--modding)
+- [Asset Pipeline](#asset-pipeline)
 - [Comparison](#how-it-compares)
 - [Roadmap](#roadmap)
 - [Architecture Principles](#architecture-principles)
@@ -44,7 +48,7 @@ Every byte of storage, every archetype migration, every event dispatch — hand-
 
 ## What's Inside
 
-**~13,500 lines** of Rust across **36 source files**. **110 tests** (85 unit + 25 integration). `cargo build --features full` compiles clean.
+**~53,000 lines** of Rust across **96 source files**. **971 tests** (946 unit + 25 integration). `cargo build --features full` compiles clean with zero errors and zero warnings.
 
 ### ECS Core
 
@@ -127,23 +131,39 @@ wgpu 23 sprite batch renderer with instanced drawing.
 | **Transform3D** | TRS → model matrix computation |
 | **ObjLoader** | Wavefront .obj parser — vertex/normal/UV/face parsing, fan triangulation |
 
-### 3D Physics
+### Physics (2D + 3D)
 
 | Module | What |
 |--------|------|
-| **PhysicsWorld3D** | Full rigid body simulation — static/dynamic bodies, sphere/AABB colliders |
+| **PhysicsWorld2D** | Full 2D rigid body simulation — AABB/circle colliders, impulse-based contact solver, raycasting |
+| **PhysicsWorld3D** | 3D rigid body simulation — static/dynamic bodies, sphere/AABB colliders |
 | **Collision response** | Impulse-based with restitution + friction |
-| **Constraints** | `DistanceConstraint`, `PointConstraint` — joint-like connections |
+| **Constraints** | `DistanceConstraint`, `PointConstraint` — joint-like connections (3D) |
 | **Gravity integration** | Per-body gravity with semi-implicit Euler |
+
+### Animation & Materials
+
+| Module | What |
+|--------|------|
+| **AnimationStateMachine** | States, transitions, parameters (bool/float/trigger) for character behavior |
+| **AnimationBlendTree** | 1D/2D blending (idle→walk→run), additive animation layers |
+| **SpriteAnimation** | Sprite sheet flipbook with frame events |
+| **TimelineSystem** | Keyframe interpolation (linear/bezier/step), event tracks |
+| **Skeletal Animation** | Joint hierarchy, `JointPose` (TRS), quaternion SLERP, `AnimationClip`, `AnimationBlender` for cross-fade |
+| **MaterialDefinition** | Albedo, normal, metallic, roughness, emissive, opacity — 7 built-in presets (Unlit, PBR, Sprite, Particle, UI, Skybox, Terrain) |
+| **ShaderGraph** | Node-based shader description — 28 shader node types, WGSL codegen, hot-reload watcher |
 
 ### Advanced Systems
 
 | Module | What |
 |--------|------|
 | **Lighting** | 2D lighting — Point, Directional, Spot, Area lights. Shadow casting via `ShadowCaster`. Visibility polygon computation. `LightMap` for scene-wide lighting. |
-| **Skeletal Animation** | Joint hierarchy, `JointPose` (TRS), quaternion SLERP, `AnimationClip` with keyframe channels, `AnimationPlayer`, `AnimationBlender` for cross-fade. Custom mat4 inverse. |
 | **Fog of War** | `FogGrid` with Unexplored/Explored/Visible states. `FogRevealer` for line-of-sight. `WallSegment` obstacles block visibility. |
 | **UI** | Immediate-mode widgets — Button, Slider, Label, Panel. Hit-testing, `UiContext`, style presets (dark/light/accent). |
+| **Camera2D** | Orthographic camera with shake, follow, bounds |
+| **TilemapEx** | Layered tilemap with collision tiles, autotile |
+| **Pathfinder2D** | A* on tilemap grids with variable cost |
+| **AudioZone** | Spatial audio regions, reverb zones, occlusion, footstep tracking |
 
 ### Audio (`audio` feature)
 
@@ -193,34 +213,45 @@ JSON scene/level serialization with `serde_json`.
 ## Architecture
 
 ```
-┌──────────────────────────────────────────────────────────┐
-│                        Game Code                          │
-│                  (your game logic here)                    │
-├──────────────────────────────────────────────────────────┤
-│                     Game Module                           │
-│   Mercenaries │ Terrain │ Navigation │ Squads │ Camera   │
-├──────────────────────────────────────────────────────────┤
-│                   Developer Tools                         │
-│   Dev Overlay │ Asset Pipeline │ Hot Reload │ Scene I/O  │
-├──────────────────────────────────────────────────────────┤
-│                    Subsystem Layer                         │
-│  Rendering │ Audio │ Physics │ Lighting │ Skeletal │ Fog  │
-├──────────────────────────────────────────────────────────┤
-│                   System Pipeline                          │
-│  Movement │ Health │ Collision │ Gravity │ Raycast │ AI   │
-├──────────────────────────────────────────────────────────┤
-│                     ECS Core                              │
-│    Entity │ Component │ Storage │ World │ Archetypes      │
-├──────────────────────────────────────────────────────────┤
-│                Spatial Indexing                            │
-│          Quadtree (2D) │ Octree (3D) │ AABB │ Ray         │
-├──────────────────────────────────────────────────────────┤
-│                   Schedulers                              │
-│    GameLoop (variable) │ TickScheduler (deterministic)    │
-├──────────────────────────────────────────────────────────┤
-│                     EventBus                              │
-│    Collision │ Damage │ Death │ RayHit │ Custom Events     │
-└──────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│               Chronos Editor (Phases 7–9)                        │
+│  Panels: Viewport │ Hierarchy │ Inspector │ Assets │ Console     │
+│  Workspace: Undo │ Grid │ Gizmo │ Selection │ Shortcuts          │
+│  Project: New/Open/Save │ Templates │ Recent │ Docking           │
+├──────────────────────────────────────────────────────────────────┤
+│                     Scripting Layer                               │
+│   Rhai Bridge │ Script Components │ Lifecycle │ Hot-Reload       │
+│   Script API: Entities │ Queries │ Input │ Audio │ Physics       │
+│   Modding: ModLoader │ ModBuilder │ Sandboxing                   │
+├──────────────────────────────────────────────────────────────────┤
+│                        Game Code                                  │
+│                  (your game logic here)                            │
+├──────────────────────────────────────────────────────────────────┤
+│                      Game Module                                  │
+│   Combat │ RPG │ AI │ Squads │ Dialogue │ Factions │ World       │
+├──────────────────────────────────────────────────────────────────┤
+│                     Developer Tools                               │
+│   Dev Overlay │ Asset Pipeline │ Hot Reload │ Scene I/O          │
+├──────────────────────────────────────────────────────────────────┤
+│                     Subsystem Layer                                │
+│  Rendering │ Audio │ Physics2D/3D │ Lighting │ Animation │ Fog   │
+│  Materials │ Shaders │ Tilemaps │ Particles │ Post-Processing    │
+├──────────────────────────────────────────────────────────────────┤
+│                    System Pipeline                                 │
+│  Movement │ Health │ Collision │ Gravity │ Raycast │ AI           │
+├──────────────────────────────────────────────────────────────────┤
+│                       ECS Core                                    │
+│    Entity │ Component │ Storage │ World │ Archetypes              │
+├──────────────────────────────────────────────────────────────────┤
+│                  Spatial Indexing                                  │
+│          Quadtree (2D) │ Octree (3D) │ AABB │ Ray                 │
+├──────────────────────────────────────────────────────────────────┤
+│                      Schedulers                                   │
+│    GameLoop (variable) │ TickScheduler (deterministic)            │
+├──────────────────────────────────────────────────────────────────┤
+│                       EventBus                                    │
+│    Collision │ Damage │ Death │ RayHit │ Custom Events             │
+└──────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -241,6 +272,9 @@ cargo run --features render
 # Everything:
 cargo run --features full
 
+# Launch the editor:
+cargo run --features editor --bin chronos-editor
+
 # Run tests:
 cargo test --features full
 
@@ -254,12 +288,15 @@ cargo test
 
 | Flag | What | Dependencies |
 |------|------|-------------|
-| *(default)* | ECS core, systems, spatial indexing, input, tilemaps, particles, lighting, skeletal animation, fog of war | **None** — pure `std` |
-| `render` | 2D/3D rendering, UI, post-processing, editor overlay | wgpu 23, winit 0.30, bytemuck, rand, tokio, image |
+| *(default)* | ECS core, systems, spatial indexing, input, physics, animations, materials, shaders, tilemaps, particles, lighting, fog of war | **None** — pure `std` |
+| `render` | 2D/3D rendering, UI, post-processing, developer overlay | wgpu 23, winit 0.30, bytemuck, rand, tokio, image |
 | `serialize` | Scene/level serialization, entity prefabs | serde, serde_json |
 | `audio` | Audio engine, spatial audio, music crossfade | rodio 0.20 |
 | `dev-tools` | Asset pipeline, hot reload | notify 7, serde, serde_json |
-| `game` | Chronos Company first game | render (transitive) |
+| `game` | Chronos Company demo game modules | render (transitive) |
+| `editor` | Desktop editor application (winit + wgpu + egui) | egui 0.30, egui-wgpu, egui-winit, wgpu, winit, pollster, serde, serde_json |
+| `scripting` | Rhai scripting engine, component scripts, modding | rhai 1 |
+| `asset-pipeline` | Advanced importers (glTF, audio, fonts, images), GUID registry, metadata | gltf, symphonia, ab_glyph, uuid, serde, serde_json, image |
 | `full` | Everything above | all of the above |
 
 ---
@@ -268,139 +305,260 @@ cargo test
 
 ```
 chronos-engine/
-├── Cargo.toml              # Feature-gated deps
-├── README.md               # This file
-├── ROADMAP.md              # Full development plan
-├── icon.png                # App icon
-├── assets/
-│   └── icon.png            # Icon source
+├── Cargo.toml                  # Feature-gated deps
+├── LICENSE                     # MIT License
+├── README.md                   # This file
+├── ROADMAP.md                  # Full development plan (Phases 1–14)
+├── icon.png                    # App icon
 ├── src/
-│   ├── lib.rs              # Public API — re-exports all modules
-│   ├── entity.rs           # Generational entity IDs
-│   ├── component.rs        # Component trait + 11 built-in types
-│   ├── input.rs            # Input system — keyboard, mouse, gamepad, action bindings
-│   ├── storage.rs          # Type-erased component storage
-│   ├── world.rs            # World — entity lifecycle, archetypes, queries
-│   ├── system.rs           # 8 systems, GameLoop, TickScheduler, EventBus
-│   ├── spatial.rs          # Quadtree, AABB, Ray (2D)
-│   ├── octree.rs           # Octree, AABB3D, Ray3D (3D)
-│   ├── physics3d.rs        # 3D physics world + constraints
-│   ├── tilemap.rs          # Chunked tile map with frustum culling
-│   ├── particle.rs         # Particle emitter + presets
-│   ├── obj_loader.rs       # Wavefront .obj parser
-│   ├── lighting.rs         # 2D lighting + shadow casting
-│   ├── skeletal.rs         # Skeletal animation + blending
-│   ├── fog_of_war.rs       # Fog of war + line-of-sight
-│   ├── render.rs           # 2D sprite batch renderer (render)
-│   ├── render3d.rs         # 3D renderer with depth buffer (render)
-│   ├── texture.rs          # Texture atlas (render)
-│   ├── font.rs             # Bitmap font rendering (render)
-│   ├── ui.rs               # UI widgets (render)
-│   ├── postprocess.rs      # Post-processing pipeline (render)
-│   ├── scene.rs            # Scene/level serialization (serialize)
-│   ├── audio.rs            # Audio engine (audio)
-│   ├── asset.rs            # Asset pipeline + hot reload (dev-tools)
-│   ├── editor.rs           # Developer overlay (render)
-│   ├── main.rs             # Battle Arena + RTS + Bullet Hell demos
-│   └── game/               # Chronos Company — first game (game)
-│       ├── mod.rs           # Game module root
-│       ├── components.rs   # Game-specific components (11 types)
-│       ├── mercenary.rs    # Mercenary factory + templates
-│       ├── terrain.rs      # Terrain grid + heightmap
-│       ├── navigation.rs   # A* pathfinding
-│       ├── camera.rs       # Tabletop/isometric camera
-│       ├── selection.rs    # Unit selection system
-│       └── squad.rs        # Squad controller + 4 formations
+│   ├── lib.rs                  # Public API — re-exports all modules
+│   ├── main.rs                 # Terminal demos
+│   │
+│   │  ═══ ECS Core ═══
+│   ├── entity.rs               # Generational entity IDs
+│   ├── component.rs            # Component trait + 11 built-in types
+│   ├── storage.rs              # Type-erased component storage
+│   ├── world.rs                # World — entity lifecycle, archetypes, queries
+│   │
+│   │  ═══ Systems & Scheduling ═══
+│   ├── system.rs               # 8 systems, GameLoop, TickScheduler, EventBus
+│   ├── input.rs                # Input system — keyboard, mouse, gamepad
+│   │
+│   │  ═══ Spatial & Physics ═══
+│   ├── spatial.rs              # Quadtree, AABB, Ray (2D)
+│   ├── octree.rs               # Octree, AABB3D, Ray3D (3D)
+│   ├── physics2d.rs            # 2D physics — rigid bodies, contact solver, raycasting
+│   ├── physics3d.rs            # 3D physics — rigid bodies, constraints, collision response
+│   │
+│   │  ═══ Rendering ═══
+│   ├── render.rs               # 2D sprite batch renderer (wgpu)
+│   ├── render3d.rs             # 3D renderer with depth buffer
+│   ├── texture.rs              # Texture atlas + frame extraction
+│   ├── font.rs                 # Bitmap font rendering
+│   ├── tilemap.rs              # Chunked tile map with frustum culling
+│   ├── particle.rs             # Particle emitter + presets (explosion/smoke/trail)
+│   ├── postprocess.rs          # Post-processing — color grading, bloom, vignette, CRT/noir/sunset
+│   ├── obj_loader.rs           # Wavefront .obj parser
+│   │
+│   │  ═══ Animation & Materials ═══
+│   ├── animation.rs            # State machine, blend tree, sprite animation, timeline
+│   ├── skeletal.rs             # Skeletal animation — joints, poses, SLERP, blending
+│   ├── material.rs             # Material system — 7 built-in presets
+│   ├── shader.rs               # Shader graph — 28 node types, WGSL generation, hot-reload
+│   │
+│   │  ═══ Advanced Systems ═══
+│   ├── lighting.rs             # 2D lighting + shadow casting
+│   ├── fog_of_war.rs           # Fog of war + line-of-sight
+│   ├── ui.rs                   # UI widgets — Button, Slider, Label, Panel
+│   ├── general_systems.rs      # Camera2D, TilemapEx, Pathfinder2D, AudioZone, Footsteps
+│   │
+│   │  ═══ Scene & Assets ═══
+│   ├── scene.rs                # Scene/level serialization
+│   ├── audio.rs                # Audio engine (rodio)
+│   ├── asset.rs                # Asset pipeline + hot reload
+│   │
+│   │  ═══ Editor ═══
+│   ├── editor.rs               # Developer overlay
+│   ├── editor_app.rs           # Editor desktop app (winit + wgpu + egui)
+│   ├── editor_panels/          # Editor UI panels
+│   │   ├── mod.rs              # EditorPanel trait, EditorState, shared types
+│   │   ├── viewport.rs         # Scene viewport (camera, grid, FPS, gizmo)
+│   │   ├── hierarchy.rs        # Entity tree (add/delete/duplicate/search)
+│   │   ├── inspector.rs        # Component property editor (drag sliders, 11 types)
+│   │   ├── asset_browser.rs    # File browser (list/grid views, type detection)
+│   │   ├── console.rs          # Log output + command processor (help/clear/echo/entities)
+│   │   ├── toolbar.rs          # Play/Pause/Stop, gizmo mode, snap toggle
+│   │   ├── menu_bar.rs         # File/Edit/View/Help menus, shortcuts dialog, about dialog
+│   │   └── welcome.rs          # Welcome screen — new project, open recent, templates
+│   ├── editor_workspace/       # Editor workspace tools
+│   │   ├── mod.rs              # Shared types (PickResult, SelectionRect, snap_to_grid)
+│   │   ├── undo.rs             # UndoStack + EditorCommand trait (dual-stack, type-erased)
+│   │   ├── grid.rs             # Infinite ground grid renderer (axis coloring, snap)
+│   │   ├── gizmo.rs            # Translate/Rotate/Scale gizmos (mouse drag, axis hit-test)
+│   │   ├── selection.rs        # Viewport click-pick (ray), box select, multi-select
+│   │   ├── shortcuts.rs        # Configurable keybindings (Blender-style defaults)
+│   │   ├── settings.rs         # Settings dialog (rendering/editor/shortcuts tabs)
+│   │   └── docking.rs          # Panel docking — tree layout, drag-drop, serialize/restore
+│   ├── editor_project/         # Project management
+│   │   ├── mod.rs              # Project module root
+│   │   └── project.rs          # ProjectManager — open/save/validate, templates, recent
+│   │
+│   │  ═══ Scripting ═══
+│   ├── scripting/              # Rhai scripting engine
+│   │   ├── mod.rs              # Scripting module root
+│   │   ├── bridge.rs           # Rhai engine bridge — register ECS types, compile/eval
+│   │   ├── component.rs        # ScriptComponent, ScriptHandle, ScriptRegistry
+│   │   ├── lifecycle.rs        # ScriptLifecycle — on_start/on_update/on_destroy/on_collision
+│   │   ├── api.rs              # Script API — math, entity, debug, time, input, audio, physics
+│   │   ├── hotreload.rs        # Script hot-reload — polling watcher, configurable policies
+│   │   └── modloader.rs        # ModLoader, ModMetadata, ModBuilder, sandboxing
+│   │
+│   │  ═══ Asset Import Pipeline ═══
+│   ├── import/                 # Advanced asset importers
+│   │   ├── mod.rs              # Import module root
+│   │   ├── audio_import.rs     # WAV/OGG/MP3/FLAC → PCM buffers (symphonia)
+│   │   ├── font_import.rs      # TTF/OTF → bitmap glyph atlases (ab_glyph)
+│   │   ├── gltf_import.rs      # glTF/GLB → meshes, materials, animations, skins
+│   │   ├── image_import.rs     # PNG/JPG/BMP/TGA → RGBA + mipmaps (box-filter)
+│   │   ├── metadata.rs         # .meta files — GUIDs, import settings, staleness detection
+│   │   └── registry.rs         # GUID-based asset registry — ref counting, GC
+│   │
+│   │  ═══ Demo Game ═══
+│   └── game/                   # Chronos Company — demo RPG (28 modules)
+│       ├── mod.rs              # Game module root
+│       ├── components.rs       # Game components (11 types)
+│       ├── mercenary.rs        # Mercenary factory + Warrior/Archer/Mage/Scout templates
+│       ├── terrain.rs          # Terrain grid + procedural heightmap
+│       ├── navigation.rs       # A* pathfinding on terrain
+│       ├── camera.rs           # Tabletop/isometric camera (orbit, pan, zoom, auto-follow)
+│       ├── selection.rs        # Unit selection system
+│       ├── squad.rs            # Squad controller + 4 formations (Line/Column/Circle/Wedge)
+│       ├── ai.rs               # Enemy AI state machine (patrol, aggro, chase, combat)
+│       ├── combat.rs           # Combat system (melee/ranged/magic, STR/DEX/INT scaling)
+│       ├── ability.rs          # Ability system (6 types, cooldowns, mana, 4 slots/unit)
+│       ├── loot.rs             # Loot drops, auto-pickup, gold stacking
+│       ├── stats.rs            # STR/DEX/INT/VIT, leveling, XP, stat allocation
+│       ├── equipment.rs        # 7 equipment slots, stat bonuses, level gating
+│       ├── jobs.rs             # Procedural bounty/contract generation (6 types, 5 tiers)
+│       ├── dialogue.rs         # Branching NPC conversations, condition gates
+│       ├── factions.rs         # 7 factions, reputation, pricing modifiers
+│       ├── inventory_ui.rs     # Item management, sorting, filtering, drag-drop
+│       ├── world_map.rs        # Procedural biomes, exploration
+│       ├── poi.rs              # Points of interest — towns, dungeons, camps, discovery
+│       ├── daynight.rs         # Day/night cycle, 6-phase lighting
+│       ├── encounters.rs       # Random encounters, ambushes, difficulty scaling
+│       ├── save.rs             # Save/load, versioning, checksums, auto-save
+│       ├── minimap.rs          # Explored/fog cells, POI/enemy markers, terrain colors
+│       ├── hud.rs              # Health/mana/XP bars, tooltips, notifications, squad panel
+│       ├── screens.rs          # Screen stack, transitions, button layouts, presets
+│       ├── effects.rs          # 16 visual effect types, particle profiles
+│       ├── ambience.rs         # Sound zones, music triggers, footstep tracking
+│       └── tutorial.rs         # Objectives, hints, guided sequences
 └── tests/
-    └── integration_tests.rs  # 25 integration tests
+    └── integration_tests.rs    # 25 integration tests
 ```
 
 ---
 
-## Systems Reference
+## Chronos Company — Demo Game
 
-### MovementSystem
-```rust
-// Applies velocity to position every tick
-Position.x += Velocity.x * dt;
-Position.y += Velocity.y * dt;
-```
-
-### HealthSystem
-```rust
-// Damage → Health → Dead pipeline
-if entity has Damage {
-    health.current -= damage.0;
-    emit DamageTaken(entity, amount);
-    if health.current <= 0 {
-        add Dead component;
-        emit EntityDied(entity);
-    }
-    remove Damage;
-}
-```
-
-### CollisionSystem
-```rust
-// Quadtree broad-phase + circle narrow-phase
-// Insert all entities with Position + CircleRadius into quadtree
-// Query collision pairs → check distance < r1 + r2
-// Emit Collision events with cooldown to prevent re-trigger
-```
-
-### GravitySystem / PlatformerSystem
-```rust
-// Gravity: velocity.y += gravity * dt (acceleration, not force)
-// Platformer: ground check, jump impulse, ground friction
-```
-
-### RaycastSystem
-```rust
-// Spatial index ray queries
-// Returns sorted RaycastHit list (entity, distance, point)
-```
-
----
-
-## Chronos Company — First Game
-
-The first game built on Chronos Engine. **A 3D real-time strategy open-world RPG sandbox.**
+The first game built on Chronos Engine. **A 3D real-time strategy open-world RPG sandbox.** Will be built inside the Chronos Editor as a proof of concept.
 
 You command a band of mercenaries navigating an open world, taking job boards and bounties, moving as a unit, fighting in RTS-style tactical combat. Tabletop/isometric camera view. The world persists. Your company grows.
+
+**Status:** All game logic modules implemented (28 files, 23 tests) — components, mercenary factory, terrain, navigation, camera, squads, combat, abilities, loot, RPG stats, equipment, job board, dialogue, factions, inventory, world map, POIs, day/night cycle, encounters, save/load, minimap, HUD, screens, effects, ambience, and tutorial. **The playable demo (Phase 14) is work in progress.**
 
 **Core pillars:**
 - Open world traversal (3D, tabletop camera)
 - RTS-style unit control (select, move, fight as a squad)
 - RPG progression (mercenary stats, equipment, skills)
 - Job board / bounty system (mission generation)
+- Faction reputation (7 factions, pricing, access gates)
+- Dialogue system (branching conversations, condition gates)
 - Sandbox freedom (go anywhere, take any contract)
 
-**Implemented (Phase 6A):**
-- 11 game-specific components: `Selectable`, `Selected`, `MoveTarget`, `MercenaryStats`, `NavigationAgent`, `Team`, `SquadMember`, `HealthBar`, `AggroRadius`, `LootDrop`, `SelectionRing`
-- `MercenaryFactory` with Warrior/Archer/Mage/Scout templates
-- `TerrainGrid` with height data, walkability (Flat/Hill/Water/Wall/Path), procedural heightmap
-- A* pathfinding on `TerrainGrid` with world-coordinate API
-- `TabletopCamera` — spherical orbit, WASD pan, scroll zoom, auto-follow, screen-to-ray picking
-- `SelectionManager` — click select, box select, toggle, max selection limit
-- `SquadManager` with 4 formations (Line, Column, Circle, Wedge)
+**Implemented modules (28 game files):**
+
+| Category | Modules |
+|----------|---------|
+| **Foundation** | Components, Mercenary Factory, Terrain, Navigation (A*), Camera, Selection, Squads |
+| **Combat** | Enemy AI, Combat System, Abilities, Loot Drops |
+| **RPG** | Stats/Leveling, Equipment, Jobs, Dialogue, Factions, Inventory |
+| **World** | World Map, Points of Interest, Day/Night Cycle, Encounters, Save/Load, Minimap |
+| **Polish** | HUD, Screen Manager, Visual Effects, Ambience, Tutorial |
+
+---
+
+## Editor Application
+
+Desktop editor built with winit 0.30 + wgpu 23 + egui 0.30.
+
+| Module | What |
+|--------|------|
+| **EditorApp** | Main application — window, wgpu surface, egui render loop, 60fps |
+| **ViewportPanel** | Central viewport with orbit/pan/zoom camera, grid overlay, FPS counter |
+| **HierarchyPanel** | Left panel — entity tree, add/delete/duplicate, search, selection sync |
+| **InspectorPanel** | Right panel — component property editor with drag sliders for all 11 types |
+| **AssetBrowserPanel** | Bottom panel — file browser with list/grid views, type detection |
+| **ConsolePanel** | Bottom panel — log output with severity filters, command processor |
+| **ToolbarPanel** | Top panel — Play/Pause/Stop, gizmo mode, snap toggle |
+| **MenuBarPanel** | Top panel — File/Edit/View/Help menus, shortcuts dialog, about dialog |
+| **WelcomePanel** | Initial screen — new project wizard (Empty, 2D Platformer, 3D Shooter, RPG templates), recent projects |
+| **UndoStack** | Dual-stack undo/redo with type-erased `Box<dyn EditorCommand>` |
+| **GridRenderer** | Infinite ground grid with axis coloring and snap-to-grid |
+| **GizmoSystem** | Translate/Rotate/Scale gizmos with mouse drag interaction |
+| **ViewportSelector** | Click-pick (ray), box select, multi-select, hover highlight |
+| **ShortcutMap** | Configurable keybindings with Blender-style defaults |
+| **SettingsDialog** | Rendering/editor/shortcuts tabs with validation |
+| **PanelDocking** | Resizable, dockable panels — tree layout, drag-drop, save/restore |
+| **ProjectManager** | New/Open/Save/Close projects, `.chronos` project format, manifest, templates |
+
+---
+
+## Engine Generalization
+
+Systems extracted to make every game genre a first-class citizen.
+
+| Module | Lines | Tests | What |
+|--------|-------|-------|------|
+| **physics2d.rs** | 1,344 | 24 | Full 2D physics — AABB/circle collisions, RigidBody2D, impulse solver, raycasting |
+| **animation.rs** | 1,484 | 29 | Animation state machine, blend trees (1D/2D), sprite flipbook, keyframe timeline |
+| **material.rs** | 757 | 14 | Material system — 7 built-in presets (Unlit, PBR, Sprite, Particle, UI, Skybox, Terrain) |
+| **shader.rs** | 1,075 | 21 | Shader graph — 28 node types, WGSL code generation, hot-reload watcher |
+| **general_systems.rs** | 1,198 | 21 | Camera2D, layered TilemapEx with autotile, A* Pathfinder2D, AudioZone system |
+
+---
+
+## Scripting & Modding
+
+Full Rhai scripting engine — make games without touching Rust.
+
+| Module | Lines | Tests | What |
+|--------|-------|-------|------|
+| **bridge.rs** | 664 | 18 | Rhai engine bridge — register Vec2/Vec3/Entity/Transform, compile/eval scripts |
+| **component.rs** | 395 | 17 | ScriptComponent — attach Rhai scripts to entities, per-entity state |
+| **lifecycle.rs** | 577 | 15 | Script hooks — `on_start`, `on_update`, `on_destroy`, `on_collision` |
+| **api.rs** | 595 | 21 | Full scripting API — vec math, entity CRUD, debug, time, input, audio, physics, events, scenes |
+| **hotreload.rs** | 861 | 20 | Polling-based script hot-reload — configurable reload policies |
+| **modloader.rs** | 1,087 | 18 | ModLoader — metadata, dependency resolution, sandboxing |
+
+---
+
+## Asset Pipeline
+
+Advanced importers for production asset workflows (feature: `asset-pipeline`).
+
+| Module | Lines | Tests | What |
+|--------|-------|-------|------|
+| **audio_import.rs** | — | 15 | WAV/OGG/MP3/FLAC → raw f32 PCM via symphonia (normalization, mono conversion, silence trim, resampling) |
+| **font_import.rs** | — | 17 | TTF/OTF → bitmap glyph atlases via ab_glyph (ASCII coverage, kerning, atlas packing) |
+| **gltf_import.rs** | — | 17 | glTF/GLB → meshes, PBR materials, skeletal animation, scene hierarchy, skin data |
+| **image_import.rs** | — | 17 | PNG/JPG/BMP/TGA → RGBA8/RGB8/Grayscale8 + box-filter mipmap chain generation |
+| **metadata.rs** | — | 18 | `.meta` companion files — stable GUID, import settings, timestamps, content hash |
+| **registry.rs** | — | 25 | GUID-based asset registry — type-erased storage, reference counting, garbage collection |
+| **Total** | **5,450** | **92** | |
 
 ---
 
 ## How It Compares
 
-| Aspect | Chronos Engine | Bevy | Legion / Hecs |
-|--------|---------------|------|---------------|
-| **Core Dependencies** | **Zero** — pure std | Heavy (wgpu, many crates) | Moderate |
-| **Deterministic Simulation** | **First-class** — `TickScheduler` for lockstep | Not designed for lockstep | Not primary focus |
-| **Game Systems** | Built-in — fog of war, skeletal animation, lighting, pathfinding, squad AI | Plugin ecosystem | ECS-only |
-| **Physics** | Built-in 2D collision + 3D physics with constraints | Rapier / Avian | None |
-| **RTS-Specific** | Tabletop camera, box selection, A*, formations, mercenary stats | No RTS modules | None |
-| **Terminal Mode** | `DebugRenderSystem` — runs without GPU | Requires GPU | No rendering |
-| **Safety** | **100% safe Rust** — zero `unsafe` in ECS/storage/spatial | Extensive unsafe for perf | Extensive unsafe |
-| **Codebase Size** | ~13.5K lines — readable in an afternoon | Very large | Moderate |
-| **Learning Curve** | Low — small, well-documented codebase | High — many abstractions | Moderate |
+| Aspect | Chronos Engine | Unity | Unreal | Bevy |
+|--------|---------------|-------|--------|------|
+| **License** | MIT — fully open-source | Proprietary | Proprietary (source) | Open-source |
+| **Language** | Rust | C# | C++/Blueprints | Rust |
+| **Core Dependencies** | **Zero** — pure std | Heavy | Heavy | Heavy |
+| **Deterministic Simulation** | **First-class** — `TickScheduler` | Not guaranteed | Not primary | Not designed for lockstep |
+| **Safety** | **100% safe Rust** — zero `unsafe` | GC, no memory safety | GC or manual | Extensive unsafe for perf |
+| **Cross-Platform** | Linux/Windows/macOS/WASM (planned) | 25+ platforms | 15+ platforms | Linux/Windows/macOS/WASM |
+| **Editor** | ✅ egui-based — all panels, workspace tools, project management, docking | Full editor | Full editor | No editor yet |
+| **Scripting** | ✅ Rhai — full engine API, hot-reload, modding | C# | C++/Blueprints | Rust |
+| **2D Physics** | ✅ Built-in AABB/circle, impulse solver, raycasting | Box2D | Paper2D | Rapier/Avian |
+| **3D Physics** | ✅ Built-in rigid body, constraints, collision response | PhysX | Chaos | Rapier/Avian |
+| **Animation** | ✅ State machine, blend trees, sprite flipbook, timeline, skeletal | Mecanim | Animation Blueprints | Animation graph |
+| **Networking** | Rollback netcode (planned) | Netcode, Relay | Netcode, Replication | Not built-in |
+| **Codebase Size** | ~53K lines — readable, auditable | Millions | Millions | Very large |
 
-**The key differentiator:** Chronos Engine is a self-contained, zero-dependency ECS with a **complete game systems layer** that compiles with only the Rust standard library, yet scales to full wgpu rendering with 3D pipelines, post-processing, and audio. It prioritizes **deterministic lockstep simulation** for RTS/strategy games — a niche not well-served by existing engines.
+**The key differentiator:** Chronos Engine is a self-contained, zero-dependency ECS with a **complete game systems layer** that compiles with only the Rust standard library, yet scales to full wgpu rendering with 3D pipelines, post-processing, audio, scripting, and a desktop editor. It prioritizes **deterministic lockstep simulation** for multiplayer — a niche not well-served by existing engines. And it's fully open-source with no license fees.
 
 ---
 
@@ -409,15 +567,20 @@ You command a band of mercenaries navigating an open world, taking job boards an
 See [ROADMAP.md](ROADMAP.md) for the full phased development plan.
 
 ```
-Phase 1 — Core ECS                          ✅ Done
-Phase 2 — Systems & Game Loop               ✅ Done
-Phase 3 — Spatial Index & Physics           ✅ Done
-Phase 4 — Rendering & Advanced Systems      ✅ Done
-Phase 5 — Developer Experience              ✅ Done
-Phase 6 — Chronos Company (first game)      🔄 WIP (6A done, 6B-6E TODO)
-Phase 7 — Scripting & Modding               📋 TODO
-Phase 8 — Networking                        📋 TODO
-Phase 9 — Polish & Distribution             📋 TODO
+Phase 1  — Core ECS                          ✅ Done
+Phase 2  — Systems & Game Loop               ✅ Done
+Phase 3  — Spatial Index & Physics           ✅ Done
+Phase 4  — Rendering & Advanced Systems      ✅ Done
+Phase 5  — Developer Experience              ✅ Done
+Phase 6  — Chronos Company (game modules)    🚧 WIP
+Phase 7  — Editor Application                ✅ Done
+Phase 8  — Engine Generalization             ✅ Done
+Phase 9  — Scripting & Modding               ✅ Done
+Phase 10 — Asset Pipeline                    🚧 WIP (importers done, processing pipeline TODO)
+Phase 11 — Cross-Platform Distribution       📋 TODO
+Phase 12 — Networking                        📋 TODO
+Phase 13 — Plugin System                     📋 TODO
+Phase 14 — Chronos Company Demo              📋 TODO
 ```
 
 ---
@@ -436,25 +599,40 @@ Phase 9 — Polish & Distribution             📋 TODO
 
 6. **Genre-agnostic** — the same ECS core powers RTS lockstep, platformer variable-timestep, RPG event-driven, and shooter pipelines. You bring the game logic.
 
+7. **Open by default** — every line is open-source. No license tiers, no revenue share, no feature gates behind paywalls.
+
 ---
 
 ## Stats
 
 | Metric | Value |
 |--------|-------|
-| Lines of Rust | ~13,500 |
-| Source files | 36 |
-| Public types | 115+ |
-| Unit tests | 85 |
+| Lines of Rust | ~53,000 |
+| Source files | 96 |
+| Engine core modules | 33 |
+| Game modules | 28 |
+| Editor panels | 9 |
+| Editor workspace modules | 8 |
+| Editor project modules | 2 |
+| Scripting modules | 7 |
+| Asset import modules | 7 |
+| Binaries | 2 (main demo + chronos-editor) |
+| Unit tests | 946 |
 | Integration tests | 25 |
-| Total tests | 110 |
+| Total tests | 971 |
 | `unsafe` blocks | 0 |
 | Core dependencies | 0 |
-| Optional dependencies | 8 (wgpu, winit, bytemuck, rand, tokio, image, serde, rodio, notify) |
+| Feature-gated dependencies | 19 |
+
+---
+
+## License
+
+MIT — see [LICENSE](LICENSE) for full text.
 
 ---
 
 <p align="center">
-  Built with 🎹🦞 by <a href="https://github.com/synthalorian">synth</a><br>
+  Built with 🎹🦞 by <a href="https://github.com/synthalorian">synth</a> + synthclaw<br>
   <em>Write the future in the present while preserving the past.</em>
 </p>

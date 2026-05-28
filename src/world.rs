@@ -229,6 +229,14 @@ impl World {
         self.entities.len()
     }
 
+    /// Get all alive entities in the world.
+    pub fn all_entities(&self) -> Vec<Entity> {
+        self.entities
+            .iter()
+            .filter_map(|e| *e)
+            .collect()
+    }
+
     // ──────────────────────────────────────────────
     // Component attachment methods
     // ──────────────────────────────────────────────

@@ -13,7 +13,12 @@ serialize = ["serde", "serde_json"]
 audio = ["rodio"]
 dev-tools = ["notify", "serde", "serde_json"]
 game = ["render"]
-full = ["render", "serialize", "audio", "dev-tools", "game"]
+asset-pipeline = ["gltf", "symphonia", "ab_glyph", "uuid", "serde", "serde_json", "image"]
+full = ["render", "serialize", "audio", "dev-tools", "game", "editor", "scripting", "asset-pipeline"]
+
+editor = ["egui", "egui-wgpu", "egui-winit", "wgpu", "winit", "pollster", "serde", "serde_json"]
+
+scripting = ["rhai"]
 
 [dependencies.wgpu]
 version = "23"
@@ -57,3 +62,48 @@ optional = true
 [dependencies.notify]
 version = "7"
 optional = true
+
+[dependencies.egui]
+version = "0.30"
+optional = true
+
+[dependencies.egui-wgpu]
+version = "0.30"
+optional = true
+features = ["winit"]
+
+[dependencies.egui-winit]
+version = "0.30"
+optional = true
+
+[dependencies.pollster]
+version = "0.4"
+optional = true
+
+[dependencies.rhai]
+version = "1"
+optional = true
+
+[dependencies.gltf]
+version = "1"
+optional = true
+features = ["import", "names"]
+
+[dependencies.symphonia]
+version = "0.5"
+optional = true
+features = ["pcm", "wav", "ogg", "mp3", "flac"]
+
+[dependencies.ab_glyph]
+version = "0.2"
+optional = true
+
+[dependencies.uuid]
+version = "1"
+optional = true
+features = ["v4"]
+
+[[bin]]
+name = "chronos-editor"
+path = "src/bin/chronos-editor.rs"
+required-features = ["editor"]

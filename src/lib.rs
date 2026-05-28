@@ -16,10 +16,18 @@ pub mod tilemap;
 pub mod particle;
 pub mod obj_loader;
 pub mod octree;
+pub mod physics2d;
 pub mod physics3d;
 pub mod lighting;
+pub mod material;
+pub mod shader;
 pub mod skeletal;
 pub mod fog_of_war;
+pub mod animation;
+pub mod general_systems;
+
+#[cfg(feature = "scripting")]
+pub mod scripting;
 
 #[cfg(feature = "render")]
 pub mod render;
@@ -51,6 +59,18 @@ pub mod asset;
 #[cfg(feature = "render")]
 pub mod editor;
 
+#[cfg(feature = "editor")]
+pub mod editor_app;
+
+#[cfg(feature = "editor")]
+pub mod editor_panels;
+
+#[cfg(feature = "editor")]
+pub mod editor_workspace;
+
+#[cfg(feature = "editor")]
+pub mod editor_project;
+
 #[cfg(feature = "game")]
 pub mod game;
 
@@ -71,10 +91,29 @@ pub use tilemap::{TileMap, TileChunk, Tile};
 pub use particle::{ParticleEmitter, Particle, ParticleSystem};
 pub use obj_loader::ObjMesh;
 pub use octree::{Octree, OctreeObject, AABB3D, Ray3D, RayHit3D};
+pub use physics2d::{Vec2, Collider2D, RigidBody2D, Contact2D, Ray2D, RayHit2D, PhysicsWorld2D};
 pub use physics3d::{PhysicsWorld3D, RigidBody3D, Collider3D, Contact3D, Constraint3D, DistanceConstraint, PointConstraint};
 pub use lighting::{Light, LightType, LightingSystem, LightMap, ShadowCaster, LineSegment, VisibilityPolygon};
 pub use skeletal::{Skeleton, Joint, JointPose, SkeletonPose, AnimationClip, AnimationChannel, AnimationPlayer, AnimationBlender};
 pub use fog_of_war::{FogOfWar, FogGrid, FogRevealer, Visibility};
+pub use material::{
+    MaterialDefinition, MaterialProperty, MaterialValue, MaterialError,
+    RenderState, BlendMode, CullMode, CompiledMaterial,
+    unlit, pbr_standard, sprite_material, particle_material,
+    ui_material, skybox_material, terrain_material,
+};
+pub use shader::{
+    ShaderGraph, ShaderNode, ShaderNodeType, ShaderError,
+    PortType, PortDef, NodePort, NodeConnection,
+    ShaderInput, ShaderOutput, ShaderWatcher,
+    unlit_shader, pbr_shader, sprite_shader,
+};
+pub use animation::{
+    AnimParam, AnimCondition, AnimTransition, AnimState, AnimStateMachine, AnimStateUpdate,
+    BlendType, BlendChild, BlendTree,
+    SpriteFrame, SpriteAnimation, SpriteAnimationEvent,
+    Timeline, TimelineTrack, Keyframe, KeyframeValue, Interpolation, TimelineSample,
+};
 pub use input::{
     KeyCode, MouseButton, GamepadButton, GamepadAxis,
     InputSource, InputEvent,
@@ -120,3 +159,9 @@ pub use editor::{
     StatsPanel, Stats, DevConsole, LogEntry, LogLevel,
     SceneTree, SceneEntry, OverlayRenderData,
 };
+
+#[cfg(feature = "editor")]
+pub use editor_app::{EditorApp, EditorError};
+
+#[cfg(feature = "asset-pipeline")]
+pub mod import;

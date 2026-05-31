@@ -1,0 +1,263 @@
+# Release workflow for Chronos Engine
+#
+# Triggered by pushing a tag matching v* (e.g. v1.0.0, v1.2.3-rc1).
+# Builds the editor binary on Linux (x86_64 + aarch64), Windows (x86_64),
+# and macOS (x86_64 + aarch64), then creates a GitHub Release with all
+# artifacts attached.
+
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  # ── Linux x86_64 ─────────────────────────────────────────────────────
+  linux-x86_64:
+    name: Linux x86_64
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-unknown-linux-gnu
+
+      - name: Build release (editor)
+        run: cargo build --bin chronos-editor --features editor --release
+
+      - name: Build release (cli)
+        run: cargo build --bin chronos --features full --release
+
+      - name: Create archive
+        run: |
+          mkdir -p dist/chronos-engine-x86_64-linux
+          cp target/release/chronos-editor dist/chronos-engine-x86_64-linux/
+          cp target/release/chronos      dist/chronos-engine-x86_64-linux/
+          cp -r packaging/appimage/chronos-editor.desktop dist/chronos-engine-x86_64-linux/
+          cp LICENSE dist/chronos-engine-x86_64-linux/
+          cd dist
+          tar czf chronos-engine-x86_64-linux.tar.gz chronos-engine-x86_64-linux
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: chronos-engine-x86_64-linux
+          path: dist/chronos-engine-x86_64-linux.tar.gz
+
+  # ── Linux aarch64 ────────────────────────────────────────────────────
+  linux-aarch64:
+    name: Linux aarch64
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-unknown-linux-gnu
+
+      - name: Install cross-compilation tools
+        run: sudo apt-get update && sudo apt-get install -y gcc-aarch64-linux-gnu
+
+      - name: Build release (editor)
+        env:
+          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
+        run: cargo build --bin chronos-editor --features editor --release --target aarch64-unknown-linux-gnu
+
+      - name: Build release (cli)
+        env:
+          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
+        run: cargo build --bin chronos --features full --release --target aarch64-unknown-linux-gnu
+
+      - name: Create archive
+        run: |
+          mkdir -p dist/chronos-engine-aarch64-linux
+          cp target/aarch64-unknown-linux-gnu/release/chronos-editor dist/chronos-engine-aarch64-linux/
+          cp target/aarch64-unknown-linux-gnu/release/chronos      dist/chronos-engine-aarch64-linux/
+          cp LICENSE dist/chronos-engine-aarch64-linux/
+          cd dist
+          tar czf chronos-engine-aarch64-linux.tar.gz chronos-engine-aarch64-linux
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: chronos-engine-aarch64-linux
+          path: dist/chronos-engine-aarch64-linux.tar.gz
+
+  # ── Windows x86_64 ───────────────────────────────────────────────────
+  windows-x86_64:
+    name: Windows x86_64
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Build release (editor)
+        run: cargo build --bin chronos-editor --features editor --release
+
+      - name: Build release (cli)
+        run: cargo build --bin chronos --features full --release
+
+      - name: Create archive
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path dist/chronos-engine-x86_64-windows -Force | Out-Null
+          Copy-Item target/release/chronos-editor.exe dist/chronos-engine-x86_64-windows/
+          Copy-Item target/release/chronos.exe      dist/chronos-engine-x86_64-windows/
+          Copy-Item LICENSE                         dist/chronos-engine-x86_64-windows/
+          Compress-Archive -Path dist/chronos-engine-x86_64-windows -DestinationPath dist/chronos-engine-x86_64-windows.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: chronos-engine-x86_64-windows
+          path: dist/chronos-engine-x86_64-windows.zip
+
+  # ── macOS x86_64 ─────────────────────────────────────────────────────
+  macos-x86_64:
+    name: macOS x86_64
+    runs-on: macos-13  # Intel runner
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-apple-darwin
+
+      - name: Build release (editor)
+        run: cargo build --bin chronos-editor --features editor --release --target x86_64-apple-darwin
+
+      - name: Build release (cli)
+        run: cargo build --bin chronos --features full --release --target x86_64-apple-darwin
+
+      - name: Create archive
+        run: |
+          mkdir -p dist/chronos-engine-x86_64-macos
+          cp target/x86_64-apple-darwin/release/chronos-editor dist/chronos-engine-x86_64-macos/
+          cp target/x86_64-apple-darwin/release/chronos      dist/chronos-engine-x86_64-macos/
+          cp LICENSE dist/chronos-engine-x86_64-macos/
+          cd dist
+          tar czf chronos-engine-x86_64-macos.tar.gz chronos-engine-x86_64-macos
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: chronos-engine-x86_64-macos
+          path: dist/chronos-engine-x86_64-macos.tar.gz
+
+  # ── macOS aarch64 (Apple Silicon) ────────────────────────────────────
+  macos-aarch64:
+    name: macOS aarch64
+    runs-on: macos-latest  # ARM runner
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin
+
+      - name: Build release (editor)
+        run: cargo build --bin chronos-editor --features editor --release --target aarch64-apple-darwin
+
+      - name: Build release (cli)
+        run: cargo build --bin chronos --features full --release --target aarch64-apple-darwin
+
+      - name: Create archive
+        run: |
+          mkdir -p dist/chronos-engine-aarch64-macos
+          cp target/aarch64-apple-darwin/release/chronos-editor dist/chronos-engine-aarch64-macos/
+          cp target/aarch64-apple-darwin/release/chronos      dist/chronos-engine-aarch64-macos/
+          cp LICENSE dist/chronos-engine-aarch64-macos/
+          cd dist
+          tar czf chronos-engine-aarch64-macos.tar.gz chronos-engine-aarch64-macos
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: chronos-engine-aarch64-macos
+          path: dist/chronos-engine-aarch64-macos.tar.gz
+
+  # ── WASM (web target) ────────────────────────────────────────────────
+  wasm:
+    name: WASM (wasm32)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Build WASM package
+        run: wasm-pack build --target web --features web --out-name chronos_engine --out-dir www/pkg
+
+      - name: Create archive
+        run: |
+          cd www
+          tar czf ../dist/chronos-engine-wasm.tar.gz index.html pkg/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: chronos-engine-wasm
+          path: dist/chronos-engine-wasm.tar.gz
+
+  # ── Create GitHub Release ────────────────────────────────────────────
+  release:
+    name: Create GitHub Release
+    needs:
+      - linux-x86_64
+      - linux-aarch64
+      - windows-x86_64
+      - macos-x86_64
+      - macos-aarch64
+      - wasm
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Generate release notes
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          VERSION="${TAG#v}"
+          cat > RELEASE_NOTES.md <<'EOF'
+          # Chronos Engine ${VERSION}
+
+          ## Downloads
+
+          | Platform | Architecture | Archive |
+          |----------|-------------|---------|
+          | Linux | x86_64 | chronos-engine-x86_64-linux.tar.gz |
+          | Linux | aarch64 | chronos-engine-aarch64-linux.tar.gz |
+          | Windows | x86_64 | chronos-engine-x86_64-windows.zip |
+          | macOS | x86_64 | chronos-engine-x86_64-macos.tar.gz |
+          | macOS | aarch64 | chronos-engine-aarch64-macos.tar.gz |
+          | Web (WASM) | — | chronos-engine-wasm.tar.gz |
+
+          ## What's Changed
+
+          See the [commit log](https://github.com/${{ github.repository }}/compare/${TAG}) for full details.
+          EOF
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Chronos Engine ${{ github.ref_name }}
+          body_path: RELEASE_NOTES.md
+          draft: true
+          prerelease: ${{ contains(github.ref_name, 'rc') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') }}
+          files: |
+            artifacts/chronos-engine-x86_64-linux/chronos-engine-x86_64-linux.tar.gz
+            artifacts/chronos-engine-aarch64-linux/chronos-engine-aarch64-linux.tar.gz
+            artifacts/chronos-engine-x86_64-windows/chronos-engine-x86_64-windows.zip
+            artifacts/chronos-engine-x86_64-macos/chronos-engine-x86_64-macos.tar.gz
+            artifacts/chronos-engine-aarch64-macos/chronos-engine-aarch64-macos.tar.gz
+            artifacts/chronos-engine-wasm/chronos-engine-wasm.tar.gz

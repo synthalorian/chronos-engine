@@ -1,0 +1,114 @@
+# Maintainer: synth <synth@chronosengine.dev>
+# Package: chronos-engine
+# Arch: x86_64 aarch64
+
+pkgname=chronos-engine
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="An open-source Rust game engine — ECS core, spatial indexing, physics, rendering, audio, editor, scripting, asset pipeline"
+arch=('x86_64' 'aarch64')
+url="https://github.com/synthalorian/chronos-engine"
+license=('MIT')
+depends=(
+    'gcc-libs'
+    'glibc'
+    'libx11'
+    'libxcb'
+    'libxkbcommon'
+    'wayland'
+)
+makedepends=('cargo' 'rust' 'pkgconf')
+optdepends=(
+    'chronos-engine-editor: desktop editor application'
+    'zenity: native file dialogs (GTK)'
+    'kdialog: native file dialogs (KDE)'
+)
+provides=('chronos-engine')
+conflicts=('chronos-engine-git')
+source=("${pkgname}-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz")
+sha256sums=('SKIP')
+
+# ── Shared build: produce both binaries ───────────────────────────────
+
+build() {
+    cd "${srcdir}/${pkgname}-${pkgver}"
+    cargo build --release --features full
+    cargo build --release --bin chronos-editor --features editor
+}
+
+# ── Subpackage: chronos-engine (CLI) ──────────────────────────────────
+
+package_chronos_engine() {
+    depends=('gcc-libs' 'glibc')
+    cd "${srcdir}/${pkgname}-${pkgver}"
+
+    # Install CLI binary
+    install -Dm755 "target/release/chronos" "${pkgdir}/usr/bin/chronos"
+
+    # Install license
+    install -Dm644 "LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+
+    # Man page
+    install -d "${pkgdir}/usr/share/man/man1"
+    cat > "${pkgdir}/usr/share/man/man1/chronos.1" <<'MANEOF'
+.TH CHRONOS 1 "2025-05" "chronos-engine v1.0" "User Commands"
+.SH NAME
+chronos \- Chronos Engine CLI
+.SH DESCRIPTION
+Command-line interface for the Chronos Engine
+.SH COMMANDS
+.TP
+.B new <name>
+Create a new project from a template.
+.TP
+.B build
+Build the current project.
+.TP
+.B run
+Build and run the current project.
+.TP
+.B test
+Run tests.
+.TP
+.B package
+Package for distribution.
+MANEOF
+}
+
+# ── Subpackage: chronos-engine-editor (desktop app) ───────────────────
+
+package_chronos_engine_editor() {
+    depends=('gcc-libs' 'glibc' 'libx11' 'libxcb' 'libxkbcommon' 'wayland')
+    cd "${srcdir}/${pkgname}-${pkgver}"
+
+    # Install editor binary
+    install -Dm755 "target/release/chronos-editor" "${pkgdir}/usr/bin/chronos-editor"
+
+    # Install desktop entry
+    install -Dm644 "packaging/appimage/chronos-editor.desktop" \
+        "${pkgdir}/usr/share/applications/chronos-editor.desktop"
+
+    # Install icon
+    install -Dm644 "icon.png" \
+        "${pkgdir}/usr/share/icons/hicolor/256x256/apps/chronos-editor.png"
+
+    # Install AppStream metadata
+    install -Dm644 /dev/stdin "${pkgdir}/usr/share/metainfo/com.chronosengine.editor.appdata.xml" <<'XML'
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.chronosengine.editor</id>
+  <metadata_license>MIT</metadata_license>
+  <project_license>MIT</project_license>
+  <name>Chronos Engine Editor</name>
+  <summary>Cross-platform game engine editor</summary>
+  <description>
+    <p>Chronos Engine is a Rust-based cross-platform game engine with an integrated editor.
+    Features ECS core, spatial indexing, 2D/3D physics, rendering, animation, audio,
+    scripting, and a full desktop editor.</p>
+  </description>
+  <url type="homepage">https://github.com/synthalorian/chronos-engine</url>
+  <developer_name>synth</developer_name>
+  <content_rating type="oars-1.1" />
+</component>
+XML
+}

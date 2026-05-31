@@ -1,0 +1,187 @@
+[package]
+name = "chronos-engine"
+version = "1.0.0"
+edition = "2021"
+description = "A custom Rust game engine — ECS core, spatial indexing, physics, rendering, audio, editor, scripting, asset pipeline"
+repository = "https://github.com/synthalorian/chronos-engine"
+homepage = "https://github.com/synthalorian/chronos-engine"
+
+[lib]
+crate-type = ["lib", "cdylib"]
+
+[dependencies]
+anyhow = "1"
+thiserror = "1"
+
+[features]
+default = []
+render = ["wgpu", "winit", "bytemuck", "rand", "tokio", "image"]
+serialize = ["serde", "serde_json"]
+audio = ["rodio"]
+dev-tools = ["notify", "serde", "serde_json"]
+game = ["render"]
+chronos-game = ["game", "render", "dep:pollster"]
+asset-pipeline = ["gltf", "symphonia", "ab_glyph", "uuid", "serde", "serde_json", "image"]
+full = ["render", "serialize", "audio", "dev-tools", "game", "editor", "scripting", "asset-pipeline", "net", "voice-chat"]
+
+web = ["render", "editor", "wgpu/webgl", "wgpu", "winit", "bytemuck", "rand", "image", "wasm-bindgen", "js-sys", "web-sys", "console_error_panic_hook", "console_log", "wasm-bindgen-futures"]
+
+dialogs = ["rfd"]
+
+editor = ["egui", "egui-wgpu", "egui-winit", "wgpu", "winit", "dep:pollster", "serde", "serde_json"]
+
+scripting = ["rhai"]
+
+net = ["serde", "serde_json", "rand"]
+voice-chat = ["audiopus"]
+
+[dependencies.wgpu]
+version = "23"
+optional = true
+
+[dependencies.winit]
+version = "0.30"
+optional = true
+
+[dependencies.bytemuck]
+version = "1"
+optional = true
+features = ["derive"]
+
+[dependencies.rand]
+version = "0.9"
+optional = true
+
+[dependencies.tokio]
+version = "1"
+optional = true
+features = ["rt", "rt-multi-thread"]
+
+[dependencies.image]
+version = "0.25"
+optional = true
+
+[dependencies.serde]
+version = "1"
+optional = true
+features = ["derive"]
+
+[dependencies.serde_json]
+version = "1"
+optional = true
+
+[dependencies.rodio]
+version = "0.20"
+optional = true
+
+[dependencies.notify]
+version = "7"
+optional = true
+
+[dependencies.egui]
+version = "0.30"
+optional = true
+
+[dependencies.egui-wgpu]
+version = "0.30"
+optional = true
+features = ["winit"]
+
+[dependencies.egui-winit]
+version = "0.30"
+optional = true
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+pollster = { version = "0.4", optional = true }
+
+[dependencies.rhai]
+version = "1"
+optional = true
+
+[dependencies.gltf]
+version = "1"
+optional = true
+features = ["import", "names"]
+
+[dependencies.symphonia]
+version = "0.5"
+optional = true
+features = ["pcm", "wav", "ogg", "mp3", "flac"]
+
+[dependencies.ab_glyph]
+version = "0.2"
+optional = true
+
+[dependencies.uuid]
+version = "1"
+optional = true
+features = ["v4"]
+
+[dependencies.rfd]
+version = "0.15"
+optional = true
+
+# ── WASM / Web dependencies (used by `web` feature) ──
+[dependencies.wasm-bindgen]
+version = "0.2.95"
+optional = true
+
+[dependencies.js-sys]
+version = "0.3.72"
+optional = true
+
+[dependencies.web-sys]
+version = "0.3.72"
+optional = true
+features = [
+    "Window", "Document", "Element", "HtmlCanvasElement", "CanvasRenderingContext2d",
+    "AudioContext", "AudioBuffer", "AudioBufferSourceNode", "GainNode", "MediaElementAudioSourceNode",
+    "Navigator", "console", "Performance", "CustomEvent", "CustomEventInit",
+]
+
+[dependencies.console_error_panic_hook]
+version = "0.1"
+optional = true
+
+[dependencies.console_log]
+version = "1"
+optional = true
+
+[dependencies.wasm-bindgen-futures]
+version = "0.4.50"
+optional = true
+
+[dependencies.audiopus]
+version = "0.3.0-rc.0"
+optional = true
+features = ["coder"]
+
+# ── Release profile ────────────────────────────────────────────────
+# Shared optimizations applied to all release builds.
+# For WASM, additionally use `RUSTFLAGS="-C panic=abort -C opt-level=z"`
+# or pass via `.cargo/config.toml` for even smaller binaries.
+[profile.release]
+codegen-units = 1     # Better LTO at cost of slower compile
+lto = "fat"            # Full link-time optimization
+strip = "symbols"      # Strip debug symbols
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+
+[[bench]]
+name = "ecs_benchmark"
+harness = false
+
+[[bin]]
+name = "chronos-editor"
+path = "src/bin/chronos-editor.rs"
+required-features = ["editor"]
+
+[[bin]]
+name = "chronos"
+path = "src/bin/chronos-cli.rs"
+
+[[bin]]
+name = "chronos-game"
+path = "src/bin/chronos-game.rs"
+required-features = ["game", "render", "chronos-game"]

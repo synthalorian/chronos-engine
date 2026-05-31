@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Chronos Engine Editor
+Comment=Cross-platform game engine editor
+Exec=chronos-editor
+Icon=chronos-editor
+Type=Application
+Categories=Development;Game;Graphics;
+Terminal=false

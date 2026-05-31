@@ -20,3 +20,7 @@ maps/*.chronos
 
 # Logs
 *.log
+
+# Claw IDE session data
+.claw/
+.clawd-todos.json

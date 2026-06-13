@@ -24,3 +24,5 @@ maps/*.chronos
 # Claw IDE session data
 .claw/
 .clawd-todos.json
+
+.sandbox-home/

@@ -68,11 +68,20 @@ impl ConsolePanel {
             "help" => {
                 state.log(ConsoleLogLevel::Info, "Available commands:");
                 state.log(ConsoleLogLevel::Info, "  help        — Show this message");
-                state.log(ConsoleLogLevel::Info, "  clear       — Clear console output");
+                state.log(
+                    ConsoleLogLevel::Info,
+                    "  clear       — Clear console output",
+                );
                 state.log(ConsoleLogLevel::Info, "  entities    — Show entity count");
                 state.log(ConsoleLogLevel::Info, "  fps         — Show FPS hint");
-                state.log(ConsoleLogLevel::Info, "  echo <text> — Print text to console");
-                state.log(ConsoleLogLevel::Info, "  select <id> — Select entity by index");
+                state.log(
+                    ConsoleLogLevel::Info,
+                    "  echo <text> — Print text to console",
+                );
+                state.log(
+                    ConsoleLogLevel::Info,
+                    "  select <id> — Select entity by index",
+                );
             }
             "clear" => {
                 state.console_log.clear();
@@ -82,7 +91,10 @@ impl ConsolePanel {
                 state.log(ConsoleLogLevel::Info, format!("Entity count: {count}"));
             }
             "fps" => {
-                state.log(ConsoleLogLevel::Info, "FPS: (not available in headless mode)");
+                state.log(
+                    ConsoleLogLevel::Info,
+                    "FPS: (not available in headless mode)",
+                );
             }
             "echo" => {
                 if args.is_empty() {
@@ -100,10 +112,8 @@ impl ConsolePanel {
                             let entity = state.world.entity_from_index(index);
                             if state.world.entity_exists(entity) {
                                 state.select(entity);
-                                state.log(
-                                    ConsoleLogLevel::Info,
-                                    format!("Selected entity {index}"),
-                                );
+                                state
+                                    .log(ConsoleLogLevel::Info, format!("Selected entity {index}"));
                             } else {
                                 state.log(
                                     ConsoleLogLevel::Warn,
@@ -120,9 +130,7 @@ impl ConsolePanel {
             _ => {
                 state.log(
                     ConsoleLogLevel::Warn,
-                    format!(
-                        "Unknown command: {command}. Type 'help' for available commands."
-                    ),
+                    format!("Unknown command: {command}. Type 'help' for available commands."),
                 );
             }
         }
@@ -289,9 +297,7 @@ impl EditorPanel for ConsolePanel {
             );
 
             // Arrow-up: walk backward through command history
-            if text_response.has_focus()
-                && ui.input(|i| i.key_pressed(egui::Key::ArrowUp))
-            {
+            if text_response.has_focus() && ui.input(|i| i.key_pressed(egui::Key::ArrowUp)) {
                 if !state.console_history.is_empty() {
                     self.history_index = Some(match self.history_index {
                         None => state.console_history.len() - 1,
@@ -305,9 +311,7 @@ impl EditorPanel for ConsolePanel {
             }
 
             // Arrow-down: walk forward through command history
-            if text_response.has_focus()
-                && ui.input(|i| i.key_pressed(egui::Key::ArrowDown))
-            {
+            if text_response.has_focus() && ui.input(|i| i.key_pressed(egui::Key::ArrowDown)) {
                 if let Some(idx) = self.history_index {
                     if idx + 1 < state.console_history.len() {
                         self.history_index = Some(idx + 1);
@@ -320,9 +324,7 @@ impl EditorPanel for ConsolePanel {
             }
 
             // Submit on Enter key
-            if text_response.has_focus()
-                && ui.input(|i| i.key_pressed(egui::Key::Enter))
-            {
+            if text_response.has_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)) {
                 submit = true;
             }
 
@@ -351,7 +353,6 @@ impl EditorPanel for ConsolePanel {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
 
     // ── Constructor & Defaults ─────────────────────────────────────────
 
@@ -491,7 +492,9 @@ mod tests {
         panel.process_command("blarghle", &mut state);
         assert_eq!(state.console_log.len(), 1);
         assert_eq!(state.console_log[0].level, ConsoleLogLevel::Warn);
-        assert!(state.console_log[0].message.contains("Unknown command: blarghle"));
+        assert!(state.console_log[0]
+            .message
+            .contains("Unknown command: blarghle"));
         assert!(state.console_log[0].message.contains("Type 'help'"));
     }
 
@@ -542,33 +545,27 @@ mod tests {
         assert!(panel.history_index.is_none());
 
         // Navigate up: should land on last entry (index 2)
-        panel.history_index = Some(
-            match panel.history_index {
-                None => state.console_history.len() - 1,
-                Some(i) if i > 0 => i - 1,
-                Some(i) => i,
-            },
-        );
+        panel.history_index = Some(match panel.history_index {
+            None => state.console_history.len() - 1,
+            Some(i) if i > 0 => i - 1,
+            Some(i) => i,
+        });
         assert_eq!(panel.history_index, Some(2));
 
         // Navigate up again: index 1
-        panel.history_index = Some(
-            match panel.history_index {
-                None => state.console_history.len() - 1,
-                Some(i) if i > 0 => i - 1,
-                Some(i) => i,
-            },
-        );
+        panel.history_index = Some(match panel.history_index {
+            None => state.console_history.len() - 1,
+            Some(i) if i > 0 => i - 1,
+            Some(i) => i,
+        });
         assert_eq!(panel.history_index, Some(1));
 
         // Navigate up again: index 0
-        panel.history_index = Some(
-            match panel.history_index {
-                None => state.console_history.len() - 1,
-                Some(i) if i > 0 => i - 1,
-                Some(i) => i,
-            },
-        );
+        panel.history_index = Some(match panel.history_index {
+            None => state.console_history.len() - 1,
+            Some(i) if i > 0 => i - 1,
+            Some(i) => i,
+        });
         assert_eq!(panel.history_index, Some(0));
 
         // Navigate down: back to index 1

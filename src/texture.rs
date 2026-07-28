@@ -1,10 +1,11 @@
 //! Texture atlas loading and GPU texture management.
 
+use std::collections::HashMap;
 use wgpu::{
     Device, Extent3d, ImageCopyTexture, ImageDataLayout, Queue, Texture, TextureAspect,
-    TextureDescriptor, TextureDimension, TextureFormat, TextureUsages, TextureView, TextureViewDescriptor,
+    TextureDescriptor, TextureDimension, TextureFormat, TextureUsages, TextureView,
+    TextureViewDescriptor,
 };
-use std::collections::HashMap;
 
 #[derive(Debug, Clone, Copy)]
 pub struct AtlasFrame {
@@ -79,11 +80,7 @@ impl TextureAtlas {
         }
     }
 
-    pub fn from_path(
-        device: &Device,
-        queue: &Queue,
-        path: &str,
-    ) -> Result<Self, String> {
+    pub fn from_path(device: &Device, queue: &Queue, path: &str) -> Result<Self, String> {
         let img = image::ImageReader::open(path)
             .map_err(|e| format!("Failed to open image {}: {}", path, e))?
             .decode()
@@ -93,7 +90,14 @@ impl TextureAtlas {
         let width = rgba.width();
         let height = rgba.height();
 
-        Ok(Self::from_rgba(device, queue, &rgba, width, height, Some(path)))
+        Ok(Self::from_rgba(
+            device,
+            queue,
+            &rgba,
+            width,
+            height,
+            Some(path),
+        ))
     }
 
     pub fn define_frame(&mut self, name: &str, x: u32, y: u32, w: u32, h: u32) {
@@ -105,7 +109,10 @@ impl TextureAtlas {
         self.frames.insert(
             name.to_string(),
             AtlasFrame {
-                u, v, du, dv,
+                u,
+                v,
+                du,
+                dv,
                 pixel_w: w,
                 pixel_h: h,
             },

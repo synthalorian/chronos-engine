@@ -81,19 +81,15 @@ impl ComponentStorage {
     }
 
     /// Iterate over (entity_index, &T) entries.
-    pub fn iter_entries<T: Send + Sync + 'static>(
-        &self,
-    ) -> impl Iterator<Item = (u32, &T)> + '_ {
-        self.data.iter().filter_map(|(idx, boxed)| {
-            boxed.downcast_ref::<T>().map(|c| (*idx, c))
-        })
+    pub fn iter_entries<T: Send + Sync + 'static>(&self) -> impl Iterator<Item = (u32, &T)> + '_ {
+        self.data
+            .iter()
+            .filter_map(|(idx, boxed)| boxed.downcast_ref::<T>().map(|c| (*idx, c)))
     }
 
     /// Get all entity indices that have this component.
     pub fn get_entities_indices<T: Send + Sync + 'static>(&self) -> Vec<u32> {
-        self.iter_entries::<T>()
-            .map(|(idx, _)| idx)
-            .collect()
+        self.iter_entries::<T>().map(|(idx, _)| idx).collect()
     }
 }
 

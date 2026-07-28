@@ -66,10 +66,7 @@ impl MenuBarPanel {
                 } else {
                     for project in &self.recent_projects {
                         if ui.button(project).clicked() {
-                            state.log(
-                                ConsoleLogLevel::Info,
-                                format!("Open recent: {project}"),
-                            );
+                            state.log(ConsoleLogLevel::Info, format!("Open recent: {project}"));
                             ui.close_menu();
                         }
                     }
@@ -283,21 +280,14 @@ impl MenuBarPanel {
     // ── Menu Item Helpers ────────────────────────────────────────────────
 
     /// Render a clickable menu item with a right-aligned keyboard shortcut.
-    fn menu_item(
-        ui: &mut egui::Ui,
-        label: &str,
-        shortcut: &str,
-        on_click: impl FnOnce(),
-    ) {
+    fn menu_item(ui: &mut egui::Ui, label: &str, shortcut: &str, on_click: impl FnOnce()) {
         let _clicked = ui
             .horizontal(|ui| {
                 ui.menu_button(label, |_| {}); // fake width calc
                 let available = ui.available_width();
                 ui.add_sized(
                     [available - ui.min_rect().width(), ui.min_rect().height()],
-                    egui::Label::new(
-                        egui::RichText::new(shortcut).italics().weak(),
-                    ),
+                    egui::Label::new(egui::RichText::new(shortcut).italics().weak()),
                 );
                 false
             })
@@ -323,11 +313,7 @@ impl MenuBarPanel {
     }
 
     /// Render a clickable menu item without a shortcut hint.
-    fn menu_item_no_shortcut(
-        ui: &mut egui::Ui,
-        label: &str,
-        on_click: impl FnOnce(),
-    ) {
+    fn menu_item_no_shortcut(ui: &mut egui::Ui, label: &str, on_click: impl FnOnce()) {
         if ui.button(label).clicked() {
             on_click();
             ui.close_menu();
@@ -335,12 +321,7 @@ impl MenuBarPanel {
     }
 
     /// Render a checkable menu item (always-checked placeholder).
-    fn check_menu_item(
-        ui: &mut egui::Ui,
-        label: &str,
-        checked: bool,
-        on_click: impl FnOnce(),
-    ) {
+    fn check_menu_item(ui: &mut egui::Ui, label: &str, checked: bool, on_click: impl FnOnce()) {
         if ui.checkbox(&mut true, label).clicked() {
             on_click();
             ui.close_menu();
@@ -350,9 +331,7 @@ impl MenuBarPanel {
 
     /// Render a single row in the shortcuts grid.
     fn shortcut_row(ui: &mut egui::Ui, key: &str, action: &str) {
-        ui.label(
-            egui::RichText::new(key).strong(),
-        );
+        ui.label(egui::RichText::new(key).strong());
         ui.label(action);
     }
 }

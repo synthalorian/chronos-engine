@@ -1,8 +1,7 @@
-#[cfg(feature = "game")]
-
-use crate::{Entity, World};
-use crate::component::{Health, Transform};
 use super::components::*;
+use crate::component::{Health, Transform};
+#[cfg(feature = "game")]
+use crate::{Entity, World};
 
 // ──────────────────────────────────────────────
 // AI State enum
@@ -151,7 +150,10 @@ impl EnemyFactory {
     ) -> Entity {
         let entity = world.create_entity();
 
-        world.add_component(entity, Transform::new(position[0], position[1], position[2]));
+        world.add_component(
+            entity,
+            Transform::new(position[0], position[1], position[2]),
+        );
         world.add_component(entity, Health::new(100));
         world.add_component(entity, team);
         world.add_component(entity, AggroRadius::new(8.0));
@@ -574,11 +576,8 @@ mod tests {
     #[test]
     fn factory_creates_entity_with_correct_components() {
         let mut world = test_world();
-        let entity = EnemyFactory::create_patrol_enemy(
-            &mut world,
-            [5.0, 0.0, 5.0],
-            vec![[10.0, 0.0, 10.0]],
-        );
+        let entity =
+            EnemyFactory::create_patrol_enemy(&mut world, [5.0, 0.0, 5.0], vec![[10.0, 0.0, 10.0]]);
 
         assert!(world.has_component::<Transform>(entity));
         assert!(world.has_component::<Health>(entity));
@@ -601,24 +600,30 @@ mod tests {
     #[test]
     fn idle_transitions_to_patrol_after_timer() {
         let mut world = test_world();
-        let entity = EnemyFactory::create_patrol_enemy(
-            &mut world,
-            [0.0, 0.0, 0.0],
-            vec![[1.0, 0.0, 0.0]],
-        );
+        let entity =
+            EnemyFactory::create_patrol_enemy(&mut world, [0.0, 0.0, 0.0], vec![[1.0, 0.0, 0.0]]);
 
         // Starts Idle.
-        let state = world.get_component::<EnemyController>(entity).expect("ctrl").state;
+        let state = world
+            .get_component::<EnemyController>(entity)
+            .expect("ctrl")
+            .state;
         assert_eq!(state, AiState::Idle);
 
         // Tick short of threshold — still Idle.
         AiSystem::update(&mut world, 0.5);
-        let state = world.get_component::<EnemyController>(entity).expect("ctrl").state;
+        let state = world
+            .get_component::<EnemyController>(entity)
+            .expect("ctrl")
+            .state;
         assert_eq!(state, AiState::Idle);
 
         // Tick past threshold — should transition.
         AiSystem::update(&mut world, 0.6);
-        let state = world.get_component::<EnemyController>(entity).expect("ctrl").state;
+        let state = world
+            .get_component::<EnemyController>(entity)
+            .expect("ctrl")
+            .state;
         assert_eq!(state, AiState::Patrol);
     }
 
@@ -698,12 +703,7 @@ mod tests {
     fn chase_transitions_to_attack_when_in_range() {
         let mut world = test_world();
 
-        let enemy = EnemyFactory::create_enemy(
-            &mut world,
-            [0.0, 0.0, 0.0],
-            vec![],
-            Team::Enemy,
-        );
+        let enemy = EnemyFactory::create_enemy(&mut world, [0.0, 0.0, 0.0], vec![], Team::Enemy);
 
         let player = world.create_entity();
         world.add_component(player, Transform::new(1.0, 0.0, 0.0));
@@ -729,12 +729,7 @@ mod tests {
         let mut world = test_world();
 
         // Enemy home at origin, aggro radius 5, so leash is 10.
-        let enemy = EnemyFactory::create_enemy(
-            &mut world,
-            [0.0, 0.0, 0.0],
-            vec![],
-            Team::Enemy,
-        );
+        let enemy = EnemyFactory::create_enemy(&mut world, [0.0, 0.0, 0.0], vec![], Team::Enemy);
 
         if let Some(ar) = world.get_component_mut::<AggroRadius>(enemy) {
             ar.radius = 5.0;
@@ -764,11 +759,8 @@ mod tests {
     fn dead_state_when_health_depleted() {
         let mut world = test_world();
 
-        let enemy = EnemyFactory::create_patrol_enemy(
-            &mut world,
-            [0.0, 0.0, 0.0],
-            vec![[1.0, 0.0, 0.0]],
-        );
+        let enemy =
+            EnemyFactory::create_patrol_enemy(&mut world, [0.0, 0.0, 0.0], vec![[1.0, 0.0, 0.0]]);
 
         // Kill the enemy.
         if let Some(hp) = world.get_component_mut::<Health>(enemy) {
@@ -787,11 +779,8 @@ mod tests {
     fn return_to_post_transitions_to_idle_on_arrival() {
         let mut world = test_world();
 
-        let enemy = EnemyFactory::create_patrol_enemy(
-            &mut world,
-            [0.0, 0.0, 0.0],
-            vec![[1.0, 0.0, 0.0]],
-        );
+        let enemy =
+            EnemyFactory::create_patrol_enemy(&mut world, [0.0, 0.0, 0.0], vec![[1.0, 0.0, 0.0]]);
 
         // Place enemy at home already and set to ReturnToPost.
         if let Some(ctrl) = world.get_component_mut::<EnemyController>(enemy) {
@@ -811,12 +800,7 @@ mod tests {
     fn attack_transitions_to_chase_when_target_moves() {
         let mut world = test_world();
 
-        let enemy = EnemyFactory::create_enemy(
-            &mut world,
-            [0.0, 0.0, 0.0],
-            vec![],
-            Team::Enemy,
-        );
+        let enemy = EnemyFactory::create_enemy(&mut world, [0.0, 0.0, 0.0], vec![], Team::Enemy);
 
         // Player far away now.
         let player = world.create_entity();
@@ -841,12 +825,7 @@ mod tests {
     fn chase_sets_move_target_toward_player() {
         let mut world = test_world();
 
-        let enemy = EnemyFactory::create_enemy(
-            &mut world,
-            [0.0, 0.0, 0.0],
-            vec![],
-            Team::Enemy,
-        );
+        let enemy = EnemyFactory::create_enemy(&mut world, [0.0, 0.0, 0.0], vec![], Team::Enemy);
 
         if let Some(ar) = world.get_component_mut::<AggroRadius>(enemy) {
             ar.radius = 20.0;
@@ -864,7 +843,9 @@ mod tests {
 
         AiSystem::update(&mut world, 0.1);
 
-        let mt = world.get_component::<MoveTarget>(enemy).expect("move target");
+        let mt = world
+            .get_component::<MoveTarget>(enemy)
+            .expect("move target");
         assert!((mt.x - 5.0).abs() < f32::EPSILON);
         assert!((mt.y - 0.0).abs() < f32::EPSILON);
         assert!((mt.z - 3.0).abs() < f32::EPSILON);

@@ -1,11 +1,9 @@
 #[cfg(feature = "game")]
-
 // ── Imports ──────────────────────────────────────────────────────────────────
 
 // std only — this module defines data types and trigger logic, NOT audio playback.
 
 // ── AmbientZone ──────────────────────────────────────────────────────────────
-
 #[derive(Debug, Clone, PartialEq)]
 pub struct AmbientZone {
     pub id: u32,
@@ -22,15 +20,7 @@ pub struct AmbientZone {
 }
 
 impl AmbientZone {
-    pub fn new(
-        id: u32,
-        name: &str,
-        x: f32,
-        y: f32,
-        z: f32,
-        radius: f32,
-        sound_id: &str,
-    ) -> Self {
+    pub fn new(id: u32, name: &str, x: f32, y: f32, z: f32, radius: f32, sound_id: &str) -> Self {
         Self {
             id,
             name: name.to_string(),
@@ -369,8 +359,7 @@ mod tests {
         assert!(zone.volume_at(15.0, 0.0, 0.0).abs() < eps);
 
         // Custom volume clamps correctly
-        let quiet = AmbientZone::new(2, "river", 0.0, 0.0, 0.0, 10.0, "amb_river")
-            .with_volume(0.5);
+        let quiet = AmbientZone::new(2, "river", 0.0, 0.0, 0.0, 10.0, "amb_river").with_volume(0.5);
         assert!((quiet.volume_at(0.0, 0.0, 0.0) - 0.5).abs() < eps);
     }
 
@@ -494,7 +483,15 @@ mod tests {
     #[test]
     fn ambience_manager_active_zones() {
         let mut mgr = AmbienceManager::new();
-        mgr.add_zone(AmbientZone::new(1, "forest", 0.0, 0.0, 0.0, 10.0, "amb_forest"));
+        mgr.add_zone(AmbientZone::new(
+            1,
+            "forest",
+            0.0,
+            0.0,
+            0.0,
+            10.0,
+            "amb_forest",
+        ));
         mgr.add_zone(AmbientZone::new(2, "town", 20.0, 0.0, 0.0, 5.0, "amb_town"));
         mgr.add_zone(AmbientZone::new(3, "lake", 3.0, 0.0, 0.0, 8.0, "amb_lake"));
 
@@ -515,9 +512,7 @@ mod tests {
         mgr.add_zone(
             AmbientZone::new(1, "forest", 0.0, 0.0, 0.0, 10.0, "amb_forest").with_priority(1),
         );
-        mgr.add_zone(
-            AmbientZone::new(2, "cave", 0.0, 0.0, 0.0, 10.0, "amb_cave").with_priority(5),
-        );
+        mgr.add_zone(AmbientZone::new(2, "cave", 0.0, 0.0, 0.0, 10.0, "amb_cave").with_priority(5));
         mgr.add_zone(
             AmbientZone::new(3, "river", 0.0, 0.0, 0.0, 10.0, "amb_river").with_priority(3),
         );

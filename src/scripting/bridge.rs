@@ -209,9 +209,7 @@ impl std::error::Error for ScriptError {}
 impl From<Box<rhai::EvalAltResult>> for ScriptError {
     fn from(err: Box<rhai::EvalAltResult>) -> Self {
         match *err {
-            rhai::EvalAltResult::ErrorParsing(..) => {
-                ScriptError::CompilationError(err.to_string())
-            }
+            rhai::EvalAltResult::ErrorParsing(..) => ScriptError::CompilationError(err.to_string()),
             rhai::EvalAltResult::ErrorFunctionNotFound(..) => {
                 ScriptError::FunctionNotFound(err.to_string())
             }
@@ -310,12 +308,8 @@ impl ScriptEngine {
     fn register_vec2(&mut self) {
         self.engine
             .register_type_with_name::<ScriptVec2>("Vec2")
-            .register_fn("Vec2", |x: f64, y: f64| {
-                ScriptVec2::new(x as f32, y as f32)
-            })
-            .register_fn("length", |v: &mut ScriptVec2| -> f64 {
-                v.length() as f64
-            })
+            .register_fn("Vec2", |x: f64, y: f64| ScriptVec2::new(x as f32, y as f32))
+            .register_fn("length", |v: &mut ScriptVec2| -> f64 { v.length() as f64 })
             .register_fn("normalize", |v: &mut ScriptVec2| -> ScriptVec2 {
                 v.normalize()
             })
@@ -326,18 +320,12 @@ impl ScriptEngine {
                 v.distance(o) as f64
             })
             .register_fn("to_string", |v: &mut ScriptVec2| v.to_string())
-            .register_fn(
-                "+",
-                |a: &mut ScriptVec2, b: ScriptVec2| -> ScriptVec2 {
-                    ScriptVec2::new(a.x + b.x, a.y + b.y)
-                },
-            )
-            .register_fn(
-                "-",
-                |a: &mut ScriptVec2, b: ScriptVec2| -> ScriptVec2 {
-                    ScriptVec2::new(a.x - b.x, a.y - b.y)
-                },
-            )
+            .register_fn("+", |a: &mut ScriptVec2, b: ScriptVec2| -> ScriptVec2 {
+                ScriptVec2::new(a.x + b.x, a.y + b.y)
+            })
+            .register_fn("-", |a: &mut ScriptVec2, b: ScriptVec2| -> ScriptVec2 {
+                ScriptVec2::new(a.x - b.x, a.y - b.y)
+            })
             .register_get("x", |v: &mut ScriptVec2| -> f64 { v.x as f64 })
             .register_set("x", |v: &mut ScriptVec2, val: f64| v.x = val as f32)
             .register_get("y", |v: &mut ScriptVec2| -> f64 { v.y as f64 })
@@ -350,9 +338,7 @@ impl ScriptEngine {
             .register_fn("Vec3", |x: f64, y: f64, z: f64| {
                 ScriptVec3::new(x as f32, y as f32, z as f32)
             })
-            .register_fn("length", |v: &mut ScriptVec3| -> f64 {
-                v.length() as f64
-            })
+            .register_fn("length", |v: &mut ScriptVec3| -> f64 { v.length() as f64 })
             .register_fn("normalize", |v: &mut ScriptVec3| -> ScriptVec3 {
                 v.normalize()
             })
@@ -394,10 +380,9 @@ impl ScriptEngine {
             .register_fn("is_valid", |v: &mut ScriptEntity| -> bool { v.is_valid() })
             .register_fn("to_string", |v: &mut ScriptEntity| v.to_string())
             .register_get("id", |v: &mut ScriptEntity| -> i64 { v.id as i64 })
-            .register_get(
-                "generation",
-                |v: &mut ScriptEntity| -> i64 { v.generation as i64 },
-            );
+            .register_get("generation", |v: &mut ScriptEntity| -> i64 {
+                v.generation as i64
+            });
     }
 
     fn register_math_helpers(&mut self) {
@@ -409,9 +394,7 @@ impl ScriptEngine {
             .register_fn("clamp_f", |v: f64, lo: f64, hi: f64| -> f64 {
                 v.clamp(lo, hi)
             })
-            .register_fn("lerp", |a: f64, b: f64, t: f64| -> f64 {
-                a + (b - a) * t
-            })
+            .register_fn("lerp", |a: f64, b: f64, t: f64| -> f64 { a + (b - a) * t })
             .register_fn("deg_to_rad", |deg: f64| -> f64 {
                 deg * std::f64::consts::PI / 180.0
             })
@@ -589,10 +572,7 @@ mod tests {
         );
 
         let err = ScriptError::RuntimeError("division by zero".into());
-        assert_eq!(
-            format!("{}", err),
-            "Script runtime error: division by zero"
-        );
+        assert_eq!(format!("{}", err), "Script runtime error: division by zero");
 
         let err = ScriptError::TypeError("expected int".into());
         assert_eq!(format!("{}", err), "Script type error: expected int");
@@ -618,9 +598,7 @@ mod tests {
     #[test]
     fn test_script_engine_eval_entity_script() {
         let mut engine = ScriptEngine::new();
-        let result: bool = engine
-            .eval("let e = Entity(5, 1); e.is_valid()")
-            .unwrap();
+        let result: bool = engine.eval("let e = Entity(5, 1); e.is_valid()").unwrap();
         assert!(result);
     }
 

@@ -172,9 +172,14 @@ impl Button {
         );
         // Bottom border
         sprites.push(
-            RenderSprite::new(cx, self.rect.y + self.rect.h + bt * 0.5, self.rect.w + bt * 2.0, bt)
-                .with_color(bc[0], bc[1], bc[2], bc[3])
-                .with_layer(self.layer + 1),
+            RenderSprite::new(
+                cx,
+                self.rect.y + self.rect.h + bt * 0.5,
+                self.rect.w + bt * 2.0,
+                bt,
+            )
+            .with_color(bc[0], bc[1], bc[2], bc[3])
+            .with_layer(self.layer + 1),
         );
         // Left border
         sprites.push(
@@ -245,8 +250,7 @@ impl Slider {
         }
 
         if self.dragging && mouse_down {
-            let t = ((mouse_x - self.rect.x) / (self.rect.w - self.handle_width))
-                .clamp(0.0, 1.0);
+            let t = ((mouse_x - self.rect.x) / (self.rect.w - self.handle_width)).clamp(0.0, 1.0);
             self.value = self.min + t * (self.max - self.min);
             return;
         }
@@ -280,14 +284,9 @@ impl Slider {
         if fill_w > 0.0 {
             let fc = self.style.color_for_state(self.state);
             sprites.push(
-                RenderSprite::new(
-                    self.rect.x + fill_w * 0.5,
-                    cy,
-                    fill_w,
-                    self.rect.h,
-                )
-                .with_color(fc[0], fc[1], fc[2], fc[3])
-                .with_layer(self.layer + 1),
+                RenderSprite::new(self.rect.x + fill_w * 0.5, cy, fill_w, self.rect.h)
+                    .with_color(fc[0], fc[1], fc[2], fc[3])
+                    .with_layer(self.layer + 1),
             );
         }
 
@@ -363,9 +362,14 @@ impl Panel {
                 .with_layer(self.layer + 1),
         );
         sprites.push(
-            RenderSprite::new(cx, self.rect.y + self.rect.h + bt * 0.5, self.rect.w + bt * 2.0, bt)
-                .with_color(bc[0], bc[1], bc[2], bc[3])
-                .with_layer(self.layer + 1),
+            RenderSprite::new(
+                cx,
+                self.rect.y + self.rect.h + bt * 0.5,
+                self.rect.w + bt * 2.0,
+                bt,
+            )
+            .with_color(bc[0], bc[1], bc[2], bc[3])
+            .with_layer(self.layer + 1),
         );
         sprites.push(
             RenderSprite::new(self.rect.x - bt * 0.5, cy, bt, self.rect.h)
@@ -422,7 +426,9 @@ impl Label {
         font: &crate::font::BitmapFont,
         atlas: &crate::texture::TextureAtlas,
     ) -> Vec<RenderSprite> {
-        font.render_text(text, self.x, self.y, self.scale, self.color, self.layer, atlas)
+        font.render_text(
+            text, self.x, self.y, self.scale, self.color, self.layer, atlas,
+        )
     }
 }
 
@@ -457,7 +463,12 @@ impl UiContext {
     pub fn button(&mut self, id: usize, x: f32, y: f32, w: f32, h: f32, label: &str) -> bool {
         let _ = id;
         let mut btn = Button::new(x, y, w, h, label);
-        btn.update(self.mouse_x, self.mouse_y, self.mouse_down, self.mouse_clicked);
+        btn.update(
+            self.mouse_x,
+            self.mouse_y,
+            self.mouse_down,
+            self.mouse_clicked,
+        );
         btn.clicked
     }
 }

@@ -134,18 +134,30 @@ impl ObjMesh {
             }
 
             let fan_base = get_or_insert_vertex(
-                &face.vertices[0], &self, &mut index_map,
-                &mut positions, &mut normals, &mut uvs,
+                &face.vertices[0],
+                &self,
+                &mut index_map,
+                &mut positions,
+                &mut normals,
+                &mut uvs,
             );
 
             for i in 2..face.vertices.len() {
                 let v1 = get_or_insert_vertex(
-                    &face.vertices[i - 1], &self, &mut index_map,
-                    &mut positions, &mut normals, &mut uvs,
+                    &face.vertices[i - 1],
+                    &self,
+                    &mut index_map,
+                    &mut positions,
+                    &mut normals,
+                    &mut uvs,
                 );
                 let v2 = get_or_insert_vertex(
-                    &face.vertices[i], &self, &mut index_map,
-                    &mut positions, &mut normals, &mut uvs,
+                    &face.vertices[i],
+                    &self,
+                    &mut index_map,
+                    &mut positions,
+                    &mut normals,
+                    &mut uvs,
                 );
                 indices.push(fan_base);
                 indices.push(v1);
@@ -165,7 +177,10 @@ impl ObjMesh {
     }
 
     pub fn triangle_count(&self) -> usize {
-        self.faces.iter().map(|f| (f.vertices.len() - 2).max(0)).sum::<usize>()
+        self.faces
+            .iter()
+            .map(|f| (f.vertices.len() - 2).max(0))
+            .sum::<usize>()
     }
 }
 
@@ -184,13 +199,23 @@ fn get_or_insert_vertex(
     let idx = positions.len() as u32;
     let pi = vert.position_index as usize;
     if pi > 0 {
-        positions.push(mesh.positions.get(pi - 1).copied().unwrap_or([0.0, 0.0, 0.0]));
+        positions.push(
+            mesh.positions
+                .get(pi - 1)
+                .copied()
+                .unwrap_or([0.0, 0.0, 0.0]),
+        );
     } else {
         positions.push([0.0, 0.0, 0.0]);
     }
 
     if let Some(ni) = vert.normal_index {
-        normals.push(mesh.normals.get(ni as usize - 1).copied().unwrap_or([0.0, 1.0, 0.0]));
+        normals.push(
+            mesh.normals
+                .get(ni as usize - 1)
+                .copied()
+                .unwrap_or([0.0, 1.0, 0.0]),
+        );
     } else {
         normals.push([0.0, 1.0, 0.0]);
     }

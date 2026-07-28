@@ -5,8 +5,8 @@
 //! to instantiate entities with their predefined components.
 
 use crate::component::{
-    CircleRadius, Damage, Dead, Gravity, Grounded, Health, Position, RigidBody,
-    Sprite, Transform, Velocity,
+    CircleRadius, Damage, Dead, Gravity, Grounded, Health, Position, RigidBody, Sprite, Transform,
+    Velocity,
 };
 use crate::entity::Entity;
 use crate::world::World;
@@ -110,17 +110,27 @@ impl ComponentValue {
                     "Position" => {
                         let x = data["x"].as_f64().ok_or("Position requires a numeric x")?;
                         let y = data["y"].as_f64().ok_or("Position requires a numeric y")?;
-                        Ok(ComponentValue::Position(serde_json::json!({"x": x, "y": y})))
+                        Ok(ComponentValue::Position(
+                            serde_json::json!({"x": x, "y": y}),
+                        ))
                     }
                     "Velocity" => {
                         let x = data["x"].as_f64().ok_or("Velocity requires a numeric x")?;
                         let y = data["y"].as_f64().ok_or("Velocity requires a numeric y")?;
-                        Ok(ComponentValue::Velocity(serde_json::json!({"x": x, "y": y})))
+                        Ok(ComponentValue::Velocity(
+                            serde_json::json!({"x": x, "y": y}),
+                        ))
                     }
                     "Health" => {
-                        let current = data["current"].as_u64().ok_or("Health requires a numeric current")?;
-                        let max = data["max"].as_u64().ok_or("Health requires a numeric max")?;
-                        Ok(ComponentValue::Health(serde_json::json!({"current": current, "max": max})))
+                        let current = data["current"]
+                            .as_u64()
+                            .ok_or("Health requires a numeric current")?;
+                        let max = data["max"]
+                            .as_u64()
+                            .ok_or("Health requires a numeric max")?;
+                        Ok(ComponentValue::Health(
+                            serde_json::json!({"current": current, "max": max}),
+                        ))
                     }
                     "Damage" => {
                         let v = data.as_u64().ok_or("Damage requires a numeric value")?;
@@ -130,31 +140,58 @@ impl ComponentValue {
                         let x = data["x"].as_f64().ok_or("Transform requires a numeric x")?;
                         let y = data["y"].as_f64().ok_or("Transform requires a numeric y")?;
                         let z = data["z"].as_f64().ok_or("Transform requires a numeric z")?;
-                        let rotation = data["rotation"].as_f64().ok_or("Transform requires a numeric rotation")?;
-                        let scale = data["scale"].as_f64().ok_or("Transform requires a numeric scale")?;
+                        let rotation = data["rotation"]
+                            .as_f64()
+                            .ok_or("Transform requires a numeric rotation")?;
+                        let scale = data["scale"]
+                            .as_f64()
+                            .ok_or("Transform requires a numeric scale")?;
                         Ok(ComponentValue::Transform(serde_json::json!({
                             "x": x, "y": y, "z": z, "rotation": rotation, "scale": scale
                         })))
                     }
                     "Sprite" => {
-                        let symbol = data["symbol"].as_str().ok_or("Sprite requires a string symbol")?;
-                        let color = data["color"].as_array().ok_or("Sprite requires an array color")?;
-                        let r = color[0].as_u64().ok_or("Sprite color requires numeric values")? as u8;
-                        let g = color[1].as_u64().ok_or("Sprite color requires numeric values")? as u8;
-                        let b = color[2].as_u64().ok_or("Sprite color requires numeric values")? as u8;
-                        let layer = data["layer"].as_i64().ok_or("Sprite requires a numeric layer")?;
+                        let symbol = data["symbol"]
+                            .as_str()
+                            .ok_or("Sprite requires a string symbol")?;
+                        let color = data["color"]
+                            .as_array()
+                            .ok_or("Sprite requires an array color")?;
+                        let r = color[0]
+                            .as_u64()
+                            .ok_or("Sprite color requires numeric values")?
+                            as u8;
+                        let g = color[1]
+                            .as_u64()
+                            .ok_or("Sprite color requires numeric values")?
+                            as u8;
+                        let b = color[2]
+                            .as_u64()
+                            .ok_or("Sprite color requires numeric values")?
+                            as u8;
+                        let layer = data["layer"]
+                            .as_i64()
+                            .ok_or("Sprite requires a numeric layer")?;
                         Ok(ComponentValue::Sprite(serde_json::json!({
                             "symbol": symbol, "color": [r, g, b], "layer": layer
                         })))
                     }
                     "CircleRadius" => {
-                        let v = data.as_f64().ok_or("CircleRadius requires a numeric value")?;
+                        let v = data
+                            .as_f64()
+                            .ok_or("CircleRadius requires a numeric value")?;
                         Ok(ComponentValue::CircleRadius(serde_json::json!(v)))
                     }
                     "RigidBody" => {
-                        let mass = data["mass"].as_f64().ok_or("RigidBody requires a numeric mass")?;
-                        let damping = data["damping"].as_f64().ok_or("RigidBody requires a numeric damping")?;
-                        let restitution = data["restitution"].as_f64().ok_or("RigidBody requires a numeric restitution")?;
+                        let mass = data["mass"]
+                            .as_f64()
+                            .ok_or("RigidBody requires a numeric mass")?;
+                        let damping = data["damping"]
+                            .as_f64()
+                            .ok_or("RigidBody requires a numeric damping")?;
+                        let restitution = data["restitution"]
+                            .as_f64()
+                            .ok_or("RigidBody requires a numeric restitution")?;
                         Ok(ComponentValue::RigidBody(serde_json::json!({
                             "mass": mass, "damping": damping, "restitution": restitution
                         })))
@@ -248,7 +285,10 @@ impl Scene {
     /// The file is created or overwritten at the given path.
     pub fn save<P: AsRef<Path>>(&self, path: P) -> Result<(), io::Error> {
         let json = serde_json::to_string_pretty(self).map_err(|e| {
-            io::Error::new(io::ErrorKind::InvalidData, format!("Serialization failed: {}", e))
+            io::Error::new(
+                io::ErrorKind::InvalidData,
+                format!("Serialization failed: {}", e),
+            )
         })?;
         fs::write(path, json)
     }
@@ -299,7 +339,9 @@ impl fmt::Display for SceneError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             SceneError::PrefabNotFound(name) => write!(f, "Prefab not found: {}", name),
-            SceneError::ComponentDeserialize(msg) => write!(f, "Component deserialize error: {}", msg),
+            SceneError::ComponentDeserialize(msg) => {
+                write!(f, "Component deserialize error: {}", msg)
+            }
         }
     }
 }
@@ -314,42 +356,46 @@ impl std::error::Error for SceneError {}
 /// # Errors
 /// Returns a `SceneError::ComponentDeserialize` if the value cannot be
 /// converted into the expected component type.
-pub fn spawn_component(world: &mut World, entity: Entity, value: ComponentValue) -> Result<(), SceneError> {
+pub fn spawn_component(
+    world: &mut World,
+    entity: Entity,
+    value: ComponentValue,
+) -> Result<(), SceneError> {
     match value {
         ComponentValue::Position(data) => {
-            let obj = data
-                .as_object()
-                .ok_or_else(|| SceneError::ComponentDeserialize("Position expects an object".into()))?;
-            let x = obj["x"]
-                .as_f64()
-                .ok_or_else(|| SceneError::ComponentDeserialize("Position x must be a number".into()))?;
-            let y = obj["y"]
-                .as_f64()
-                .ok_or_else(|| SceneError::ComponentDeserialize("Position y must be a number".into()))?;
+            let obj = data.as_object().ok_or_else(|| {
+                SceneError::ComponentDeserialize("Position expects an object".into())
+            })?;
+            let x = obj["x"].as_f64().ok_or_else(|| {
+                SceneError::ComponentDeserialize("Position x must be a number".into())
+            })?;
+            let y = obj["y"].as_f64().ok_or_else(|| {
+                SceneError::ComponentDeserialize("Position y must be a number".into())
+            })?;
             world.add_component(entity, Position::new(x as f32, y as f32));
         }
         ComponentValue::Velocity(data) => {
-            let obj = data
-                .as_object()
-                .ok_or_else(|| SceneError::ComponentDeserialize("Velocity expects an object".into()))?;
-            let x = obj["x"]
-                .as_f64()
-                .ok_or_else(|| SceneError::ComponentDeserialize("Velocity x must be a number".into()))?;
-            let y = obj["y"]
-                .as_f64()
-                .ok_or_else(|| SceneError::ComponentDeserialize("Velocity y must be a number".into()))?;
+            let obj = data.as_object().ok_or_else(|| {
+                SceneError::ComponentDeserialize("Velocity expects an object".into())
+            })?;
+            let x = obj["x"].as_f64().ok_or_else(|| {
+                SceneError::ComponentDeserialize("Velocity x must be a number".into())
+            })?;
+            let y = obj["y"].as_f64().ok_or_else(|| {
+                SceneError::ComponentDeserialize("Velocity y must be a number".into())
+            })?;
             world.add_component(entity, Velocity::new(x as f32, y as f32));
         }
         ComponentValue::Health(data) => {
-            let obj = data
-                .as_object()
-                .ok_or_else(|| SceneError::ComponentDeserialize("Health expects an object".into()))?;
-            let current = obj["current"]
-                .as_u64()
-                .ok_or_else(|| SceneError::ComponentDeserialize("Health current must be a number".into()))?;
-            let max = obj["max"]
-                .as_u64()
-                .ok_or_else(|| SceneError::ComponentDeserialize("Health max must be a number".into()))?;
+            let obj = data.as_object().ok_or_else(|| {
+                SceneError::ComponentDeserialize("Health expects an object".into())
+            })?;
+            let current = obj["current"].as_u64().ok_or_else(|| {
+                SceneError::ComponentDeserialize("Health current must be a number".into())
+            })?;
+            let max = obj["max"].as_u64().ok_or_else(|| {
+                SceneError::ComponentDeserialize("Health max must be a number".into())
+            })?;
             world.add_component(entity, Health::new(max as u32));
             // Set current after construction since Health::new sets current = max
             if let Some(h) = world.get_component_mut::<Health>(entity) {
@@ -357,87 +403,93 @@ pub fn spawn_component(world: &mut World, entity: Entity, value: ComponentValue)
             }
         }
         ComponentValue::Damage(data) => {
-            let value = data
-                .as_u64()
-                .ok_or_else(|| SceneError::ComponentDeserialize("Damage must be a number".into()))?;
+            let value = data.as_u64().ok_or_else(|| {
+                SceneError::ComponentDeserialize("Damage must be a number".into())
+            })?;
             world.add_component(entity, Damage(value as u32));
         }
         ComponentValue::Transform(data) => {
-            let obj = data
-                .as_object()
-                .ok_or_else(|| SceneError::ComponentDeserialize("Transform expects an object".into()))?;
-            let x = obj["x"]
-                .as_f64()
-                .ok_or_else(|| SceneError::ComponentDeserialize("Transform x must be a number".into()))?;
-            let y = obj["y"]
-                .as_f64()
-                .ok_or_else(|| SceneError::ComponentDeserialize("Transform y must be a number".into()))?;
-            let z = obj["z"]
-                .as_f64()
-                .ok_or_else(|| SceneError::ComponentDeserialize("Transform z must be a number".into()))?;
+            let obj = data.as_object().ok_or_else(|| {
+                SceneError::ComponentDeserialize("Transform expects an object".into())
+            })?;
+            let x = obj["x"].as_f64().ok_or_else(|| {
+                SceneError::ComponentDeserialize("Transform x must be a number".into())
+            })?;
+            let y = obj["y"].as_f64().ok_or_else(|| {
+                SceneError::ComponentDeserialize("Transform y must be a number".into())
+            })?;
+            let z = obj["z"].as_f64().ok_or_else(|| {
+                SceneError::ComponentDeserialize("Transform z must be a number".into())
+            })?;
             world.add_component(entity, Transform::new(x as f32, y as f32, z as f32));
         }
         ComponentValue::Sprite(data) => {
-            let obj = data
-                .as_object()
-                .ok_or_else(|| SceneError::ComponentDeserialize("Sprite expects an object".into()))?;
-            let symbol = obj["symbol"]
-                .as_str()
-                .ok_or_else(|| SceneError::ComponentDeserialize("Sprite symbol must be a string".into()))?;
-            let color = obj["color"]
-                .as_array()
-                .ok_or_else(|| SceneError::ComponentDeserialize("Sprite color must be an array".into()))?;
-            let r = color[0]
-                .as_u64()
-                .ok_or_else(|| SceneError::ComponentDeserialize("Sprite color r must be a number".into()))? as u8;
-            let g = color[1]
-                .as_u64()
-                .ok_or_else(|| SceneError::ComponentDeserialize("Sprite color g must be a number".into()))? as u8;
-            let b = color[2]
-                .as_u64()
-                .ok_or_else(|| SceneError::ComponentDeserialize("Sprite color b must be a number".into()))? as u8;
-            let layer = obj["layer"]
-                .as_i64()
-                .ok_or_else(|| SceneError::ComponentDeserialize("Sprite layer must be a number".into()))? as i32;
-            world.add_component(entity, Sprite::new(symbol.chars().next().unwrap_or('?'), r, g, b));
+            let obj = data.as_object().ok_or_else(|| {
+                SceneError::ComponentDeserialize("Sprite expects an object".into())
+            })?;
+            let symbol = obj["symbol"].as_str().ok_or_else(|| {
+                SceneError::ComponentDeserialize("Sprite symbol must be a string".into())
+            })?;
+            let color = obj["color"].as_array().ok_or_else(|| {
+                SceneError::ComponentDeserialize("Sprite color must be an array".into())
+            })?;
+            let r = color[0].as_u64().ok_or_else(|| {
+                SceneError::ComponentDeserialize("Sprite color r must be a number".into())
+            })? as u8;
+            let g = color[1].as_u64().ok_or_else(|| {
+                SceneError::ComponentDeserialize("Sprite color g must be a number".into())
+            })? as u8;
+            let b = color[2].as_u64().ok_or_else(|| {
+                SceneError::ComponentDeserialize("Sprite color b must be a number".into())
+            })? as u8;
+            let layer = obj["layer"].as_i64().ok_or_else(|| {
+                SceneError::ComponentDeserialize("Sprite layer must be a number".into())
+            })? as i32;
+            world.add_component(
+                entity,
+                Sprite::new(symbol.chars().next().unwrap_or('?'), r, g, b),
+            );
             if let Some(s) = world.get_component_mut::<Sprite>(entity) {
                 s.layer = layer;
             }
         }
         ComponentValue::CircleRadius(data) => {
-            let value = data
-                .as_f64()
-                .ok_or_else(|| SceneError::ComponentDeserialize("CircleRadius must be a number".into()))?;
+            let value = data.as_f64().ok_or_else(|| {
+                SceneError::ComponentDeserialize("CircleRadius must be a number".into())
+            })?;
             world.add_component(entity, CircleRadius::new(value as f32));
         }
         ComponentValue::RigidBody(data) => {
-            let obj = data
-                .as_object()
-                .ok_or_else(|| SceneError::ComponentDeserialize("RigidBody expects an object".into()))?;
-            let mass = obj["mass"]
-                .as_f64()
-                .ok_or_else(|| SceneError::ComponentDeserialize("RigidBody mass must be a number".into()))?;
-            let damping = obj["damping"]
-                .as_f64()
-                .ok_or_else(|| SceneError::ComponentDeserialize("RigidBody damping must be a number".into()))?;
-            let restitution = obj["restitution"]
-                .as_f64()
-                .ok_or_else(|| SceneError::ComponentDeserialize("RigidBody restitution must be a number".into()))?;
-            world.add_component(entity, RigidBody::new(mass as f32, damping as f32, restitution as f32));
+            let obj = data.as_object().ok_or_else(|| {
+                SceneError::ComponentDeserialize("RigidBody expects an object".into())
+            })?;
+            let mass = obj["mass"].as_f64().ok_or_else(|| {
+                SceneError::ComponentDeserialize("RigidBody mass must be a number".into())
+            })?;
+            let damping = obj["damping"].as_f64().ok_or_else(|| {
+                SceneError::ComponentDeserialize("RigidBody damping must be a number".into())
+            })?;
+            let restitution = obj["restitution"].as_f64().ok_or_else(|| {
+                SceneError::ComponentDeserialize("RigidBody restitution must be a number".into())
+            })?;
+            world.add_component(
+                entity,
+                RigidBody::new(mass as f32, damping as f32, restitution as f32),
+            );
         }
         ComponentValue::Grounded(_) => {
             world.add_component(entity, Grounded);
         }
         ComponentValue::Gravity(data) => {
-            let obj = data
-                .as_object()
-                .ok_or_else(|| SceneError::ComponentDeserialize("Gravity expects an object".into()))?;
-            let x = obj["x"]
-                .as_f64()
-                .ok_or_else(|| SceneError::ComponentDeserialize("Gravity x must be a number".into()))?;
-            let y = obj["y"]
-                .as_f64()
-                .ok_or_else(|| SceneError::ComponentDeserialize("Gravity y must be a number".into()))?;
+            let obj = data.as_object().ok_or_else(|| {
+                SceneError::ComponentDeserialize("Gravity expects an object".into())
+            })?;
+            let x = obj["x"].as_f64().ok_or_else(|| {
+                SceneError::ComponentDeserialize("Gravity x must be a number".into())
+            })?;
+            let y = obj["y"].as_f64().ok_or_else(|| {
+                SceneError::ComponentDeserialize("Gravity y must be a number".into())
+            })?;
             world.add_component(entity, Gravity::new(x as f32, y as f32));
         }
         ComponentValue::Dead(_) => {
@@ -596,7 +648,9 @@ mod tests {
             name: "spawn_point".into(),
             components: vec![
                 ComponentValue::Position(serde_json::json!({"x": 0.0, "y": 0.0})),
-                ComponentValue::RigidBody(serde_json::json!({"mass": 1.0, "damping": 0.0, "restitution": 0.0})),
+                ComponentValue::RigidBody(
+                    serde_json::json!({"mass": 1.0, "damping": 0.0, "restitution": 0.0}),
+                ),
             ],
         });
 
@@ -613,9 +667,18 @@ mod tests {
 
     #[test]
     fn test_component_value_display() {
-        assert_eq!(format!("{}", ComponentValue::Position(serde_json::json!({}))), "Position");
-        assert_eq!(format!("{}", ComponentValue::Velocity(serde_json::json!({}))), "Velocity");
-        assert_eq!(format!("{}", ComponentValue::Grounded(serde_json::json!({}))), "Grounded");
+        assert_eq!(
+            format!("{}", ComponentValue::Position(serde_json::json!({}))),
+            "Position"
+        );
+        assert_eq!(
+            format!("{}", ComponentValue::Velocity(serde_json::json!({}))),
+            "Velocity"
+        );
+        assert_eq!(
+            format!("{}", ComponentValue::Grounded(serde_json::json!({}))),
+            "Grounded"
+        );
     }
 
     #[test]

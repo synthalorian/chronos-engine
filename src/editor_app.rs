@@ -139,10 +139,7 @@ impl EditorApp {
         // ── Create window ──
         let window_attrs = Window::default_attributes()
             .with_title(Self::WINDOW_TITLE)
-            .with_inner_size(PhysicalSize::new(
-                Self::DEFAULT_WIDTH,
-                Self::DEFAULT_HEIGHT,
-            ));
+            .with_inner_size(PhysicalSize::new(Self::DEFAULT_WIDTH, Self::DEFAULT_HEIGHT));
 
         let window = Arc::new(
             event_loop
@@ -166,10 +163,10 @@ impl EditorApp {
         let mut egui_painter = egui_wgpu::winit::Painter::new(
             egui_ctx.clone(),
             wgpu_config,
-            1,                      // msaa_samples
-            None,                   // depth_format
-            false,                  // support_transparent_backbuffer
-            false,                  // dithering
+            1,     // msaa_samples
+            None,  // depth_format
+            false, // support_transparent_backbuffer
+            false, // dithering
         );
 
         // Async: create surface & initialize render state for the window.
@@ -182,9 +179,9 @@ impl EditorApp {
         let egui_winit = egui_winit::State::new(
             egui_ctx.clone(),
             viewport_id,
-            &window,            // implements HasDisplayHandle
+            &window, // implements HasDisplayHandle
             scale_factor,
-            None,               // theme — let egui decide
+            None, // theme — let egui decide
             max_texture_side,
         );
 
@@ -197,7 +194,11 @@ impl EditorApp {
             state: EditorState::new(),
             menu_bar: MenuBarPanel::new(),
             toolbar: ToolbarPanel::new(),
-            viewport: { let mut v = ViewportPanel::new(); v.grid_visible = false; v },
+            viewport: {
+                let mut v = ViewportPanel::new();
+                v.grid_visible = false;
+                v
+            },
             hierarchy: HierarchyPanel::new(),
             inspector: InspectorPanel::new(),
             asset_browser: AssetBrowserPanel::new(),
@@ -256,59 +257,111 @@ impl EditorApp {
         let full_output = ctx.run(raw_input, |ctx| {
             ctx.input(|i| {
                 for event in &i.events {
-                    if let egui::Event::Key { key, pressed: true, modifiers, .. } = event {
-                        if let Some(action) = shortcut_map.find_action(*key, modifiers.ctrl, modifiers.shift, modifiers.alt) {
+                    if let egui::Event::Key {
+                        key,
+                        pressed: true,
+                        modifiers,
+                        ..
+                    } = event
+                    {
+                        if let Some(action) = shortcut_map.find_action(
+                            *key,
+                            modifiers.ctrl,
+                            modifiers.shift,
+                            modifiers.alt,
+                        ) {
                             match action {
                                 ShortcutAction::Undo => {
                                     if let Some(desc) = undo_stack.undo(&mut state.world) {
-                                        state.log(crate::editor_panels::ConsoleLogLevel::Info, format!("Undo: {desc}"));
+                                        state.log(
+                                            crate::editor_panels::ConsoleLogLevel::Info,
+                                            format!("Undo: {desc}"),
+                                        );
                                     }
                                 }
                                 ShortcutAction::Redo => {
                                     if let Some(desc) = undo_stack.redo(&mut state.world) {
-                                        state.log(crate::editor_panels::ConsoleLogLevel::Info, format!("Redo: {desc}"));
+                                        state.log(
+                                            crate::editor_panels::ConsoleLogLevel::Info,
+                                            format!("Redo: {desc}"),
+                                        );
                                     }
                                 }
-                                ShortcutAction::GizmoTranslate => state.gizmo_mode = crate::editor_panels::GizmoMode::Translate,
-                                ShortcutAction::GizmoRotate => state.gizmo_mode = crate::editor_panels::GizmoMode::Rotate,
-                                ShortcutAction::GizmoScale => state.gizmo_mode = crate::editor_panels::GizmoMode::Scale,
-                                ShortcutAction::ToggleSnap => state.snap_enabled = !state.snap_enabled,
-                                ShortcutAction::ToggleGrid => grid_renderer.visible = !grid_renderer.visible,
+                                ShortcutAction::GizmoTranslate => {
+                                    state.gizmo_mode = crate::editor_panels::GizmoMode::Translate
+                                }
+                                ShortcutAction::GizmoRotate => {
+                                    state.gizmo_mode = crate::editor_panels::GizmoMode::Rotate
+                                }
+                                ShortcutAction::GizmoScale => {
+                                    state.gizmo_mode = crate::editor_panels::GizmoMode::Scale
+                                }
+                                ShortcutAction::ToggleSnap => {
+                                    state.snap_enabled = !state.snap_enabled
+                                }
+                                ShortcutAction::ToggleGrid => {
+                                    grid_renderer.visible = !grid_renderer.visible
+                                }
                                 ShortcutAction::Delete => {
                                     if !state.selected_entities.is_empty() {
-                                        state.log(crate::editor_panels::ConsoleLogLevel::Info,
-                                            format!("Delete: {} entities", state.selected_entities.len()));
+                                        state.log(
+                                            crate::editor_panels::ConsoleLogLevel::Info,
+                                            format!(
+                                                "Delete: {} entities",
+                                                state.selected_entities.len()
+                                            ),
+                                        );
                                         state.selected_entities.clear();
                                     }
                                 }
                                 ShortcutAction::Deselect => state.clear_selection(),
                                 ShortcutAction::PlayStop => {
                                     state.play_mode = match state.play_mode {
-                                        crate::editor_panels::PlayMode::Stopped => crate::editor_panels::PlayMode::Playing,
+                                        crate::editor_panels::PlayMode::Stopped => {
+                                            crate::editor_panels::PlayMode::Playing
+                                        }
                                         _ => crate::editor_panels::PlayMode::Stopped,
                                     };
                                 }
                                 ShortcutAction::Quit => state.should_quit = true,
                                 ShortcutAction::NewProject => {
                                     state.project_manager.show_new_wizard = true;
-                                    state.log(crate::editor_panels::ConsoleLogLevel::Info, "New project wizard");
+                                    state.log(
+                                        crate::editor_panels::ConsoleLogLevel::Info,
+                                        "New project wizard",
+                                    );
                                 }
                                 ShortcutAction::OpenProject => {
                                     state.project_manager.show_open_dialog = true;
-                                    state.log(crate::editor_panels::ConsoleLogLevel::Info, "Open project dialog");
+                                    state.log(
+                                        crate::editor_panels::ConsoleLogLevel::Info,
+                                        "Open project dialog",
+                                    );
                                 }
                                 ShortcutAction::Save => {
                                     if state.project_manager.is_loaded() {
                                         match state.project_manager.save_current() {
-                                            Ok(()) => state.log(crate::editor_panels::ConsoleLogLevel::Info, "Project saved"),
-                                            Err(e) => state.log(crate::editor_panels::ConsoleLogLevel::Error, format!("Save failed: {e}")),
+                                            Ok(()) => state.log(
+                                                crate::editor_panels::ConsoleLogLevel::Info,
+                                                "Project saved",
+                                            ),
+                                            Err(e) => state.log(
+                                                crate::editor_panels::ConsoleLogLevel::Error,
+                                                format!("Save failed: {e}"),
+                                            ),
                                         }
                                     } else {
-                                        state.log(crate::editor_panels::ConsoleLogLevel::Warn, "No project loaded to save");
+                                        state.log(
+                                            crate::editor_panels::ConsoleLogLevel::Warn,
+                                            "No project loaded to save",
+                                        );
                                     }
                                 }
                                 ShortcutAction::SaveAs => {
-                                    state.log(crate::editor_panels::ConsoleLogLevel::Info, "Save As dialog");
+                                    state.log(
+                                        crate::editor_panels::ConsoleLogLevel::Info,
+                                        "Save As dialog",
+                                    );
                                 }
                                 _ => {}
                             }
@@ -405,7 +458,11 @@ impl EditorApp {
             .handle_platform_output(&self.window, full_output.platform_output);
 
         let title = if self.state.project_manager.is_loaded() {
-            format!("{} — {}", self.state.project_manager.project_name(), Self::WINDOW_TITLE)
+            format!(
+                "{} — {}",
+                self.state.project_manager.project_name(),
+                Self::WINDOW_TITLE
+            )
         } else {
             Self::WINDOW_TITLE.to_string()
         };

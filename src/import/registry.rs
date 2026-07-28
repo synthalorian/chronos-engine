@@ -446,10 +446,7 @@ mod tests {
         // Also works with owned string.
         let owned = String::from("6ba7b810-9dad-11d1-80b4-00c04fd430c8");
         let guid2 = Guid::from_string(owned);
-        assert_eq!(
-            guid2.as_str(),
-            "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
-        );
+        assert_eq!(guid2.as_str(), "6ba7b810-9dad-11d1-80b4-00c04fd430c8");
     }
 
     // ── Test 3: Register an asset → get Guid back ──
@@ -694,7 +691,10 @@ mod tests {
 
         catalog.unload(&guid);
 
-        assert!(!catalog.is_loaded(&guid), "should not be loaded after unload");
+        assert!(
+            !catalog.is_loaded(&guid),
+            "should not be loaded after unload"
+        );
         assert_eq!(catalog.loaded_count(), 0, "loaded_count should be 0");
         assert_eq!(catalog.total_count(), 1, "registration should persist");
         assert!(
@@ -763,10 +763,22 @@ mod tests {
 
         // Load two.
         catalog
-            .load(&g1, make_loader(TestData { value: 1, label: "a".into() }))
+            .load(
+                &g1,
+                make_loader(TestData {
+                    value: 1,
+                    label: "a".into(),
+                }),
+            )
             .expect("load g1");
         catalog
-            .load(&g2, make_loader(TestData { value: 2, label: "b".into() }))
+            .load(
+                &g2,
+                make_loader(TestData {
+                    value: 2,
+                    label: "b".into(),
+                }),
+            )
             .expect("load g2");
 
         assert_eq!(catalog.loaded_count(), 2);
@@ -799,7 +811,13 @@ mod tests {
 
         // After load.
         catalog
-            .load(&guid, make_loader(TestData { value: 0, label: String::new() }))
+            .load(
+                &guid,
+                make_loader(TestData {
+                    value: 0,
+                    label: String::new(),
+                }),
+            )
             .expect("load");
         assert!(catalog.is_loaded(&guid));
 
@@ -847,10 +865,22 @@ mod tests {
         let guid = catalog.register(&path, AssetKind::Image);
 
         catalog
-            .load(&guid, make_loader(TestData { value: 1, label: "first".into() }))
+            .load(
+                &guid,
+                make_loader(TestData {
+                    value: 1,
+                    label: "first".into(),
+                }),
+            )
             .expect("first load");
 
-        let result = catalog.load(&guid, make_loader(TestData { value: 2, label: "second".into() }));
+        let result = catalog.load(
+            &guid,
+            make_loader(TestData {
+                value: 2,
+                label: "second".into(),
+            }),
+        );
 
         assert!(
             matches!(result, Err(RegistryError::AlreadyLoaded)),
@@ -859,7 +889,9 @@ mod tests {
         );
 
         // Original data is still intact.
-        let data = catalog.get::<TestData>(&guid).expect("data should still exist");
+        let data = catalog
+            .get::<TestData>(&guid)
+            .expect("data should still exist");
         assert_eq!(data.value, 1);
         assert_eq!(data.label, "first");
     }
@@ -892,7 +924,13 @@ mod tests {
         let mut catalog = AssetCatalog::new();
         let unknown = Guid::new();
 
-        let result = catalog.load(&unknown, make_loader(TestData { value: 0, label: String::new() }));
+        let result = catalog.load(
+            &unknown,
+            make_loader(TestData {
+                value: 0,
+                label: String::new(),
+            }),
+        );
 
         assert!(
             matches!(result, Err(RegistryError::NotFound)),
@@ -913,13 +951,22 @@ mod tests {
         let guid = catalog.register(&path, AssetKind::Image);
 
         catalog
-            .load(&guid, make_loader(TestData { value: 10, label: "kept".into() }))
+            .load(
+                &guid,
+                make_loader(TestData {
+                    value: 10,
+                    label: "kept".into(),
+                }),
+            )
             .expect("load");
 
         catalog.retain(&guid); // ref_count = 1
 
         let collected = catalog.collect_garbage();
-        assert!(collected.is_empty(), "referenced entry should not be collected");
+        assert!(
+            collected.is_empty(),
+            "referenced entry should not be collected"
+        );
         assert_eq!(catalog.total_count(), 1);
     }
 
@@ -946,15 +993,16 @@ mod tests {
     fn error_display_messages() {
         assert!(RegistryError::NotFound.to_string().contains("not found"));
         assert!(RegistryError::TypeMismatch.to_string().contains("mismatch"));
-        assert!(RegistryError::LoadFailed("bad".into()).to_string().contains("bad"));
+        assert!(RegistryError::LoadFailed("bad".into())
+            .to_string()
+            .contains("bad"));
         assert!(RegistryError::AlreadyLoaded.to_string().contains("already"));
         assert!(RegistryError::NotLoaded.to_string().contains("not loaded"));
-        assert!(RegistryError::Io(std::io::Error::new(
-            std::io::ErrorKind::NotFound,
-            "gone",
-        ))
-        .to_string()
-        .contains("gone"));
+        assert!(
+            RegistryError::Io(std::io::Error::new(std::io::ErrorKind::NotFound, "gone",))
+                .to_string()
+                .contains("gone")
+        );
     }
 
     // ── Test 22: Guid Display trait ──
@@ -977,7 +1025,13 @@ mod tests {
         let guid = catalog.register(&path, AssetKind::Script);
 
         catalog
-            .load(&guid, make_loader(TestData { value: 10, label: "original".into() }))
+            .load(
+                &guid,
+                make_loader(TestData {
+                    value: 10,
+                    label: "original".into(),
+                }),
+            )
             .expect("load");
 
         let data = catalog.get_mut::<TestData>(&guid).expect("get_mut");

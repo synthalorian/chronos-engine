@@ -1,7 +1,5 @@
 #[cfg(feature = "game")]
-
 // ── SaveVersion ──
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct SaveVersion {
     pub major: u32,
@@ -264,7 +262,10 @@ impl SaveSerializer {
         out.push_str(&Self::serialize_world(&slot.world));
         out.push_str("\n[factions]\n");
         for (name, rep, jobs) in &slot.factions.entries {
-            out.push_str(&format!("faction={} reputation={} jobs={}\n", name, rep, jobs));
+            out.push_str(&format!(
+                "faction={} reputation={} jobs={}\n",
+                name, rep, jobs
+            ));
         }
         out
     }
@@ -399,7 +400,9 @@ mod tests {
         let world = WorldSaveData::new(99, 50, 50);
         let factions = FactionSaveData::new();
 
-        let id = mgr.save(0, player.clone(), world.clone(), factions.clone()).unwrap();
+        let id = mgr
+            .save(0, player.clone(), world.clone(), factions.clone())
+            .unwrap();
         assert!(id >= 1);
 
         let loaded = mgr.load(id).unwrap();
@@ -407,7 +410,10 @@ mod tests {
         assert_eq!(loaded.world.seed, 99);
 
         // Update existing
-        let updated_player = PlayerSaveData { level: 5, ..PlayerSaveData::new("Hero") };
+        let updated_player = PlayerSaveData {
+            level: 5,
+            ..PlayerSaveData::new("Hero")
+        };
         mgr.save(id, updated_player, world, factions).unwrap();
         assert_eq!(mgr.load(id).unwrap().player.level, 5);
     }
@@ -419,8 +425,10 @@ mod tests {
         let world = WorldSaveData::new(1, 10, 10);
         let factions = FactionSaveData::new();
 
-        mgr.save(1, player.clone(), world.clone(), factions.clone()).unwrap();
-        mgr.save(2, player.clone(), world.clone(), factions.clone()).unwrap();
+        mgr.save(1, player.clone(), world.clone(), factions.clone())
+            .unwrap();
+        mgr.save(2, player.clone(), world.clone(), factions.clone())
+            .unwrap();
         let result = mgr.save(3, player, world, factions);
         assert_eq!(result, Err(SaveError::SlotFull));
     }
@@ -432,7 +440,8 @@ mod tests {
         let world = WorldSaveData::new(1, 10, 10);
         let factions = FactionSaveData::new();
 
-        mgr.save(5, player.clone(), world.clone(), factions.clone()).unwrap();
+        mgr.save(5, player.clone(), world.clone(), factions.clone())
+            .unwrap();
         assert!(mgr.has_slot(5));
 
         let deleted = mgr.delete(5).unwrap();
@@ -450,8 +459,10 @@ mod tests {
         let world = WorldSaveData::new(1, 10, 10);
         let factions = FactionSaveData::new();
 
-        mgr.save(1, player.clone(), world.clone(), factions.clone()).unwrap();
-        mgr.save(2, player.clone(), world.clone(), factions.clone()).unwrap();
+        mgr.save(1, player.clone(), world.clone(), factions.clone())
+            .unwrap();
+        mgr.save(2, player.clone(), world.clone(), factions.clone())
+            .unwrap();
 
         let listed = mgr.list_slots();
         assert_eq!(listed.len(), 2);

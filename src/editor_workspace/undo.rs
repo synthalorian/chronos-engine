@@ -44,10 +44,7 @@ pub enum UndoAction {
         to: Position,
     },
     /// A component was modified.
-    ModifyComponent {
-        entity: Entity,
-        type_name: String,
-    },
+    ModifyComponent { entity: Entity, type_name: String },
 }
 
 // ── EditorCommand Trait ─────────────────────────────────────────
@@ -293,13 +290,11 @@ impl DestroyEntityCommand {
     }
 
     /// Convenience: capture a component from the world if present.
-    pub fn with_world_snapshot<T: Clone + Send + Sync + 'static>(
-        mut self,
-        world: &World,
-    ) -> Self {
+    pub fn with_world_snapshot<T: Clone + Send + Sync + 'static>(mut self, world: &World) -> Self {
         if let Some(comp) = world.get_component::<T>(self.entity.get()) {
-            self.snapshots
-                .push(Box::new(TypedSnapshot { value: comp.clone() }));
+            self.snapshots.push(Box::new(TypedSnapshot {
+                value: comp.clone(),
+            }));
         }
         self
     }
@@ -346,11 +341,7 @@ impl EditorCommand for DestroyEntityCommand {
     fn box_clone(&self) -> Box<dyn EditorCommand> {
         Box::new(DestroyEntityCommand {
             entity: Cell::new(self.entity.get()),
-            snapshots: self
-                .snapshots
-                .iter()
-                .map(|s| s.clone_boxed())
-                .collect(),
+            snapshots: self.snapshots.iter().map(|s| s.clone_boxed()).collect(),
         })
     }
 }
@@ -842,11 +833,8 @@ mod tests {
             Some(Position::new(5.0, 5.0)),
             Some(Position::new(99.0, 99.0)),
         );
-        let modify_cmd = ModifyComponentCommand::new(
-            entity,
-            Position::new(5.0, 5.0),
-            Position::new(99.0, 99.0),
-        );
+        let modify_cmd =
+            ModifyComponentCommand::new(entity, Position::new(5.0, 5.0), Position::new(99.0, 99.0));
 
         // Destroy entity — commands should gracefully no-op.
         world.destroy_entity(entity);

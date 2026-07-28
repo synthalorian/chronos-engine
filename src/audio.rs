@@ -218,8 +218,8 @@ impl SfxPlayer {
 
     /// Plays a sound effect from raw file bytes (decoded at call time).
     pub fn play_bytes(&self, bytes: Vec<u8>, volume: f32) -> Result<(), AudioError> {
-        let source =
-            Decoder::new(Cursor::new(bytes)).map_err(|e| AudioError::DecodeFailed(e.to_string()))?;
+        let source = Decoder::new(Cursor::new(bytes))
+            .map_err(|e| AudioError::DecodeFailed(e.to_string()))?;
         self.sink.append(source.amplify(volume.clamp(0.0, 1.0)));
         Ok(())
     }
@@ -334,8 +334,8 @@ impl MusicPlayer {
     pub fn play(&mut self, path: &str, volume: f32) -> Result<(), AudioError> {
         self.stop();
         let bytes = std::fs::read(path).map_err(AudioError::FileError)?;
-        let source =
-            Decoder::new(Cursor::new(bytes)).map_err(|e| AudioError::DecodeFailed(e.to_string()))?;
+        let source = Decoder::new(Cursor::new(bytes))
+            .map_err(|e| AudioError::DecodeFailed(e.to_string()))?;
         self.base_volume = volume.clamp(0.0, 1.0);
         self.sink.set_volume(self.base_volume);
         self.sink.append(source);
@@ -373,8 +373,8 @@ impl MusicPlayer {
             .map_err(|e| AudioError::NoDeviceAvailable(e.to_string()))?;
 
         let bytes = std::fs::read(path).map_err(AudioError::FileError)?;
-        let source =
-            Decoder::new(Cursor::new(bytes)).map_err(|e| AudioError::DecodeFailed(e.to_string()))?;
+        let source = Decoder::new(Cursor::new(bytes))
+            .map_err(|e| AudioError::DecodeFailed(e.to_string()))?;
 
         let vol = target_volume.clamp(0.0, 1.0);
         new_sink.set_volume(0.0);

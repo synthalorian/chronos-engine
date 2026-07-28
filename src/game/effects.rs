@@ -1,5 +1,4 @@
 #[cfg(feature = "game")]
-
 use std::collections::HashMap;
 
 // ── EffectType ──
@@ -475,13 +474,15 @@ impl EffectSystem {
         let dead: Vec<u32> = self
             .active_effects
             .iter_mut()
-            .filter_map(|(id, effect)| {
-                if !effect.tick(delta) {
-                    Some(*id)
-                } else {
-                    None
-                }
-            })
+            .filter_map(
+                |(id, effect)| {
+                    if !effect.tick(delta) {
+                        Some(*id)
+                    } else {
+                        None
+                    }
+                },
+            )
             .collect();
 
         let removed = dead.len();
@@ -579,7 +580,10 @@ mod tests {
         assert!((p.intensity - 1.0).abs() < f32::EPSILON);
         assert!(p.color_override.is_none());
 
-        let p = p.with_scale(2.5).with_intensity(0.7).with_color([1.0, 0.0, 0.0, 1.0]);
+        let p = p
+            .with_scale(2.5)
+            .with_intensity(0.7)
+            .with_color([1.0, 0.0, 0.0, 1.0]);
         assert!((p.scale - 2.5).abs() < f32::EPSILON);
         assert!((p.intensity - 0.7).abs() < f32::EPSILON);
         assert_eq!(p.color_override, Some([1.0, 0.0, 0.0, 1.0]));
@@ -655,21 +659,49 @@ mod tests {
         for et in &all_types {
             let p = EffectPreset::get(*et);
             assert!(p.count > 0, "count > 0 for {:?}", et);
-            assert!(p.speed_max >= p.speed_min, "speed_max >= speed_min for {:?}", et);
+            assert!(
+                p.speed_max >= p.speed_min,
+                "speed_max >= speed_min for {:?}",
+                et
+            );
             assert!(p.size > 0.0, "size > 0 for {:?}", et);
         }
 
         // Verify named presets match get()
-        assert_eq!(EffectPreset::get(EffectType::MeleeHit), EffectPreset::melee_hit());
-        assert_eq!(EffectPreset::get(EffectType::RangedHit), EffectPreset::ranged_hit());
-        assert_eq!(EffectPreset::get(EffectType::MagicHit), EffectPreset::magic_hit());
+        assert_eq!(
+            EffectPreset::get(EffectType::MeleeHit),
+            EffectPreset::melee_hit()
+        );
+        assert_eq!(
+            EffectPreset::get(EffectType::RangedHit),
+            EffectPreset::ranged_hit()
+        );
+        assert_eq!(
+            EffectPreset::get(EffectType::MagicHit),
+            EffectPreset::magic_hit()
+        );
         assert_eq!(EffectPreset::get(EffectType::Heal), EffectPreset::heal());
-        assert_eq!(EffectPreset::get(EffectType::LevelUp), EffectPreset::level_up());
+        assert_eq!(
+            EffectPreset::get(EffectType::LevelUp),
+            EffectPreset::level_up()
+        );
         assert_eq!(EffectPreset::get(EffectType::Death), EffectPreset::death());
-        assert_eq!(EffectPreset::get(EffectType::LootDrop), EffectPreset::loot_drop());
-        assert_eq!(EffectPreset::get(EffectType::DustTrail), EffectPreset::dust_trail());
-        assert_eq!(EffectPreset::get(EffectType::FireBurst), EffectPreset::fire_burst());
-        assert_eq!(EffectPreset::get(EffectType::IceShatter), EffectPreset::ice_shatter());
+        assert_eq!(
+            EffectPreset::get(EffectType::LootDrop),
+            EffectPreset::loot_drop()
+        );
+        assert_eq!(
+            EffectPreset::get(EffectType::DustTrail),
+            EffectPreset::dust_trail()
+        );
+        assert_eq!(
+            EffectPreset::get(EffectType::FireBurst),
+            EffectPreset::fire_burst()
+        );
+        assert_eq!(
+            EffectPreset::get(EffectType::IceShatter),
+            EffectPreset::ice_shatter()
+        );
     }
 
     #[test]
@@ -680,18 +712,18 @@ mod tests {
         assert!((e.elapsed).abs() < f32::EPSILON);
         assert!((e.duration - 0.3).abs() < f32::EPSILON);
 
-        assert!(e.tick(0.1));  // elapsed=0.1 < 0.3 → alive
+        assert!(e.tick(0.1)); // elapsed=0.1 < 0.3 → alive
         assert!((e.elapsed - 0.1).abs() < f32::EPSILON);
-        assert!(e.tick(0.1));  // elapsed=0.2 < 0.3 → alive
+        assert!(e.tick(0.1)); // elapsed=0.2 < 0.3 → alive
         assert!((e.elapsed - 0.2).abs() < f32::EPSILON);
     }
 
     #[test]
     fn active_effect_tick_dies() {
         let mut e = ActiveEffect::new(1, EffectType::MeleeHit, EffectParams::new(0.0, 0.0, 0.0));
-        assert!(e.tick(0.2));    // 0.2 < 0.3 → alive
-        assert!(!e.tick(0.2));   // 0.4 >= 0.3 → dead
-        assert!(!e.tick(0.1));   // stays dead
+        assert!(e.tick(0.2)); // 0.2 < 0.3 → alive
+        assert!(!e.tick(0.2)); // 0.4 >= 0.3 → dead
+        assert!(!e.tick(0.1)); // stays dead
         assert!((e.progress() - 1.0).abs() < f32::EPSILON);
     }
 
@@ -717,7 +749,7 @@ mod tests {
     fn effect_system_update_removes_dead() {
         let mut sys = EffectSystem::new();
         sys.spawn(EffectType::MeleeHit, EffectParams::new(0.0, 0.0, 0.0)); // duration 0.3
-        sys.spawn(EffectType::LevelUp, EffectParams::new(1.0, 1.0, 0.0));  // duration 1.5
+        sys.spawn(EffectType::LevelUp, EffectParams::new(1.0, 1.0, 0.0)); // duration 1.5
         assert_eq!(sys.active_count(), 2);
 
         // Tick past MeleeHit duration but not LevelUp
@@ -725,7 +757,7 @@ mod tests {
         assert_eq!(removed, 1);
         assert_eq!(sys.active_count(), 1);
         assert!(sys.get(1).is_none()); // MeleeHit gone
-        assert!(sys.get(2).is_some());  // LevelUp still alive
+        assert!(sys.get(2).is_some()); // LevelUp still alive
     }
 
     #[test]

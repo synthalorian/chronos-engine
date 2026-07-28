@@ -5,16 +5,16 @@
 
 #![allow(dead_code)]
 
+mod api;
 mod bridge;
 mod component;
-mod lifecycle;
-mod api;
 mod hotreload;
+mod lifecycle;
 mod modloader;
 
+pub use api::ScriptApi;
 pub use bridge::ScriptEngine;
 pub use component::{ScriptComponent, ScriptHandle};
-pub use lifecycle::{ScriptLifecycle, ScriptContext};
-pub use api::ScriptApi;
 pub use hotreload::ScriptWatcher;
-pub use modloader::{ModLoader, ModMetadata, ModError};
+pub use lifecycle::{ScriptContext, ScriptLifecycle};
+pub use modloader::{ModError, ModLoader, ModMetadata};

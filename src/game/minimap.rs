@@ -299,7 +299,8 @@ impl MinimapSystem {
         terrain_colors: &Vec<Vec<[f32; 3]>>,
     ) {
         self.data.clear_enemies();
-        self.data.update_player_position(player_world_x, player_world_y);
+        self.data
+            .update_player_position(player_world_x, player_world_y);
         self.data.reveal_radius(
             self.data.player_x,
             self.data.player_y,
@@ -445,7 +446,9 @@ mod tests {
 
     #[test]
     fn minimap_renderer_cell_to_screen() {
-        let renderer = MinimapRenderer::new().with_position(100.0, 50.0).with_size(200.0);
+        let renderer = MinimapRenderer::new()
+            .with_position(100.0, 50.0)
+            .with_size(200.0);
         let pos = renderer.cell_to_screen(0, 0, 10, 10);
         assert_eq!(pos, [100.0, 50.0]);
 
@@ -465,7 +468,10 @@ mod tests {
     fn minimap_renderer_render_cell() {
         // Unexplored → fog
         let cell = MinimapCell::new();
-        assert_eq!(MinimapRenderer::render_cell(&cell), MinimapCell::fog_color());
+        assert_eq!(
+            MinimapRenderer::render_cell(&cell),
+            MinimapCell::fog_color()
+        );
 
         // Explored, no markers → terrain color
         let mut cell = MinimapCell::new();
@@ -490,7 +496,9 @@ mod tests {
 
     #[test]
     fn minimap_renderer_click_detection() {
-        let renderer = MinimapRenderer::new().with_position(100.0, 50.0).with_size(200.0);
+        let renderer = MinimapRenderer::new()
+            .with_position(100.0, 50.0)
+            .with_size(200.0);
 
         // Inside
         assert!(renderer.is_click_on_minimap(150.0, 100.0));
@@ -571,7 +579,11 @@ mod tests {
         ];
         for i in 0..colors.len() {
             for j in (i + 1)..colors.len() {
-                assert_ne!(colors[i], colors[j], "terrain colors {} and {} are not distinct", i, j);
+                assert_ne!(
+                    colors[i], colors[j],
+                    "terrain colors {} and {} are not distinct",
+                    i, j
+                );
             }
         }
     }

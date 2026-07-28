@@ -1,10 +1,9 @@
 #[cfg(feature = "game")]
-
 use std::collections::HashMap;
 use std::f32::consts::PI;
 
-use crate::{Entity, World};
 use super::components::{MoveTarget, NavigationAgent, SquadMember};
+use crate::{Entity, World};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct SquadId(pub u32);
@@ -32,11 +31,7 @@ impl Formation {
                     })
                     .collect()
             }
-            Formation::Column => {
-                (0..count)
-                    .map(|i| [0.0, 0.0, i as f32 * spacing])
-                    .collect()
-            }
+            Formation::Column => (0..count).map(|i| [0.0, 0.0, i as f32 * spacing]).collect(),
             Formation::Circle => {
                 if count == 1 {
                     return vec![[0.0, 0.0, 0.0]];
@@ -49,17 +44,15 @@ impl Formation {
                     })
                     .collect()
             }
-            Formation::Wedge => {
-                (0..count)
-                    .map(|i| {
-                        let side = if i % 2 == 0 { 1.0 } else { -1.0 };
-                        let rank = (i / 2 + 1) as f32;
-                        let x = rank * spacing * side;
-                        let z = rank * spacing;
-                        [x, 0.0, z]
-                    })
-                    .collect()
-            }
+            Formation::Wedge => (0..count)
+                .map(|i| {
+                    let side = if i % 2 == 0 { 1.0 } else { -1.0 };
+                    let rank = (i / 2 + 1) as f32;
+                    let x = rank * spacing * side;
+                    let z = rank * spacing;
+                    [x, 0.0, z]
+                })
+                .collect(),
         }
     }
 }

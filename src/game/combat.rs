@@ -1,8 +1,7 @@
-#[cfg(feature = "game")]
-
-use crate::{Entity, World};
-use crate::component::{Health, Transform, Dead};
 use super::components::*;
+use crate::component::{Dead, Health, Transform};
+#[cfg(feature = "game")]
+use crate::{Entity, World};
 
 /// The type of attack being performed.
 ///
@@ -147,7 +146,10 @@ impl CombatSystem {
             if !world.has_component::<Health>(entity) {
                 continue;
             }
-            if world.get_component::<Health>(entity).map_or(true, |h| h.is_dead()) {
+            if world
+                .get_component::<Health>(entity)
+                .map_or(true, |h| h.is_dead())
+            {
                 continue;
             }
 
@@ -169,7 +171,10 @@ impl CombatSystem {
             if !world.has_component::<Health>(target) {
                 continue;
             }
-            if world.get_component::<Health>(target).map_or(true, |h| h.is_dead()) {
+            if world
+                .get_component::<Health>(target)
+                .map_or(true, |h| h.is_dead())
+            {
                 continue;
             }
 
@@ -416,10 +421,7 @@ mod tests {
             AttackType::Melee,
         );
         world.add_component(attacker, AttackCooldown::new(1.0));
-        world.add_component(
-            attacker,
-            CombatState::new(AttackType::Melee),
-        );
+        world.add_component(attacker, CombatState::new(AttackType::Melee));
 
         let target = make_combatant(
             &mut world,
@@ -431,7 +433,10 @@ mod tests {
         );
 
         // Wire up the target
-        world.get_component_mut::<CombatState>(attacker).unwrap().target = Some(target);
+        world
+            .get_component_mut::<CombatState>(attacker)
+            .unwrap()
+            .target = Some(target);
 
         system.update(&mut world, 0.016);
 
@@ -456,10 +461,7 @@ mod tests {
             AttackType::Melee,
         );
         world.add_component(attacker, AttackCooldown::new(1.0));
-        world.add_component(
-            attacker,
-            CombatState::new(AttackType::Melee),
-        );
+        world.add_component(attacker, CombatState::new(AttackType::Melee));
 
         // Target has only 5 HP — will be killed in one hit.
         let target = make_combatant(
@@ -471,7 +473,10 @@ mod tests {
             AttackType::Melee,
         );
 
-        world.get_component_mut::<CombatState>(attacker).unwrap().target = Some(target);
+        world
+            .get_component_mut::<CombatState>(attacker)
+            .unwrap()
+            .target = Some(target);
 
         system.update(&mut world, 0.016);
 
@@ -511,10 +516,16 @@ mod tests {
             AttackType::Melee,
         );
         // Kill the target first.
-        world.get_component_mut::<Health>(target).unwrap().take_damage(10);
+        world
+            .get_component_mut::<Health>(target)
+            .unwrap()
+            .take_damage(10);
         assert!(world.get_component::<Health>(target).unwrap().is_dead());
 
-        world.get_component_mut::<CombatState>(attacker).unwrap().target = Some(target);
+        world
+            .get_component_mut::<CombatState>(attacker)
+            .unwrap()
+            .target = Some(target);
 
         system.update(&mut world, 0.016);
 
@@ -547,7 +558,10 @@ mod tests {
         world.add_component(target, Team::Enemy);
         world.add_component(target, Transform::new(0.5, 0.0, 0.0));
 
-        world.get_component_mut::<CombatState>(attacker).unwrap().target = Some(target);
+        world
+            .get_component_mut::<CombatState>(attacker)
+            .unwrap()
+            .target = Some(target);
 
         system.update(&mut world, 0.016);
 
@@ -571,10 +585,7 @@ mod tests {
             100,
             AttackType::Melee,
         );
-        world.add_component(
-            attacker,
-            AttackCooldown::new(1.0).with_remaining(0.5),
-        );
+        world.add_component(attacker, AttackCooldown::new(1.0).with_remaining(0.5));
         world.add_component(attacker, CombatState::new(AttackType::Melee));
 
         let target = make_combatant(
@@ -586,7 +597,10 @@ mod tests {
             AttackType::Melee,
         );
 
-        world.get_component_mut::<CombatState>(attacker).unwrap().target = Some(target);
+        world
+            .get_component_mut::<CombatState>(attacker)
+            .unwrap()
+            .target = Some(target);
 
         // First tick — cooldown not ready, should not attack.
         system.update(&mut world, 0.016);
@@ -623,7 +637,10 @@ mod tests {
             AttackType::Melee,
         );
 
-        world.get_component_mut::<CombatState>(attacker).unwrap().target = Some(target);
+        world
+            .get_component_mut::<CombatState>(attacker)
+            .unwrap()
+            .target = Some(target);
 
         system.update(&mut world, 0.016);
 
@@ -658,7 +675,10 @@ mod tests {
             AttackType::Ranged(10.0),
         );
 
-        world.get_component_mut::<CombatState>(attacker).unwrap().target = Some(target);
+        world
+            .get_component_mut::<CombatState>(attacker)
+            .unwrap()
+            .target = Some(target);
 
         system.update(&mut world, 0.016);
 
@@ -695,7 +715,10 @@ mod tests {
             AttackType::Melee,
         );
 
-        world.get_component_mut::<CombatState>(attacker).unwrap().target = Some(ally);
+        world
+            .get_component_mut::<CombatState>(attacker)
+            .unwrap()
+            .target = Some(ally);
 
         system.update(&mut world, 0.016);
 

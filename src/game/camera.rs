@@ -1,5 +1,4 @@
 #[cfg(feature = "game")]
-
 use crate::input::{InputManager, InputSource, KeyCode};
 
 // ──────────────────────────────────────────────
@@ -225,11 +224,7 @@ impl Default for TabletopCamera {
 
 /// Standard look-at view matrix.
 fn look_at(eye: [f32; 3], target: [f32; 3], up: [f32; 3]) -> [[f32; 4]; 4] {
-    let f = normalize3([
-        target[0] - eye[0],
-        target[1] - eye[1],
-        target[2] - eye[2],
-    ]);
+    let f = normalize3([target[0] - eye[0], target[1] - eye[1], target[2] - eye[2]]);
     let s = normalize3(cross3(f, up));
     let u = cross3(s, f);
 
@@ -237,10 +232,12 @@ fn look_at(eye: [f32; 3], target: [f32; 3], up: [f32; 3]) -> [[f32; 4]; 4] {
         [s[0], u[0], -f[0], 0.0],
         [s[1], u[1], -f[1], 0.0],
         [s[2], u[2], -f[2], 0.0],
-        [-(s[0] * eye[0] + s[1] * eye[1] + s[2] * eye[2]),
-         -(u[0] * eye[0] + u[1] * eye[1] + u[2] * eye[2]),
-         -(-f[0] * eye[0] + -f[1] * eye[1] + -f[2] * eye[2]),
-         1.0],
+        [
+            -(s[0] * eye[0] + s[1] * eye[1] + s[2] * eye[2]),
+            -(u[0] * eye[0] + u[1] * eye[1] + u[2] * eye[2]),
+            -(-f[0] * eye[0] + -f[1] * eye[1] + -f[2] * eye[2]),
+            1.0,
+        ],
     ]
 }
 
@@ -498,9 +495,17 @@ mod tests {
         let (origin, dir) = cam.screen_to_ray(400.0, 300.0, 800.0, 600.0);
         // Direction should be non-zero
         let len_sq = dir[0] * dir[0] + dir[1] * dir[1] + dir[2] * dir[2];
-        assert!(len_sq > 0.01, "ray direction should be non-zero, len_sq={}", len_sq);
+        assert!(
+            len_sq > 0.01,
+            "ray direction should be non-zero, len_sq={}",
+            len_sq
+        );
         // Origin should be somewhere near the camera
-        assert!(origin[1] > -0.1, "ray origin y should be near or above ground, got {}", origin[1]);
+        assert!(
+            origin[1] > -0.1,
+            "ray origin y should be near or above ground, got {}",
+            origin[1]
+        );
     }
 
     #[test]

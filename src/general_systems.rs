@@ -21,7 +21,12 @@ pub struct CameraBounds {
 
 impl CameraBounds {
     pub fn new(min_x: f32, max_x: f32, min_y: f32, max_y: f32) -> Self {
-        CameraBounds { min_x, max_x, min_y, max_y }
+        CameraBounds {
+            min_x,
+            max_x,
+            min_y,
+            max_y,
+        }
     }
 
     /// Clamp a world-space position within these bounds.
@@ -34,8 +39,7 @@ impl CameraBounds {
 
     /// Returns `true` if `pos` lies within the bounds (inclusive).
     pub fn contains(&self, pos: [f32; 2]) -> bool {
-        pos[0] >= self.min_x && pos[0] <= self.max_x
-            && pos[1] >= self.min_y && pos[1] <= self.max_y
+        pos[0] >= self.min_x && pos[0] <= self.max_x && pos[1] >= self.min_y && pos[1] <= self.max_y
     }
 }
 
@@ -121,11 +125,7 @@ impl Camera2D {
     pub fn projection_matrix(&self) -> [[f32; 3]; 3] {
         let hw = 2.0 / self.viewport_size[0];
         let hh = 2.0 / self.viewport_size[1];
-        [
-            [hw,  0.0, 0.0],
-            [0.0, hh,  0.0],
-            [0.0, 0.0, 1.0],
-        ]
+        [[hw, 0.0, 0.0], [0.0, hh, 0.0], [0.0, 0.0, 1.0]]
     }
 
     /// Convert a screen-space pixel coordinate to world space.
@@ -160,10 +160,7 @@ impl Camera2D {
         let half_w = self.viewport_size[0] / 2.0;
         let half_h = self.viewport_size[1] / 2.0;
 
-        [
-            half_w + rx * z,
-            half_h - ry * z,
-        ]
+        [half_w + rx * z, half_h - ry * z]
     }
 
     /// Apply shake decay and follow-target interpolation.
@@ -182,11 +179,11 @@ impl Camera2D {
 
         // Shake decay
         if self.shake_intensity > 0.01 {
-            let angle = (self.position[0] * 7.3 + self.position[1] * 13.7
-                + self.shake_intensity * 41.1)
-                .to_radians()
-                .sin()
-                .acos();
+            let angle =
+                (self.position[0] * 7.3 + self.position[1] * 13.7 + self.shake_intensity * 41.1)
+                    .to_radians()
+                    .sin()
+                    .acos();
             self.shake_offset = [
                 angle.cos() * self.shake_intensity,
                 angle.sin() * self.shake_intensity,
@@ -288,7 +285,8 @@ impl TileLayer {
     }
 
     pub fn resize(&mut self, new_width: usize, new_height: usize) {
-        self.tiles.resize_with(new_height, || vec![TileData::default(); new_width]);
+        self.tiles
+            .resize_with(new_height, || vec![TileData::default(); new_width]);
         for row in &mut self.tiles {
             row.resize(new_width, TileData::default());
         }
@@ -304,7 +302,10 @@ pub struct AutotileRule {
 
 impl AutotileRule {
     pub fn new(center_tile: u32, result_tiles: [u32; 4]) -> Self {
-        AutotileRule { center_tile, result_tiles }
+        AutotileRule {
+            center_tile,
+            result_tiles,
+        }
     }
 
     /// Given neighbor connectivity [up, right, down, left], return the
@@ -358,16 +359,28 @@ impl TilemapEx {
         };
 
         let neighbors = [
-            layer.get_tile(x, y.saturating_sub(1)).map_or(false, |t| t.sprite_index == current),
-            layer.get_tile(x + 1, y).map_or(false, |t| t.sprite_index == current),
-            layer.get_tile(x, y + 1).map_or(false, |t| t.sprite_index == current),
-            layer.get_tile(x.saturating_sub(1), y).map_or(false, |t| t.sprite_index == current),
+            layer
+                .get_tile(x, y.saturating_sub(1))
+                .map_or(false, |t| t.sprite_index == current),
+            layer
+                .get_tile(x + 1, y)
+                .map_or(false, |t| t.sprite_index == current),
+            layer
+                .get_tile(x, y + 1)
+                .map_or(false, |t| t.sprite_index == current),
+            layer
+                .get_tile(x.saturating_sub(1), y)
+                .map_or(false, |t| t.sprite_index == current),
         ];
 
         for rule in &self.autotile_rules {
             if rule.center_tile == current {
                 if let Some(new_tile) = rule.matches(neighbors) {
-                    if let Some(tile) = self.layers[layer_index].tiles.get_mut(y).and_then(|r| r.get_mut(x)) {
+                    if let Some(tile) = self.layers[layer_index]
+                        .tiles
+                        .get_mut(y)
+                        .and_then(|r| r.get_mut(x))
+                    {
                         tile.sprite_index = new_tile;
                     }
                     return;
@@ -402,7 +415,10 @@ impl TilemapEx {
 
     /// Width of the first layer (0 if no layers exist).
     pub fn width(&self) -> usize {
-        self.layers.first().map(|l| l.tiles.first().map_or(0, |r| r.len())).unwrap_or(0)
+        self.layers
+            .first()
+            .map(|l| l.tiles.first().map_or(0, |r| r.len()))
+            .unwrap_or(0)
     }
 
     /// Height of the first layer (0 if no layers exist).
@@ -470,9 +486,7 @@ impl Pathfinder2D {
         let (sx, sy) = (start[0], start[1]);
         let (ex, ey) = (end[0], end[1]);
 
-        if sx >= grid.width() || sy >= grid.height()
-            || ex >= grid.width() || ey >= grid.height()
-        {
+        if sx >= grid.width() || sy >= grid.height() || ex >= grid.width() || ey >= grid.height() {
             return None;
         }
 
@@ -518,7 +532,11 @@ impl Pathfinder2D {
                 closed.push((current.position, current.parent));
                 let path = reconstruct_path(&closed, [ex, ey]);
                 let total_cost = current.g_cost;
-                return Some(PathResult { path, total_cost, nodes_explored });
+                return Some(PathResult {
+                    path,
+                    total_cost,
+                    nodes_explored,
+                });
             }
 
             closed.push((current.position, current.parent));
@@ -545,7 +563,10 @@ impl Pathfinder2D {
                 let tentative_g = current.g_cost + move_cost;
 
                 // Check existing open node
-                if let Some(existing) = open.iter().find(|n| n.position[0] == nx && n.position[1] == ny) {
+                if let Some(existing) = open
+                    .iter()
+                    .find(|n| n.position[0] == nx && n.position[1] == ny)
+                {
                     if tentative_g >= existing.g_cost {
                         continue;
                     }
@@ -578,7 +599,10 @@ fn reconstruct_path(
     let mut current = Some(end);
     while let Some(pos) = current {
         path.push(pos);
-        if let Some((_, parent)) = closed.iter().find(|(p, _)| p[0] == pos[0] && p[1] == pos[1]) {
+        if let Some((_, parent)) = closed
+            .iter()
+            .find(|(p, _)| p[0] == pos[0] && p[1] == pos[1])
+        {
             current = *parent;
         } else {
             break;
@@ -984,7 +1008,11 @@ mod tests {
         assert_eq!(tm.height(), 8);
 
         // Set a solid tile on layer 1
-        let solid = TileData { sprite_index: 3, collision: TileCollision::Solid, cost: 1.0 };
+        let solid = TileData {
+            sprite_index: 3,
+            collision: TileCollision::Solid,
+            cost: 1.0,
+        };
         tm.layers[1].set_tile(5, 4, solid);
 
         // Collision check — layer 0 is passable, layer 1 has solid at (5,4)
@@ -1006,7 +1034,12 @@ mod tests {
 
     impl TestGrid {
         fn new(w: usize, h: usize) -> Self {
-            TestGrid { width: w, height: h, walls: Vec::new(), costs: Vec::new() }
+            TestGrid {
+                width: w,
+                height: h,
+                walls: Vec::new(),
+                costs: Vec::new(),
+            }
         }
         fn add_wall(&mut self, x: usize, y: usize) {
             self.walls.push([x, y]);
@@ -1017,13 +1050,18 @@ mod tests {
     }
 
     impl PathfindingGrid for TestGrid {
-        fn width(&self) -> usize { self.width }
-        fn height(&self) -> usize { self.height }
+        fn width(&self) -> usize {
+            self.width
+        }
+        fn height(&self) -> usize {
+            self.height
+        }
         fn is_walkable(&self, x: usize, y: usize) -> bool {
             !self.walls.iter().any(|&[wx, wy]| wx == x && wy == y)
         }
         fn cost(&self, x: usize, y: usize) -> f32 {
-            self.costs.iter()
+            self.costs
+                .iter()
                 .find(|&&(pos, _)| pos[0] == x && pos[1] == y)
                 .map(|&(_, c)| c)
                 .unwrap_or(1.0)
@@ -1111,8 +1149,7 @@ mod tests {
 
     #[test]
     fn audio_zone_contains_and_distance_factor() {
-        let zone = AudioZone::new("forest", 0.0, 0.0, 100.0)
-            .with_blend_distance(30.0);
+        let zone = AudioZone::new("forest", 0.0, 0.0, 100.0).with_blend_distance(30.0);
 
         // Center
         assert!(zone.contains([0.0, 0.0]));
@@ -1136,13 +1173,17 @@ mod tests {
         let mut mgr = AudioZoneManager::new();
         assert_eq!(mgr.zone_count(), 0);
 
-        mgr.add_zone(AudioZone::new("forest", 0.0, 0.0, 100.0)
-            .with_track("forest_amb")
-            .with_volume(0.8));
-        mgr.add_zone(AudioZone::new("cave", 200.0, 0.0, 80.0)
-            .with_track("cave_amb")
-            .with_volume(1.0)
-            .with_priority(1));
+        mgr.add_zone(
+            AudioZone::new("forest", 0.0, 0.0, 100.0)
+                .with_track("forest_amb")
+                .with_volume(0.8),
+        );
+        mgr.add_zone(
+            AudioZone::new("cave", 200.0, 0.0, 80.0)
+                .with_track("cave_amb")
+                .with_volume(1.0)
+                .with_priority(1),
+        );
         assert_eq!(mgr.zone_count(), 2);
 
         // Listener in forest (first update, transitions from None → Some)

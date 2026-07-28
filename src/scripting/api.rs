@@ -182,10 +182,7 @@ impl ScriptApi {
 
     /// Register physics stubs: `raycast_2d`, `apply_force`, `apply_impulse`.
     pub fn register_physics(engine: &mut rhai::Engine) {
-        engine.register_fn(
-            "raycast_2d",
-            |_x: f64, _y: f64, _dx: f64, _dy: f64| false,
-        );
+        engine.register_fn("raycast_2d", |_x: f64, _y: f64, _dx: f64, _dy: f64| false);
         engine.register_fn("apply_force", |_id: i64, _fx: f64, _fy: f64| ());
         engine.register_fn("apply_impulse", |_id: i64, _ix: f64, _iy: f64| ());
     }
@@ -581,9 +578,7 @@ mod tests {
         assert!(surviving > 0);
 
         // The destroyed entity should be invalid
-        let valid: bool = engine
-            .eval("entity_is_valid(1)")
-            .unwrap();
+        let valid: bool = engine.eval("entity_is_valid(1)").unwrap();
         assert!(!valid);
 
         // The surviving entity should be valid

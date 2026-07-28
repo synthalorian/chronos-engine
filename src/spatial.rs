@@ -408,13 +408,7 @@ impl Quadtree {
     }
 
     /// Check if a ray intersects a circle and return the hit point if so.
-    fn raycast_circle(
-        &self,
-        ray: Ray,
-        cx: f32,
-        cy: f32,
-        cr: f32,
-    ) -> Option<RaycastHit> {
+    fn raycast_circle(&self, ray: Ray, cx: f32, cy: f32, cr: f32) -> Option<RaycastHit> {
         // Ray-circle intersection: solve |O + tD - C|^2 = r^2
         let ox = ray.x - cx;
         let oy = ray.y - cy;
@@ -432,7 +426,13 @@ impl Quadtree {
         let t2 = (-b + sqrt_d) / (2.0 * a);
 
         // Pick the closest intersection in front of the ray
-        let t = if t1 > 0.0 { t1 } else if t2 > 0.0 { t2 } else { return None };
+        let t = if t1 > 0.0 {
+            t1
+        } else if t2 > 0.0 {
+            t2
+        } else {
+            return None;
+        };
 
         Some(RaycastHit {
             entity: 0, // placeholder, set by caller

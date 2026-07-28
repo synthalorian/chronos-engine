@@ -357,12 +357,12 @@ impl GltfImporter {
     pub fn import(path: &Path) -> Result<GltfScene, GltfImportError> {
         let (document, buffers, _images) = gltf::import(path)?;
 
-        let base_dir = path
-            .parent()
-            .ok_or_else(|| GltfImportError::Io(std::io::Error::new(
+        let base_dir = path.parent().ok_or_else(|| {
+            GltfImportError::Io(std::io::Error::new(
                 std::io::ErrorKind::NotFound,
                 "cannot resolve parent directory",
-            )))?;
+            ))
+        })?;
 
         let materials = Self::extract_materials(&document, base_dir)?;
         let meshes = Self::extract_meshes(&document, &buffers)?;
@@ -395,10 +395,7 @@ impl GltfImporter {
     ) -> Result<Vec<GltfMesh>, GltfImportError> {
         let mut meshes = Vec::new();
         for gltf_mesh in document.meshes() {
-            let mesh_name = gltf_mesh
-                .name()
-                .unwrap_or("unnamed")
-                .to_string();
+            let mesh_name = gltf_mesh.name().unwrap_or("unnamed").to_string();
 
             // Collect all primitives into one mesh.
             // We merge by offsetting indices per primitive.
@@ -420,10 +417,12 @@ impl GltfImporter {
 
                 let positions: Vec<[f32; 3]> = reader
                     .read_positions()
-                    .ok_or_else(|| GltfImportError::InvalidMesh(format!(
-                        "mesh '{}' primitive has no POSITION attribute",
-                        mesh_name
-                    )))?
+                    .ok_or_else(|| {
+                        GltfImportError::InvalidMesh(format!(
+                            "mesh '{}' primitive has no POSITION attribute",
+                            mesh_name
+                        ))
+                    })?
                     .collect();
 
                 let normals: Vec<[f32; 3]> = reader
@@ -607,10 +606,12 @@ impl GltfImporter {
 
                 let times: Vec<f32> = reader
                     .read_inputs()
-                    .ok_or_else(|| GltfImportError::Parse(format!(
-                        "animation '{}' channel has no input accessor",
-                        name
-                    )))?
+                    .ok_or_else(|| {
+                        GltfImportError::Parse(format!(
+                            "animation '{}' channel has no input accessor",
+                            name
+                        ))
+                    })?
                     .collect();
 
                 if let Some(&t) = times.last() {
@@ -623,10 +624,7 @@ impl GltfImporter {
                     gltf::animation::Interpolation::CubicSpline => GltfInterpolation::CubicSpline,
                 };
 
-                let node_index = channel
-                    .target()
-                    .node()
-                    .index();
+                let node_index = channel.target().node().index();
 
                 let values = match reader.read_outputs() {
                     Some(gltf::animation::util::ReadOutputs::Translations(iter)) => {
@@ -670,10 +668,7 @@ impl GltfImporter {
 
     // ── Skin extraction ──────────────────────
 
-    fn extract_skins(
-        document: &gltf::Document,
-        buffers: &[gltf::buffer::Data],
-    ) -> Vec<GltfSkin> {
+    fn extract_skins(document: &gltf::Document, buffers: &[gltf::buffer::Data]) -> Vec<GltfSkin> {
         let mut skins = Vec::new();
 
         for skin in document.skins() {
@@ -686,8 +681,12 @@ impl GltfImporter {
                 .unwrap_or_else(|| {
                     // Default to identity matrices when IBMs are absent.
                     vec![
-                        [[1.0, 0.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0],
-                         [0.0, 0.0, 1.0, 0.0], [0.0, 0.0, 0.0, 1.0]];
+                        [
+                            [1.0, 0.0, 0.0, 0.0],
+                            [0.0, 1.0, 0.0, 0.0],
+                            [0.0, 0.0, 1.0, 0.0],
+                            [0.0, 0.0, 0.0, 1.0]
+                        ];
                         joint_indices.len()
                     ]
                 });
@@ -838,7 +837,7 @@ mod tests {
         glb.extend(b"glTF"); // magic
         glb.extend(&2u32.to_le_bytes()); // version
         glb.extend(&(total as u32).to_le_bytes()); // total length
-        // JSON chunk
+                                                   // JSON chunk
         glb.extend(&(json_len as u32).to_le_bytes());
         glb.extend(b"JSON");
         glb.extend(&json_padded);
@@ -949,7 +948,11 @@ mod tests {
         let scene = GltfImporter::import(&gltf_path).unwrap();
         // materials[0] is the default, materials[1] is ours
         assert!(scene.materials.len() >= 2);
-        let mat = scene.materials.iter().find(|m| m.name == "TestPBR").unwrap();
+        let mat = scene
+            .materials
+            .iter()
+            .find(|m| m.name == "TestPBR")
+            .unwrap();
         assert!((mat.base_color[0] - 0.8).abs() < 0.01);
         assert!((mat.metallic - 0.9).abs() < 0.01);
         assert!((mat.roughness - 0.3).abs() < 0.01);
@@ -1087,7 +1090,9 @@ mod tests {
         let dir = setup("skin");
 
         // 2 identity inverse bind matrices (each 16 floats = 64 bytes)
-        let identity: [f32; 16] = [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0];
+        let identity: [f32; 16] = [
+            1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0,
+        ];
         let mut ibm_bytes = Vec::new();
         for _ in 0..2 {
             ibm_bytes.extend(identity.iter().flat_map(|f| f.to_le_bytes()));
@@ -1149,10 +1154,16 @@ mod tests {
 
     #[test]
     fn test_error_nonexistent_file() {
-        let result = GltfImporter::import(Path::new("/tmp/chronos_import_tests/does_not_exist.gltf"));
+        let result =
+            GltfImporter::import(Path::new("/tmp/chronos_import_tests/does_not_exist.gltf"));
         assert!(result.is_err());
         let msg = format!("{}", result.unwrap_err());
-        assert!(msg.contains("glTF") || msg.contains("I/O") || msg.contains("parse") || msg.contains("No such"));
+        assert!(
+            msg.contains("glTF")
+                || msg.contains("I/O")
+                || msg.contains("parse")
+                || msg.contains("No such")
+        );
     }
 
     // ── 10. Error on invalid glTF content ────
@@ -1286,7 +1297,11 @@ mod tests {
         let scene = GltfScene {
             meshes: vec![GltfMesh {
                 name: "Tri".into(),
-                vertices: vec![GltfVertex::new([1.0, 2.0, 3.0], [0.0, 1.0, 0.0], [0.5, 0.5])],
+                vertices: vec![GltfVertex::new(
+                    [1.0, 2.0, 3.0],
+                    [0.0, 1.0, 0.0],
+                    [0.5, 0.5],
+                )],
                 indices: vec![0],
                 material_index: Some(0),
                 morph_targets: vec![],

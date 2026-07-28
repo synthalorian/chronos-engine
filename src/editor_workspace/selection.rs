@@ -125,8 +125,7 @@ impl ViewportSelector {
 
         for entity in &entities {
             // Try Position first, fall back to Transform.
-            let world_pos: [f32; 2] = if let Some(pos) = world.get_component::<Position>(*entity)
-            {
+            let world_pos: [f32; 2] = if let Some(pos) = world.get_component::<Position>(*entity) {
                 [pos.x, pos.y]
             } else if let Some(xform) = world.get_component::<Transform>(*entity) {
                 [xform.x, xform.y]
@@ -182,7 +181,12 @@ impl ViewportSelector {
             return None;
         }
         let rect = self.box_select_start.map(|start| {
-            SelectionRect::new(start[0], start[1], self.current_mouse[0], self.current_mouse[1])
+            SelectionRect::new(
+                start[0],
+                start[1],
+                self.current_mouse[0],
+                self.current_mouse[1],
+            )
         });
         self.box_selecting = false;
         self.is_dragging = false;
@@ -216,7 +220,11 @@ impl ViewportSelector {
         let rect = egui::Rect::from_min_max(min, max);
 
         // Semi-transparent blue fill.
-        painter.rect_filled(rect, 0.0, egui::Color32::from_rgba_unmultiplied(100, 149, 237, 50));
+        painter.rect_filled(
+            rect,
+            0.0,
+            egui::Color32::from_rgba_unmultiplied(100, 149, 237, 50),
+        );
         // Solid blue stroke.
         painter.rect_stroke(rect, 0.0, (1.0, egui::Color32::from_rgb(100, 149, 237)));
     }
@@ -232,10 +240,7 @@ impl ViewportSelector {
 ///
 /// The viewport center is assumed to be the origin.
 pub fn world_to_screen_2d(world: [f32; 2], camera: [f32; 2], zoom: f32) -> [f32; 2] {
-    [
-        (world[0] - camera[0]) * zoom,
-        (world[1] - camera[1]) * zoom,
-    ]
+    [(world[0] - camera[0]) * zoom, (world[1] - camera[1]) * zoom]
 }
 
 impl Default for ViewportSelector {

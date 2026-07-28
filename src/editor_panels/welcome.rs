@@ -50,10 +50,10 @@ impl ProjectTemplate {
     /// Emoji icon for the template card.
     pub fn icon(&self) -> &str {
         match self {
-            Self::Empty => "\u{1F4C2}",         // 📂
-            Self::Platformer2D => "\u{1F3AE}",   // 🎮
-            Self::Shooter3D => "\u{1F52B}",      // 🔫
-            Self::RPG => "\u{2694}\u{FE0F}",     // ⚔️
+            Self::Empty => "\u{1F4C2}",        // 📂
+            Self::Platformer2D => "\u{1F3AE}", // 🎮
+            Self::Shooter3D => "\u{1F52B}",    // 🔫
+            Self::RPG => "\u{2694}\u{FE0F}",   // ⚔️
         }
     }
 
@@ -182,8 +182,7 @@ impl EditorPanel for WelcomeScreen {
 
                 ui.add_space(8.0);
                 ui.horizontal(|ui| {
-                    if ui.button("Create Project").clicked()
-                        && !self.project_name.trim().is_empty()
+                    if ui.button("Create Project").clicked() && !self.project_name.trim().is_empty()
                     {
                         state.log(
                             ConsoleLogLevel::Info,
@@ -210,9 +209,7 @@ impl EditorPanel for WelcomeScreen {
         ui.add_space(4.0);
 
         ui.vertical(|ui| {
-            ui.label(
-                egui::RichText::new("No recent projects").color(egui::Color32::GRAY),
-            );
+            ui.label(egui::RichText::new("No recent projects").color(egui::Color32::GRAY));
             ui.add_space(4.0);
             ui.label(
                 egui::RichText::new("Create or open a project to get started.")
@@ -331,7 +328,8 @@ mod tests {
             ConsoleLogLevel::Info,
             format!(
                 "Create project: '{}' ({:?})",
-                "TestGame", ProjectTemplate::Platformer2D
+                "TestGame",
+                ProjectTemplate::Platformer2D
             ),
         );
         assert_eq!(state.console_log.len(), 1);

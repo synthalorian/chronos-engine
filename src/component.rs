@@ -43,10 +43,7 @@ pub struct Health {
 
 impl Health {
     pub fn new(max: u32) -> Self {
-        Health {
-            current: max,
-            max,
-        }
+        Health { current: max, max }
     }
 
     pub fn is_dead(&self) -> bool {

@@ -2,10 +2,29 @@
 
 #[derive(Debug, Clone, Copy)]
 pub enum LightType {
-    Point { radius: f32, intensity: f32, color: [f32; 4] },
-    Directional { direction: [f32; 2], intensity: f32, color: [f32; 4] },
-    Spot { direction: [f32; 2], angle: f32, radius: f32, intensity: f32, color: [f32; 4] },
-    Area { width: f32, height: f32, intensity: f32, color: [f32; 4] },
+    Point {
+        radius: f32,
+        intensity: f32,
+        color: [f32; 4],
+    },
+    Directional {
+        direction: [f32; 2],
+        intensity: f32,
+        color: [f32; 4],
+    },
+    Spot {
+        direction: [f32; 2],
+        angle: f32,
+        radius: f32,
+        intensity: f32,
+        color: [f32; 4],
+    },
+    Area {
+        width: f32,
+        height: f32,
+        intensity: f32,
+        color: [f32; 4],
+    },
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -22,7 +41,11 @@ impl Light {
         Light {
             entity,
             position: [x, y],
-            light_type: LightType::Point { radius, intensity, color: [1.0, 1.0, 1.0, 1.0] },
+            light_type: LightType::Point {
+                radius,
+                intensity,
+                color: [1.0, 1.0, 1.0, 1.0],
+            },
             enabled: true,
             layer_mask: !0,
         }
@@ -79,7 +102,10 @@ pub struct LineSegment {
 
 impl LineSegment {
     pub fn new(x0: f32, y0: f32, x1: f32, y1: f32) -> Self {
-        LineSegment { start: [x0, y0], end: [x1, y1] }
+        LineSegment {
+            start: [x0, y0],
+            end: [x1, y1],
+        }
     }
 }
 
@@ -90,7 +116,9 @@ pub struct ShadowCaster {
 
 impl ShadowCaster {
     pub fn new() -> Self {
-        ShadowCaster { segments: Vec::new() }
+        ShadowCaster {
+            segments: Vec::new(),
+        }
     }
 
     pub fn add_segment(&mut self, seg: LineSegment) {
@@ -190,8 +218,10 @@ impl VisibilityPolygon {
                     continue;
                 }
 
-                let t = ((seg.start[0] - origin[0]) * sdy - (seg.start[1] - origin[1]) * sdx) / denom;
-                let u = ((seg.start[0] - origin[0]) * rdy - (seg.start[1] - origin[1]) * rdx) / denom;
+                let t =
+                    ((seg.start[0] - origin[0]) * sdy - (seg.start[1] - origin[1]) * sdx) / denom;
+                let u =
+                    ((seg.start[0] - origin[0]) * rdy - (seg.start[1] - origin[1]) * rdx) / denom;
 
                 if t > 0.0 && u >= 0.0 && u <= 1.0 && t < closest_t {
                     closest_t = t;
@@ -200,15 +230,9 @@ impl VisibilityPolygon {
             }
 
             if closest_t < max_radius || hit {
-                polygon.push([
-                    origin[0] + dx * closest_t,
-                    origin[1] + dy * closest_t,
-                ]);
+                polygon.push([origin[0] + dx * closest_t, origin[1] + dy * closest_t]);
             } else {
-                polygon.push([
-                    origin[0] + dx * max_radius,
-                    origin[1] + dy * max_radius,
-                ]);
+                polygon.push([origin[0] + dx * max_radius, origin[1] + dy * max_radius]);
             }
         }
 
@@ -252,7 +276,9 @@ impl LightingSystem {
             map.values[cell_idx] = self.ambient_intensity;
         }
 
-        let all_segments: Vec<LineSegment> = self.shadow_casters.iter()
+        let all_segments: Vec<LineSegment> = self
+            .shadow_casters
+            .iter()
             .flat_map(|sc| sc.segments.iter().copied())
             .collect();
 
@@ -261,16 +287,51 @@ impl LightingSystem {
                 continue;
             }
             match &light.light_type {
-                LightType::Point { radius, intensity, color } => {
-                    self.add_point_light(map, light.position, *radius, *intensity, *color, &all_segments);
+                LightType::Point {
+                    radius,
+                    intensity,
+                    color,
+                } => {
+                    self.add_point_light(
+                        map,
+                        light.position,
+                        *radius,
+                        *intensity,
+                        *color,
+                        &all_segments,
+                    );
                 }
-                LightType::Directional { direction, intensity, color } => {
+                LightType::Directional {
+                    direction,
+                    intensity,
+                    color,
+                } => {
                     self.add_directional_light(map, *direction, *intensity, *color);
                 }
-                LightType::Spot { direction, angle, radius, intensity, color } => {
-                    self.add_spot_light(map, light.position, *direction, *angle, *radius, *intensity, *color, &all_segments);
+                LightType::Spot {
+                    direction,
+                    angle,
+                    radius,
+                    intensity,
+                    color,
+                } => {
+                    self.add_spot_light(
+                        map,
+                        light.position,
+                        *direction,
+                        *angle,
+                        *radius,
+                        *intensity,
+                        *color,
+                        &all_segments,
+                    );
                 }
-                LightType::Area { width, height, intensity, color } => {
+                LightType::Area {
+                    width,
+                    height,
+                    intensity,
+                    color,
+                } => {
                     self.add_area_light(map, light.position, *width, *height, *intensity, *color);
                 }
             }
@@ -278,8 +339,12 @@ impl LightingSystem {
     }
 
     fn add_point_light(
-        &self, map: &mut LightMap,
-        pos: [f32; 2], radius: f32, intensity: f32, color: [f32; 4],
+        &self,
+        map: &mut LightMap,
+        pos: [f32; 2],
+        radius: f32,
+        intensity: f32,
+        color: [f32; 4],
         segments: &[LineSegment],
     ) {
         let r_cells = (radius / map.cell_size).ceil() as i32;
@@ -312,8 +377,11 @@ impl LightingSystem {
     }
 
     fn add_directional_light(
-        &self, map: &mut LightMap,
-        _direction: [f32; 2], intensity: f32, color: [f32; 4],
+        &self,
+        map: &mut LightMap,
+        _direction: [f32; 2],
+        intensity: f32,
+        color: [f32; 4],
     ) {
         for gy in 0..(map.height as usize) {
             for gx in 0..(map.width as usize) {
@@ -323,9 +391,15 @@ impl LightingSystem {
     }
 
     fn add_spot_light(
-        &self, map: &mut LightMap,
-        pos: [f32; 2], dir: [f32; 2], angle: f32, radius: f32,
-        intensity: f32, color: [f32; 4], segments: &[LineSegment],
+        &self,
+        map: &mut LightMap,
+        pos: [f32; 2],
+        dir: [f32; 2],
+        angle: f32,
+        radius: f32,
+        intensity: f32,
+        color: [f32; 4],
+        segments: &[LineSegment],
     ) {
         let r_cells = (radius / map.cell_size).ceil() as i32;
         let (gcx, gcy) = (
@@ -356,7 +430,8 @@ impl LightingSystem {
 
                 let has_los = self.check_los(pos, [wx, wy], segments);
                 if has_los {
-                    let atten = (1.0 - dist / radius) * ((dot - cos_half) / (1.0 - cos_half)).max(0.0);
+                    let atten =
+                        (1.0 - dist / radius) * ((dot - cos_half) / (1.0 - cos_half)).max(0.0);
                     map.add_intensity(gx, gy, intensity * atten * color[0]);
                 }
             }
@@ -364,8 +439,13 @@ impl LightingSystem {
     }
 
     fn add_area_light(
-        &self, map: &mut LightMap,
-        pos: [f32; 2], width: f32, height: f32, intensity: f32, color: [f32; 4],
+        &self,
+        map: &mut LightMap,
+        pos: [f32; 2],
+        width: f32,
+        height: f32,
+        intensity: f32,
+        color: [f32; 4],
     ) {
         let gx0 = ((pos[0] - width * 0.5) / map.cell_size).floor().max(0.0) as usize;
         let gy0 = ((pos[1] - height * 0.5) / map.cell_size).floor().max(0.0) as usize;

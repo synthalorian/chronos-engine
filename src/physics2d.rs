@@ -37,7 +37,10 @@ impl Vec2 {
     pub fn normalize(self) -> Vec2 {
         let len = self.length();
         if len > 1e-8 {
-            Vec2 { x: self.x / len, y: self.y / len }
+            Vec2 {
+                x: self.x / len,
+                y: self.y / len,
+            }
         } else {
             Vec2::zero()
         }
@@ -49,35 +52,50 @@ impl Vec2 {
 
     /// Returns the perpendicular vector (-y, x).
     pub fn perp(self) -> Vec2 {
-        Vec2 { x: -self.y, y: self.x }
+        Vec2 {
+            x: -self.y,
+            y: self.x,
+        }
     }
 }
 
 impl Add for Vec2 {
     type Output = Vec2;
     fn add(self, rhs: Vec2) -> Vec2 {
-        Vec2 { x: self.x + rhs.x, y: self.y + rhs.y }
+        Vec2 {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+        }
     }
 }
 
 impl Sub for Vec2 {
     type Output = Vec2;
     fn sub(self, rhs: Vec2) -> Vec2 {
-        Vec2 { x: self.x - rhs.x, y: self.y - rhs.y }
+        Vec2 {
+            x: self.x - rhs.x,
+            y: self.y - rhs.y,
+        }
     }
 }
 
 impl Mul<f32> for Vec2 {
     type Output = Vec2;
     fn mul(self, s: f32) -> Vec2 {
-        Vec2 { x: self.x * s, y: self.y * s }
+        Vec2 {
+            x: self.x * s,
+            y: self.y * s,
+        }
     }
 }
 
 impl Neg for Vec2 {
     type Output = Vec2;
     fn neg(self) -> Vec2 {
-        Vec2 { x: -self.x, y: -self.y }
+        Vec2 {
+            x: -self.x,
+            y: -self.y,
+        }
     }
 }
 
@@ -98,15 +116,15 @@ impl Collider2D {
     }
 
     pub fn aabb(hx: f32, hy: f32) -> Self {
-        Collider2D::AABB { half_extents: [hx, hy] }
+        Collider2D::AABB {
+            half_extents: [hx, hy],
+        }
     }
 
     /// Returns true if `point` lies inside this collider placed at `pos`.
     pub fn contains_point(&self, pos: Vec2, point: Vec2) -> bool {
         match self {
-            Collider2D::Circle { radius } => {
-                (point - pos).length_squared() <= radius * radius
-            }
+            Collider2D::Circle { radius } => (point - pos).length_squared() <= radius * radius,
             Collider2D::AABB { half_extents } => {
                 point.x >= pos.x - half_extents[0]
                     && point.x <= pos.x + half_extents[0]
@@ -141,8 +159,12 @@ impl Collider2D {
 
 #[inline]
 fn circle_aabb_overlap(circle_pos: Vec2, radius: f32, aabb_pos: Vec2, half: [f32; 2]) -> bool {
-    let cx = circle_pos.x.clamp(aabb_pos.x - half[0], aabb_pos.x + half[0]);
-    let cy = circle_pos.y.clamp(aabb_pos.y - half[1], aabb_pos.y + half[1]);
+    let cx = circle_pos
+        .x
+        .clamp(aabb_pos.x - half[0], aabb_pos.x + half[0]);
+    let cy = circle_pos
+        .y
+        .clamp(aabb_pos.y - half[1], aabb_pos.y + half[1]);
     let dx = circle_pos.x - cx;
     let dy = circle_pos.y - cy;
     dx * dx + dy * dy <= radius * radius
@@ -401,18 +423,20 @@ impl PhysicsWorld2D {
                     (Collider2D::Circle { radius: ra }, Collider2D::Circle { radius: rb }) => {
                         circle_vs_circle(a.position, *ra, b.position, *rb)
                     }
-                    (Collider2D::AABB { half_extents: ha }, Collider2D::AABB { half_extents: hb }) => {
-                        aabb_vs_aabb(a.position, *ha, b.position, *hb)
-                    }
+                    (
+                        Collider2D::AABB { half_extents: ha },
+                        Collider2D::AABB { half_extents: hb },
+                    ) => aabb_vs_aabb(a.position, *ha, b.position, *hb),
                     (Collider2D::Circle { radius }, Collider2D::AABB { half_extents }) => {
                         circle_vs_aabb(a.position, *radius, b.position, *half_extents)
                     }
                     (Collider2D::AABB { half_extents }, Collider2D::Circle { radius }) => {
-                        circle_vs_aabb(b.position, *radius, a.position, *half_extents)
-                            .map(|mut c| {
+                        circle_vs_aabb(b.position, *radius, a.position, *half_extents).map(
+                            |mut c| {
                                 c.normal = -c.normal;
                                 c
-                            })
+                            },
+                        )
                     }
                 };
 
@@ -501,26 +525,22 @@ impl PhysicsWorld2D {
             };
 
             let hit = match collider {
-                Collider2D::Circle { radius } => {
-                    ray_vs_circle(ray, body.position, *radius)
-                        .filter(|(t, _)| *t >= 0.0 && *t <= max_distance)
-                        .map(|(t, normal)| RayHit2D {
-                            entity: body.entity,
-                            point: ray.at(t),
-                            normal,
-                            distance: t,
-                        })
-                }
-                Collider2D::AABB { half_extents } => {
-                    ray_vs_aabb(ray, body.position, *half_extents)
-                        .filter(|(t, _)| *t >= 0.0 && *t <= max_distance)
-                        .map(|(t, normal)| RayHit2D {
-                            entity: body.entity,
-                            point: ray.at(t),
-                            normal,
-                            distance: t,
-                        })
-                }
+                Collider2D::Circle { radius } => ray_vs_circle(ray, body.position, *radius)
+                    .filter(|(t, _)| *t >= 0.0 && *t <= max_distance)
+                    .map(|(t, normal)| RayHit2D {
+                        entity: body.entity,
+                        point: ray.at(t),
+                        normal,
+                        distance: t,
+                    }),
+                Collider2D::AABB { half_extents } => ray_vs_aabb(ray, body.position, *half_extents)
+                    .filter(|(t, _)| *t >= 0.0 && *t <= max_distance)
+                    .map(|(t, normal)| RayHit2D {
+                        entity: body.entity,
+                        point: ray.at(t),
+                        normal,
+                        distance: t,
+                    }),
             };
 
             if let Some(h) = hit {
@@ -945,9 +965,7 @@ mod tests {
 
     #[test]
     fn test_rigid_body_kinetic_energy() {
-        let body = RigidBody2D::new(1)
-            .with_mass(2.0)
-            .with_velocity(3.0, 4.0);
+        let body = RigidBody2D::new(1).with_mass(2.0).with_velocity(3.0, 4.0);
         // KE = 0.5 * 2.0 * (9 + 16) = 25.0
         assert!((body.kinetic_energy() - 25.0).abs() < 1e-6);
 
@@ -1004,13 +1022,7 @@ mod tests {
 
     #[test]
     fn test_collision_circle_circle() {
-        let contact = circle_vs_circle(
-            Vec2::new(0.0, 0.0),
-            1.0,
-            Vec2::new(1.5, 0.0),
-            1.0,
-        )
-        .unwrap();
+        let contact = circle_vs_circle(Vec2::new(0.0, 0.0), 1.0, Vec2::new(1.5, 0.0), 1.0).unwrap();
         assert!((contact.depth - 0.5).abs() < 1e-6);
         assert!((contact.normal.x - 1.0).abs() < 1e-6);
         assert!(contact.normal.y.abs() < 1e-6);
@@ -1034,27 +1046,28 @@ mod tests {
         assert!(contact.normal.y.abs() < 1e-6);
 
         // Non-overlapping
-        assert!(aabb_vs_aabb(Vec2::new(0.0, 0.0), [1.0, 1.0], Vec2::new(5.0, 0.0), [1.0, 1.0])
-            .is_none());
+        assert!(aabb_vs_aabb(
+            Vec2::new(0.0, 0.0),
+            [1.0, 1.0],
+            Vec2::new(5.0, 0.0),
+            [1.0, 1.0]
+        )
+        .is_none());
     }
 
     #[test]
     fn test_collision_circle_aabb() {
         // Circle to the left, overlapping AABB
-        let contact = circle_vs_aabb(
-            Vec2::new(-0.5, 0.0),
-            1.0,
-            Vec2::new(1.0, 0.0),
-            [1.0, 1.0],
-        )
-        .unwrap();
+        let contact =
+            circle_vs_aabb(Vec2::new(-0.5, 0.0), 1.0, Vec2::new(1.0, 0.0), [1.0, 1.0]).unwrap();
         assert!(contact.depth > 0.0);
         // Normal should point from circle toward AABB (positive x direction)
         assert!(contact.normal.x > 0.0);
 
         // Non-overlapping
-        assert!(circle_vs_aabb(Vec2::new(-5.0, 0.0), 1.0, Vec2::new(1.0, 0.0), [1.0, 1.0])
-            .is_none());
+        assert!(
+            circle_vs_aabb(Vec2::new(-5.0, 0.0), 1.0, Vec2::new(1.0, 0.0), [1.0, 1.0]).is_none()
+        );
     }
 
     #[test]
@@ -1120,8 +1133,14 @@ mod tests {
         assert!(a.velocity.x < 0.0, "Dynamic body should bounce back");
 
         // Static body should not have moved
-        assert!((b.position.x - 0.8).abs() < 1e-4, "Static body should not move");
-        assert!(b.velocity.x.abs() < 1e-6, "Static body should have zero velocity");
+        assert!(
+            (b.position.x - 0.8).abs() < 1e-4,
+            "Static body should not move"
+        );
+        assert!(
+            b.velocity.x.abs() < 1e-6,
+            "Static body should have zero velocity"
+        );
     }
 
     // ── Raycasting tests ──
@@ -1271,9 +1290,17 @@ mod tests {
         let c = world.get_body(2).unwrap();
 
         // Body A should slow down or reverse (was moving right at 1.0)
-        assert!(a.velocity.x < 1.0, "A should slow down, got {}", a.velocity.x);
+        assert!(
+            a.velocity.x < 1.0,
+            "A should slow down, got {}",
+            a.velocity.x
+        );
         // Body C should slow down or reverse (was moving left at -1.0)
-        assert!(c.velocity.x > -1.0, "C should slow down, got {}", c.velocity.x);
+        assert!(
+            c.velocity.x > -1.0,
+            "C should slow down, got {}",
+            c.velocity.x
+        );
         // Middle body B should have been pushed
         assert!(b.velocity.x.abs() > 0.0 || b.position.x.abs() > 0.01);
     }

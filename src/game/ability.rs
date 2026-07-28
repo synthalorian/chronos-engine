@@ -1,8 +1,7 @@
-#[cfg(feature = "game")]
-
-use crate::{Entity, World};
-use crate::component::{Health, Transform};
 use super::components::*;
+use crate::component::{Health, Transform};
+#[cfg(feature = "game")]
+use crate::{Entity, World};
 
 // ---------------------------------------------------------------------------
 // Ability type classification
@@ -307,14 +306,10 @@ impl AbilitySystem {
         match ability.ability_type {
             AbilityType::MeleeStrike => (stats.strength as f32 * 2.0) as u32 + ability.base_damage,
             AbilityType::RangedShot => (stats.dexterity as f32 * 2.0) as u32 + ability.base_damage,
-            AbilityType::Fireball => {
-                (stats.intelligence as f32 * 3.0) as u32 + ability.base_damage
-            }
+            AbilityType::Fireball => (stats.intelligence as f32 * 3.0) as u32 + ability.base_damage,
             AbilityType::Heal => (stats.intelligence as f32 * 2.0) as u32 + ability.base_damage,
             AbilityType::ShieldBash => (stats.strength as f32 * 1.5) as u32 + ability.base_damage,
-            AbilityType::PoisonArrow => {
-                (stats.dexterity as f32 * 1.5) as u32 + ability.base_damage
-            }
+            AbilityType::PoisonArrow => (stats.dexterity as f32 * 1.5) as u32 + ability.base_damage,
         }
     }
 
@@ -511,10 +506,7 @@ mod tests {
         let e = world.create_entity();
         world.add_component(e, Transform::new(pos[0], pos[1], pos[2]));
         world.add_component(e, Health::new(80));
-        world.add_component(
-            e,
-            MercenaryStats::new("TestMage").with_stats(5, 8, 18, 6),
-        );
+        world.add_component(e, MercenaryStats::new("TestMage").with_stats(5, 8, 18, 6));
         world.add_component(e, team);
         world.add_component(e, ManaPool::new(100));
         let mut slots = AbilitySlot::new();
@@ -604,23 +596,51 @@ mod tests {
     fn damage_calculation_per_type() {
         let stats = MercenaryStats::new("Dummy").with_stats(10, 10, 10, 10);
 
-        let melee = Ability::new().with_type(AbilityType::MeleeStrike).with_damage(5);
-        assert_eq!(AbilitySystem::calculate_ability_damage(&melee, &stats), 10 * 2 + 5);
+        let melee = Ability::new()
+            .with_type(AbilityType::MeleeStrike)
+            .with_damage(5);
+        assert_eq!(
+            AbilitySystem::calculate_ability_damage(&melee, &stats),
+            10 * 2 + 5
+        );
 
-        let ranged = Ability::new().with_type(AbilityType::RangedShot).with_damage(5);
-        assert_eq!(AbilitySystem::calculate_ability_damage(&ranged, &stats), 10 * 2 + 5);
+        let ranged = Ability::new()
+            .with_type(AbilityType::RangedShot)
+            .with_damage(5);
+        assert_eq!(
+            AbilitySystem::calculate_ability_damage(&ranged, &stats),
+            10 * 2 + 5
+        );
 
-        let fireball = Ability::new().with_type(AbilityType::Fireball).with_damage(5);
-        assert_eq!(AbilitySystem::calculate_ability_damage(&fireball, &stats), 10 * 3 + 5);
+        let fireball = Ability::new()
+            .with_type(AbilityType::Fireball)
+            .with_damage(5);
+        assert_eq!(
+            AbilitySystem::calculate_ability_damage(&fireball, &stats),
+            10 * 3 + 5
+        );
 
         let heal = Ability::new().with_type(AbilityType::Heal).with_damage(5);
-        assert_eq!(AbilitySystem::calculate_ability_damage(&heal, &stats), 10 * 2 + 5);
+        assert_eq!(
+            AbilitySystem::calculate_ability_damage(&heal, &stats),
+            10 * 2 + 5
+        );
 
-        let bash = Ability::new().with_type(AbilityType::ShieldBash).with_damage(5);
-        assert_eq!(AbilitySystem::calculate_ability_damage(&bash, &stats), (10.0_f32 * 1.5) as u32 + 5);
+        let bash = Ability::new()
+            .with_type(AbilityType::ShieldBash)
+            .with_damage(5);
+        assert_eq!(
+            AbilitySystem::calculate_ability_damage(&bash, &stats),
+            (10.0_f32 * 1.5) as u32 + 5
+        );
 
-        let poison = Ability::new().with_type(AbilityType::PoisonArrow).with_damage(5);
-        assert_eq!(AbilitySystem::calculate_ability_damage(&poison, &stats), (10.0_f32 * 1.5) as u32 + 5);
+        let poison = Ability::new()
+            .with_type(AbilityType::PoisonArrow)
+            .with_damage(5);
+        assert_eq!(
+            AbilitySystem::calculate_ability_damage(&poison, &stats),
+            (10.0_f32 * 1.5) as u32 + 5
+        );
     }
 
     // ── 6. Use ability on valid target (applies damage) ─────────────
@@ -631,8 +651,12 @@ mod tests {
         let caster = spawn_warrior(&mut world, Team::Player, [0.0, 0.0, 0.0]);
         let enemy = spawn_warrior(&mut world, Team::Enemy, [1.0, 0.0, 0.0]);
 
-        let result =
-            AbilitySystem::use_ability_on_target(&mut world, caster, 0, AbilityTarget::SingleEnemy(enemy));
+        let result = AbilitySystem::use_ability_on_target(
+            &mut world,
+            caster,
+            0,
+            AbilityTarget::SingleEnemy(enemy),
+        );
 
         match result {
             AbilityResult::Success { damage, target } => {
@@ -721,12 +745,8 @@ mod tests {
         assert_eq!(world.get_component::<Health>(ally).unwrap().current, 40);
 
         // Priest heal is in slot 1, mage intelligence = 18 → 18*2 + 15 = 51
-        let result = AbilitySystem::use_ability_on_target(
-            &mut world,
-            healer,
-            1,
-            AbilityTarget::Ally(ally),
-        );
+        let result =
+            AbilitySystem::use_ability_on_target(&mut world, healer, 1, AbilityTarget::Ally(ally));
 
         match result {
             AbilityResult::Success { damage, target } => {
@@ -788,12 +808,8 @@ mod tests {
         world.add_component(entity, Transform::new(0.0, 0.0, 0.0));
         world.add_component(entity, Team::Player);
 
-        let result = AbilitySystem::use_ability_on_target(
-            &mut world,
-            entity,
-            0,
-            AbilityTarget::None,
-        );
+        let result =
+            AbilitySystem::use_ability_on_target(&mut world, entity, 0, AbilityTarget::None);
         assert_eq!(result, AbilityResult::NoAbility);
     }
 }

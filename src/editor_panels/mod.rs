@@ -5,22 +5,22 @@
 
 #![allow(dead_code)]
 
-mod viewport;
-mod hierarchy;
-mod inspector;
 mod asset_browser;
 mod console;
-mod toolbar;
+mod hierarchy;
+mod inspector;
 mod menu_bar;
+mod toolbar;
+mod viewport;
 mod welcome;
 
-pub use viewport::ViewportPanel;
-pub use hierarchy::HierarchyPanel;
-pub use inspector::InspectorPanel;
 pub use asset_browser::AssetBrowserPanel;
 pub use console::ConsolePanel;
-pub use toolbar::ToolbarPanel;
+pub use hierarchy::HierarchyPanel;
+pub use inspector::InspectorPanel;
 pub use menu_bar::MenuBarPanel;
+pub use toolbar::ToolbarPanel;
+pub use viewport::ViewportPanel;
 pub use welcome::WelcomeScreen;
 
 use crate::entity::Entity;

@@ -51,7 +51,8 @@ fn destroy_entity_with_event() {
     assert!(!world.entity_exists(e));
 
     let drained = events.drain();
-    let destroyed: Vec<_> = drained.iter()
+    let destroyed: Vec<_> = drained
+        .iter()
         .filter(|ev| matches!(ev, Event::EntityDestroyed(idx) if *idx == e.index()))
         .collect();
     assert_eq!(destroyed.len(), 1);
@@ -113,9 +114,24 @@ fn quadtree_insert_and_query() {
     let bounds = AABB::new(0.0, 0.0, 100.0, 100.0);
     let mut qt = Quadtree::new(bounds, 4, 4);
 
-    qt.insert(QuadtreeObject { entity: 1, x: 10.0, y: 10.0, radius: 2.0 });
-    qt.insert(QuadtreeObject { entity: 2, x: 50.0, y: 50.0, radius: 2.0 });
-    qt.insert(QuadtreeObject { entity: 3, x: 90.0, y: 90.0, radius: 2.0 });
+    qt.insert(QuadtreeObject {
+        entity: 1,
+        x: 10.0,
+        y: 10.0,
+        radius: 2.0,
+    });
+    qt.insert(QuadtreeObject {
+        entity: 2,
+        x: 50.0,
+        y: 50.0,
+        radius: 2.0,
+    });
+    qt.insert(QuadtreeObject {
+        entity: 3,
+        x: 90.0,
+        y: 90.0,
+        radius: 2.0,
+    });
 
     let results = qt.query_circle(10.0, 10.0, 5.0);
     assert_eq!(results.len(), 1);
@@ -127,9 +143,24 @@ fn quadtree_collision_detection() {
     let bounds = AABB::new(0.0, 0.0, 200.0, 200.0);
     let mut qt = Quadtree::new(bounds, 4, 4);
 
-    qt.insert(QuadtreeObject { entity: 1, x: 10.0, y: 10.0, radius: 5.0 });
-    qt.insert(QuadtreeObject { entity: 2, x: 14.0, y: 10.0, radius: 5.0 });
-    qt.insert(QuadtreeObject { entity: 3, x: 100.0, y: 100.0, radius: 5.0 });
+    qt.insert(QuadtreeObject {
+        entity: 1,
+        x: 10.0,
+        y: 10.0,
+        radius: 5.0,
+    });
+    qt.insert(QuadtreeObject {
+        entity: 2,
+        x: 14.0,
+        y: 10.0,
+        radius: 5.0,
+    });
+    qt.insert(QuadtreeObject {
+        entity: 3,
+        x: 100.0,
+        y: 100.0,
+        radius: 5.0,
+    });
 
     let pairs = qt.query_collisions();
     assert_eq!(pairs.len(), 1);
@@ -142,7 +173,12 @@ fn quadtree_collision_detection() {
 fn quadtree_point_query() {
     let bounds = AABB::new(0.0, 0.0, 100.0, 100.0);
     let mut qt = Quadtree::new(bounds, 4, 4);
-    qt.insert(QuadtreeObject { entity: 1, x: 50.0, y: 50.0, radius: 10.0 });
+    qt.insert(QuadtreeObject {
+        entity: 1,
+        x: 50.0,
+        y: 50.0,
+        radius: 10.0,
+    });
 
     let results = qt.query_point(50.0, 50.0);
     assert_eq!(results.len(), 1);
@@ -164,8 +200,22 @@ fn aabb_overlap() {
 #[test]
 fn tilemap_set_get() {
     let mut map = TileMap::new(32.0);
-    map.set_tile(0, 0, Tile { frame: 1, solid: true });
-    map.set_tile(5, 3, Tile { frame: 2, solid: false });
+    map.set_tile(
+        0,
+        0,
+        Tile {
+            frame: 1,
+            solid: true,
+        },
+    );
+    map.set_tile(
+        5,
+        3,
+        Tile {
+            frame: 2,
+            solid: false,
+        },
+    );
 
     let t = map.get_tile(0, 0).unwrap();
     assert_eq!(t.frame, 1);
@@ -183,7 +233,14 @@ fn tilemap_visible_chunks() {
     let mut map = TileMap::new(32.0);
     for y in 0..5 {
         for x in 0..5 {
-            map.set_tile(x, y, Tile { frame: 1, solid: false });
+            map.set_tile(
+                x,
+                y,
+                Tile {
+                    frame: 1,
+                    solid: false,
+                },
+            );
         }
     }
 
@@ -296,7 +353,11 @@ fn physics3d_gravity_integration() {
 fn skeleton_pose_skin_matrices() {
     let mut skeleton = Skeleton::new();
     skeleton.add_joint("root", None, JointPose::identity());
-    skeleton.add_joint("child", Some(0), JointPose::identity().with_translation(1.0, 0.0, 0.0));
+    skeleton.add_joint(
+        "child",
+        Some(0),
+        JointPose::identity().with_translation(1.0, 0.0, 0.0),
+    );
 
     let pose = SkeletonPose::new(2);
     let matrices = pose.compute_skin_matrices(&skeleton);

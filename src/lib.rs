@@ -5,26 +5,26 @@
 //! indexing, tile maps, particles, fog of war, skeletal animation,
 //! 2D/3D rendering, lighting, and post-processing.
 
-pub mod entity;
+pub mod animation;
 pub mod component;
+pub mod entity;
+pub mod fog_of_war;
+pub mod general_systems;
 pub mod input;
-pub mod spatial;
-pub mod storage;
-pub mod world;
-pub mod system;
-pub mod tilemap;
-pub mod particle;
-pub mod obj_loader;
-pub mod octree;
-pub mod physics2d;
-pub mod physics3d;
 pub mod lighting;
 pub mod material;
+pub mod obj_loader;
+pub mod octree;
+pub mod particle;
+pub mod physics2d;
+pub mod physics3d;
 pub mod shader;
 pub mod skeletal;
-pub mod fog_of_war;
-pub mod animation;
-pub mod general_systems;
+pub mod spatial;
+pub mod storage;
+pub mod system;
+pub mod tilemap;
+pub mod world;
 
 #[cfg(feature = "scripting")]
 pub mod scripting;
@@ -74,90 +74,89 @@ pub mod editor_project;
 #[cfg(feature = "game")]
 pub mod game;
 
-pub use entity::Entity;
+pub use animation::{
+    AnimCondition, AnimParam, AnimState, AnimStateMachine, AnimStateUpdate, AnimTransition,
+    BlendChild, BlendTree, BlendType, Interpolation, Keyframe, KeyframeValue, SpriteAnimation,
+    SpriteAnimationEvent, SpriteFrame, Timeline, TimelineSample, TimelineTrack,
+};
 pub use component::{
-    Component, Position, Velocity, Health, Damage, Dead, Transform, Sprite,
-    CircleRadius, RigidBody, Grounded, Gravity,
+    CircleRadius, Component, Damage, Dead, Gravity, Grounded, Health, Position, RigidBody, Sprite,
+    Transform, Velocity,
 };
-pub use storage::{ComponentStorage, StorageRegistry};
-pub use world::World;
-pub use system::{
-    System, MovementSystem, HealthSystem, CollisionSystem, DeathCleanupSystem,
-    DebugRenderSystem, SystemPhase, GameLoop, TickScheduler, Event, EventBus,
-    GravitySystem, PlatformerSystem, RaycastSystem,
+pub use entity::Entity;
+pub use fog_of_war::{FogGrid, FogOfWar, FogRevealer, Visibility};
+pub use input::{
+    ActionBinding, ActionState, AxisBinding, Binding, GamepadAxis, GamepadButton, InputContext,
+    InputEvent, InputManager, InputSource, KeyCode, MouseButton,
 };
-pub use spatial::{Quadtree, QuadtreeObject, AABB, Ray, RaycastHit};
-pub use tilemap::{TileMap, TileChunk, Tile};
-pub use particle::{ParticleEmitter, Particle, ParticleSystem};
-pub use obj_loader::ObjMesh;
-pub use octree::{Octree, OctreeObject, AABB3D, Ray3D, RayHit3D};
-pub use physics2d::{Vec2, Collider2D, RigidBody2D, Contact2D, Ray2D, RayHit2D, PhysicsWorld2D};
-pub use physics3d::{PhysicsWorld3D, RigidBody3D, Collider3D, Contact3D, Constraint3D, DistanceConstraint, PointConstraint};
-pub use lighting::{Light, LightType, LightingSystem, LightMap, ShadowCaster, LineSegment, VisibilityPolygon};
-pub use skeletal::{Skeleton, Joint, JointPose, SkeletonPose, AnimationClip, AnimationChannel, AnimationPlayer, AnimationBlender};
-pub use fog_of_war::{FogOfWar, FogGrid, FogRevealer, Visibility};
+pub use lighting::{
+    Light, LightMap, LightType, LightingSystem, LineSegment, ShadowCaster, VisibilityPolygon,
+};
 pub use material::{
-    MaterialDefinition, MaterialProperty, MaterialValue, MaterialError,
-    RenderState, BlendMode, CullMode, CompiledMaterial,
-    unlit, pbr_standard, sprite_material, particle_material,
-    ui_material, skybox_material, terrain_material,
+    particle_material, pbr_standard, skybox_material, sprite_material, terrain_material,
+    ui_material, unlit, BlendMode, CompiledMaterial, CullMode, MaterialDefinition, MaterialError,
+    MaterialProperty, MaterialValue, RenderState,
+};
+pub use obj_loader::ObjMesh;
+pub use octree::{Octree, OctreeObject, Ray3D, RayHit3D, AABB3D};
+pub use particle::{Particle, ParticleEmitter, ParticleSystem};
+pub use physics2d::{Collider2D, Contact2D, PhysicsWorld2D, Ray2D, RayHit2D, RigidBody2D, Vec2};
+pub use physics3d::{
+    Collider3D, Constraint3D, Contact3D, DistanceConstraint, PhysicsWorld3D, PointConstraint,
+    RigidBody3D,
 };
 pub use shader::{
-    ShaderGraph, ShaderNode, ShaderNodeType, ShaderError,
-    PortType, PortDef, NodePort, NodeConnection,
-    ShaderInput, ShaderOutput, ShaderWatcher,
-    unlit_shader, pbr_shader, sprite_shader,
+    pbr_shader, sprite_shader, unlit_shader, NodeConnection, NodePort, PortDef, PortType,
+    ShaderError, ShaderGraph, ShaderInput, ShaderNode, ShaderNodeType, ShaderOutput, ShaderWatcher,
 };
-pub use animation::{
-    AnimParam, AnimCondition, AnimTransition, AnimState, AnimStateMachine, AnimStateUpdate,
-    BlendType, BlendChild, BlendTree,
-    SpriteFrame, SpriteAnimation, SpriteAnimationEvent,
-    Timeline, TimelineTrack, Keyframe, KeyframeValue, Interpolation, TimelineSample,
+pub use skeletal::{
+    AnimationBlender, AnimationChannel, AnimationClip, AnimationPlayer, Joint, JointPose, Skeleton,
+    SkeletonPose,
 };
-pub use input::{
-    KeyCode, MouseButton, GamepadButton, GamepadAxis,
-    InputSource, InputEvent,
-    Binding, ActionBinding, ActionState,
-    InputContext, AxisBinding, InputManager,
+pub use spatial::{Quadtree, QuadtreeObject, Ray, RaycastHit, AABB};
+pub use storage::{ComponentStorage, StorageRegistry};
+pub use system::{
+    CollisionSystem, DeathCleanupSystem, DebugRenderSystem, Event, EventBus, GameLoop,
+    GravitySystem, HealthSystem, MovementSystem, PlatformerSystem, RaycastSystem, System,
+    SystemPhase, TickScheduler,
 };
+pub use tilemap::{Tile, TileChunk, TileMap};
+pub use world::World;
 
 #[cfg(feature = "render")]
-pub use render::{Renderer, RenderSprite, SpriteBatch, Camera};
+pub use render::{Camera, RenderSprite, Renderer, SpriteBatch};
 
 #[cfg(feature = "render")]
-pub use texture::{TextureAtlas, AtlasFrame, FpsCounter};
+pub use texture::{AtlasFrame, FpsCounter, TextureAtlas};
 
 #[cfg(feature = "render")]
 pub use font::BitmapFont;
 
 #[cfg(feature = "render")]
-pub use ui::{Button, Slider, Label, Panel, UiContext, WidgetState, WidgetStyle, Rect};
+pub use ui::{Button, Label, Panel, Rect, Slider, UiContext, WidgetState, WidgetStyle};
 
 #[cfg(feature = "render")]
-pub use render3d::{Renderer3D, PerspectiveCamera, Mesh3D, Vertex3D, Transform3D};
+pub use render3d::{Mesh3D, PerspectiveCamera, Renderer3D, Transform3D, Vertex3D};
 
 #[cfg(feature = "render")]
-pub use postprocess::{PostProcessor, ColorGradeParams};
+pub use postprocess::{ColorGradeParams, PostProcessor};
 
 #[cfg(feature = "serialize")]
-pub use scene::{Scene, EntityPrefab, ComponentValue, SceneError, spawn_component};
+pub use scene::{spawn_component, ComponentValue, EntityPrefab, Scene, SceneError};
 
 #[cfg(feature = "audio")]
 pub use audio::{
-    AudioEngine, AudioError, VolumeControl, SpatialAudio, SoundBuffer,
-    SfxPlayer, MusicPlayer, MusicState,
+    AudioEngine, AudioError, MusicPlayer, MusicState, SfxPlayer, SoundBuffer, SpatialAudio,
+    VolumeControl,
 };
 
 #[cfg(feature = "dev-tools")]
-pub use asset::{
-    Asset, AssetId, AssetError, AssetRegistry, HotReloadWatcher, AssetLoader,
-};
+pub use asset::{Asset, AssetError, AssetId, AssetLoader, AssetRegistry, HotReloadWatcher};
 
 #[cfg(feature = "render")]
 pub use editor::{
-    DevOverlay, EntityInspector, InspectionReport, ComponentInfo,
-    StatsPanel, Stats, DevConsole, LogEntry, LogLevel,
-    SceneTree, SceneEntry, OverlayRenderData,
+    ComponentInfo, DevConsole, DevOverlay, EntityInspector, InspectionReport, LogEntry, LogLevel,
+    OverlayRenderData, SceneEntry, SceneTree, Stats, StatsPanel,
 };
 
 #[cfg(feature = "editor")]

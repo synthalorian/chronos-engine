@@ -99,11 +99,17 @@ impl FogGrid {
     }
 
     pub fn visible_count(&self) -> usize {
-        self.cells.iter().filter(|&&c| c == Visibility::Visible).count()
+        self.cells
+            .iter()
+            .filter(|&&c| c == Visibility::Visible)
+            .count()
     }
 
     pub fn explored_count(&self) -> usize {
-        self.cells.iter().filter(|&&c| c != Visibility::Unexplored).count()
+        self.cells
+            .iter()
+            .filter(|&&c| c != Visibility::Unexplored)
+            .count()
     }
 
     pub fn total_cells(&self) -> usize {
@@ -174,7 +180,8 @@ impl FogOfWar {
             if revealer.line_of_sight && !walls.is_empty() {
                 self.reveal_with_los(revealer.x, revealer.y, revealer.radius, &walls);
             } else {
-                self.grid.reveal_circle(revealer.x, revealer.y, revealer.radius);
+                self.grid
+                    .reveal_circle(revealer.x, revealer.y, revealer.radius);
             }
         }
     }
@@ -221,8 +228,14 @@ fn has_line_of_sight(x0: f32, y0: f32, x1: f32, y1: f32, walls: &[WallSegment]) 
 }
 
 fn ray_segment_intersect(
-    rx: f32, ry: f32, rdx: f32, rdy: f32,
-    sx0: f32, sy0: f32, sx1: f32, sy1: f32,
+    rx: f32,
+    ry: f32,
+    rdx: f32,
+    rdy: f32,
+    sx0: f32,
+    sy0: f32,
+    sx1: f32,
+    sy1: f32,
 ) -> bool {
     let sdx = sx1 - sx0;
     let sdy = sy1 - sy0;

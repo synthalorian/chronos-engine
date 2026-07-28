@@ -205,10 +205,11 @@ impl AssetBrowserPanel {
 
         // Directories first, then alphabetical.
         entries.sort_by(|a, b| {
-            a.is_dir
-                .cmp(&b.is_dir)
-                .reverse()
-                .then_with(|| a.name.to_ascii_lowercase().cmp(&b.name.to_ascii_lowercase()))
+            a.is_dir.cmp(&b.is_dir).reverse().then_with(|| {
+                a.name
+                    .to_ascii_lowercase()
+                    .cmp(&b.name.to_ascii_lowercase())
+            })
         });
 
         self.entries = entries;
@@ -257,11 +258,7 @@ impl AssetBrowserPanel {
     fn show_toolbar(&mut self, ui: &mut egui::Ui, state: &mut EditorState) {
         ui.horizontal(|ui| {
             // Back button.
-            let back_enabled = self
-                .current_dir
-                .as_ref()
-                .and_then(|d| d.parent())
-                .is_some();
+            let back_enabled = self.current_dir.as_ref().and_then(|d| d.parent()).is_some();
             ui.add_enabled_ui(back_enabled, |ui| {
                 if ui.button("⬅ Back").clicked() {
                     self.navigate_up(state);
@@ -274,9 +271,7 @@ impl AssetBrowserPanel {
                 .as_ref()
                 .map(|p| p.display().to_string())
                 .unwrap_or_else(|| "(no project)".into());
-            ui.label(
-                egui::RichText::new(&path_str).small().monospace(),
-            );
+            ui.label(egui::RichText::new(&path_str).small().monospace());
 
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                 // View mode toggle.
@@ -313,7 +308,8 @@ impl AssetBrowserPanel {
             };
 
             // Collect all ancestors from root to current.
-            let mut ancestors: Vec<PathBuf> = dir.ancestors().map(PathBuf::from).collect::<Vec<_>>();
+            let mut ancestors: Vec<PathBuf> =
+                dir.ancestors().map(PathBuf::from).collect::<Vec<_>>();
             ancestors.reverse();
 
             for (i, segment) in ancestors.iter().enumerate() {
@@ -335,7 +331,11 @@ impl AssetBrowserPanel {
 
     /// Render the file listing in list mode.
     fn show_list_view(&mut self, ui: &mut egui::Ui) {
-        let filtered: Vec<(usize, AssetEntry)> = self.filtered_entries().into_iter().map(|(i, e)| (i, e.clone())).collect();
+        let filtered: Vec<(usize, AssetEntry)> = self
+            .filtered_entries()
+            .into_iter()
+            .map(|(i, e)| (i, e.clone()))
+            .collect();
         let selected = self.selected_entry;
         let mut new_selection: Option<usize> = None;
         egui::ScrollArea::vertical().show(ui, |ui| {
@@ -381,7 +381,11 @@ impl AssetBrowserPanel {
 
     /// Render the file listing in grid mode.
     fn show_grid_view(&mut self, ui: &mut egui::Ui) {
-        let filtered: Vec<(usize, AssetEntry)> = self.filtered_entries().into_iter().map(|(i, e)| (i, e.clone())).collect();
+        let filtered: Vec<(usize, AssetEntry)> = self
+            .filtered_entries()
+            .into_iter()
+            .map(|(i, e)| (i, e.clone()))
+            .collect();
         let selected = self.selected_entry;
         let item_size = egui::vec2(72.0, 80.0);
         let mut new_selection: Option<usize> = None;
@@ -393,17 +397,15 @@ impl AssetBrowserPanel {
                     let color = egui::Color32::from_hex(entry.asset_type.color_hex())
                         .unwrap_or(egui::Color32::GRAY);
 
-                    let (rect, response) = ui.allocate_exact_size(
-                        item_size,
-                        egui::Sense::click(),
-                    );
+                    let (rect, response) = ui.allocate_exact_size(item_size, egui::Sense::click());
 
                     let stroke = if is_selected {
-                        egui::Stroke::new(2.0, egui::Color32::WHITE)
+                        egui::Stroke::new(2.0f32, egui::Color32::WHITE)
                     } else {
-                        egui::Stroke::new(1.0, egui::Color32::from_gray(60))
+                        egui::Stroke::new(1.0f32, egui::Color32::from_gray(60))
                     };
-                    ui.painter().rect_filled(rect, 4.0, color.gamma_multiply(0.3));
+                    ui.painter()
+                        .rect_filled(rect, 4.0, color.gamma_multiply(0.3));
                     ui.painter().rect_stroke(rect, 4.0, stroke);
 
                     let icon = if entry.is_dir { "📁" } else { "📄" };
@@ -573,12 +575,18 @@ mod tests {
 
     #[test]
     fn detect_asset_type_known_extensions() {
-        assert_eq!(detect_asset_type(Path::new("level.scene")), AssetType::Scene);
+        assert_eq!(
+            detect_asset_type(Path::new("level.scene")),
+            AssetType::Scene
+        );
         assert_eq!(detect_asset_type(Path::new("data.json")), AssetType::Scene);
         assert_eq!(detect_asset_type(Path::new("hero.png")), AssetType::Image);
         assert_eq!(detect_asset_type(Path::new("bg.jpg")), AssetType::Image);
         assert_eq!(detect_asset_type(Path::new("icon.bmp")), AssetType::Image);
-        assert_eq!(detect_asset_type(Path::new("character.obj")), AssetType::Mesh);
+        assert_eq!(
+            detect_asset_type(Path::new("character.obj")),
+            AssetType::Mesh
+        );
         assert_eq!(detect_asset_type(Path::new("model.gltf")), AssetType::Mesh);
         assert_eq!(detect_asset_type(Path::new("anim.glb")), AssetType::Mesh);
         assert_eq!(detect_asset_type(Path::new("bgm.wav")), AssetType::Audio);
@@ -634,10 +642,11 @@ mod tests {
         ];
 
         entries.sort_by(|a, b| {
-            a.is_dir
-                .cmp(&b.is_dir)
-                .reverse()
-                .then_with(|| a.name.to_ascii_lowercase().cmp(&b.name.to_ascii_lowercase()))
+            a.is_dir.cmp(&b.is_dir).reverse().then_with(|| {
+                a.name
+                    .to_ascii_lowercase()
+                    .cmp(&b.name.to_ascii_lowercase())
+            })
         });
 
         assert!(entries[0].is_dir);

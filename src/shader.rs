@@ -77,7 +77,10 @@ pub struct NodePort {
 
 impl NodePort {
     pub fn new(node_id: usize, port_index: usize) -> Self {
-        NodePort { node_id, port_index }
+        NodePort {
+            node_id,
+            port_index,
+        }
     }
 }
 
@@ -185,7 +188,10 @@ impl ShaderNodeType {
             | ShaderNodeType::Divide
             | ShaderNodeType::Min
             | ShaderNodeType::Max => (
-                vec![PortDef::new("a", PortType::Float), PortDef::new("b", PortType::Float)],
+                vec![
+                    PortDef::new("a", PortType::Float),
+                    PortDef::new("b", PortType::Float),
+                ],
                 vec![PortDef::new("out", PortType::Float)],
             ),
             // Unary math
@@ -213,7 +219,10 @@ impl ShaderNodeType {
                 vec![PortDef::new("out", PortType::Float)],
             ),
             ShaderNodeType::Step => (
-                vec![PortDef::new("edge", PortType::Float), PortDef::new("x", PortType::Float)],
+                vec![
+                    PortDef::new("edge", PortType::Float),
+                    PortDef::new("x", PortType::Float),
+                ],
                 vec![PortDef::new("out", PortType::Float)],
             ),
             ShaderNodeType::Smoothstep => (
@@ -225,73 +234,47 @@ impl ShaderNodeType {
                 vec![PortDef::new("out", PortType::Float)],
             ),
             ShaderNodeType::Pow => (
-                vec![PortDef::new("base", PortType::Float), PortDef::new("exp", PortType::Float)],
+                vec![
+                    PortDef::new("base", PortType::Float),
+                    PortDef::new("exp", PortType::Float),
+                ],
                 vec![PortDef::new("out", PortType::Float)],
             ),
             // Inputs — no input ports
-            ShaderNodeType::Time => (
-                vec![],
-                vec![PortDef::new("out", PortType::Float)],
-            ),
-            ShaderNodeType::UV => (
-                vec![],
-                vec![PortDef::new("out", PortType::Vec2)],
-            ),
-            ShaderNodeType::WorldPosition => (
-                vec![],
-                vec![PortDef::new("out", PortType::Vec3)],
-            ),
-            ShaderNodeType::ViewDirection => (
-                vec![],
-                vec![PortDef::new("out", PortType::Vec3)],
-            ),
-            ShaderNodeType::Normal => (
-                vec![],
-                vec![PortDef::new("out", PortType::Vec3)],
-            ),
-            ShaderNodeType::ScreenPosition => (
-                vec![],
-                vec![PortDef::new("out", PortType::Vec4)],
-            ),
+            ShaderNodeType::Time => (vec![], vec![PortDef::new("out", PortType::Float)]),
+            ShaderNodeType::UV => (vec![], vec![PortDef::new("out", PortType::Vec2)]),
+            ShaderNodeType::WorldPosition => (vec![], vec![PortDef::new("out", PortType::Vec3)]),
+            ShaderNodeType::ViewDirection => (vec![], vec![PortDef::new("out", PortType::Vec3)]),
+            ShaderNodeType::Normal => (vec![], vec![PortDef::new("out", PortType::Vec3)]),
+            ShaderNodeType::ScreenPosition => (vec![], vec![PortDef::new("out", PortType::Vec4)]),
             // Texture
             ShaderNodeType::SampleTexture => (
-                vec![PortDef::new("uv", PortType::Vec2), PortDef::new("texture", PortType::Texture)],
+                vec![
+                    PortDef::new("uv", PortType::Vec2),
+                    PortDef::new("texture", PortType::Texture),
+                ],
                 vec![PortDef::new("color", PortType::Vec4)],
             ),
             ShaderNodeType::SampleCubemap => (
-                vec![PortDef::new("dir", PortType::Vec3), PortDef::new("texture", PortType::Texture)],
+                vec![
+                    PortDef::new("dir", PortType::Vec3),
+                    PortDef::new("texture", PortType::Texture),
+                ],
                 vec![PortDef::new("color", PortType::Vec4)],
             ),
             // Outputs
-            ShaderNodeType::FragmentColor => (
-                vec![PortDef::new("color", PortType::Vec4)],
-                vec![],
-            ),
-            ShaderNodeType::WorldNormal => (
-                vec![PortDef::new("normal", PortType::Vec3)],
-                vec![],
-            ),
-            ShaderNodeType::Emissive => (
-                vec![PortDef::new("color", PortType::Vec3)],
-                vec![],
-            ),
-            ShaderNodeType::Opacity => (
-                vec![PortDef::new("value", PortType::Float)],
-                vec![],
-            ),
+            ShaderNodeType::FragmentColor => (vec![PortDef::new("color", PortType::Vec4)], vec![]),
+            ShaderNodeType::WorldNormal => (vec![PortDef::new("normal", PortType::Vec3)], vec![]),
+            ShaderNodeType::Emissive => (vec![PortDef::new("color", PortType::Vec3)], vec![]),
+            ShaderNodeType::Opacity => (vec![PortDef::new("value", PortType::Float)], vec![]),
             // Constants — no inputs
-            ShaderNodeType::FloatConstant(_) => (
-                vec![],
-                vec![PortDef::new("out", PortType::Float)],
-            ),
-            ShaderNodeType::ColorConstant(_) => (
-                vec![],
-                vec![PortDef::new("out", PortType::Color)],
-            ),
-            ShaderNodeType::Vec3Constant(_) => (
-                vec![],
-                vec![PortDef::new("out", PortType::Vec3)],
-            ),
+            ShaderNodeType::FloatConstant(_) => {
+                (vec![], vec![PortDef::new("out", PortType::Float)])
+            }
+            ShaderNodeType::ColorConstant(_) => {
+                (vec![], vec![PortDef::new("out", PortType::Color)])
+            }
+            ShaderNodeType::Vec3Constant(_) => (vec![], vec![PortDef::new("out", PortType::Vec3)]),
         }
     }
 
@@ -306,10 +289,19 @@ impl ShaderNodeType {
             ShaderNodeType::Cos => format!("cos({})", input_vars[0]),
             ShaderNodeType::Sqrt => format!("sqrt({})", input_vars[0]),
             ShaderNodeType::Abs => format!("abs({})", input_vars[0]),
-            ShaderNodeType::Clamp => format!("clamp({}, {}, {})", input_vars[0], input_vars[1], input_vars[2]),
-            ShaderNodeType::Lerp => format!("mix({}, {}, {})", input_vars[0], input_vars[1], input_vars[2]),
+            ShaderNodeType::Clamp => format!(
+                "clamp({}, {}, {})",
+                input_vars[0], input_vars[1], input_vars[2]
+            ),
+            ShaderNodeType::Lerp => format!(
+                "mix({}, {}, {})",
+                input_vars[0], input_vars[1], input_vars[2]
+            ),
             ShaderNodeType::Step => format!("step({}, {})", input_vars[0], input_vars[1]),
-            ShaderNodeType::Smoothstep => format!("smoothstep({}, {}, {})", input_vars[0], input_vars[1], input_vars[2]),
+            ShaderNodeType::Smoothstep => format!(
+                "smoothstep({}, {}, {})",
+                input_vars[0], input_vars[1], input_vars[2]
+            ),
             ShaderNodeType::Pow => format!("pow({}, {})", input_vars[0], input_vars[1]),
             ShaderNodeType::Min => format!("min({}, {})", input_vars[0], input_vars[1]),
             ShaderNodeType::Max => format!("max({}, {})", input_vars[0], input_vars[1]),
@@ -319,8 +311,14 @@ impl ShaderNodeType {
             ShaderNodeType::ViewDirection => "input_view_dir".to_string(),
             ShaderNodeType::Normal => "input_normal".to_string(),
             ShaderNodeType::ScreenPosition => "input_screen_pos".to_string(),
-            ShaderNodeType::SampleTexture => format!("textureSample({}, sampler, {})", input_vars[1], input_vars[0]),
-            ShaderNodeType::SampleCubemap => format!("textureSample({}, sampler, {})", input_vars[1], input_vars[0]),
+            ShaderNodeType::SampleTexture => format!(
+                "textureSample({}, sampler, {})",
+                input_vars[1], input_vars[0]
+            ),
+            ShaderNodeType::SampleCubemap => format!(
+                "textureSample({}, sampler, {})",
+                input_vars[1], input_vars[0]
+            ),
             ShaderNodeType::FragmentColor => String::new(),
             ShaderNodeType::WorldNormal => String::new(),
             ShaderNodeType::Emissive => String::new(),
@@ -514,9 +512,10 @@ impl ShaderGraph {
             // Output-type nodes (FragmentColor, etc.) are expected to have
             // unconnected *outputs* but must have their inputs connected.
             for (i, port) in node.inputs.iter().enumerate() {
-                let connected = self.connections.iter().any(|c| {
-                    c.to.node_id == node.id && c.to.port_index == i
-                });
+                let connected = self
+                    .connections
+                    .iter()
+                    .any(|c| c.to.node_id == node.id && c.to.port_index == i);
                 if !connected {
                     return Err(ShaderError::UnconnectedInput {
                         node: node.id,
@@ -546,7 +545,9 @@ impl ShaderGraph {
         }
 
         for conn in &self.connections {
-            adj.entry(conn.from.node_id).or_default().push(conn.to.node_id);
+            adj.entry(conn.from.node_id)
+                .or_default()
+                .push(conn.to.node_id);
             *in_degree.entry(conn.to.node_id).or_insert(0) += 1;
         }
 
@@ -593,7 +594,11 @@ impl ShaderGraph {
         // Struct declarations
         lines.push("struct Uniforms {".into());
         for input in &self.inputs {
-            lines.push(format!("    {}: {},", input.name, input.input_type.wgsl_name()));
+            lines.push(format!(
+                "    {}: {},",
+                input.name,
+                input.input_type.wgsl_name()
+            ));
         }
         lines.push("};".into());
         lines.push(String::new());
@@ -622,9 +627,10 @@ impl ShaderGraph {
             let mut input_vars: Vec<String> = Vec::new();
             for i in 0..node.inputs.len() {
                 // Find the connection feeding this input.
-                let conn = self.connections.iter().find(|c| {
-                    c.to.node_id == node.id && c.to.port_index == i
-                });
+                let conn = self
+                    .connections
+                    .iter()
+                    .find(|c| c.to.node_id == node.id && c.to.port_index == i);
                 if let Some(c) = conn {
                     if let Some(name) = var_names.get(&(c.from.node_id, c.from.port_index)) {
                         input_vars.push(name.clone());
@@ -659,7 +665,10 @@ impl ShaderGraph {
                 node.outputs[0].port_type.wgsl_name().to_string()
             };
 
-            lines.push(format!("let {} = {}: {} = {};", var_name, var_name, out_type, expr));
+            lines.push(format!(
+                "let {} = {}: {} = {};",
+                var_name, var_name, out_type, expr
+            ));
 
             for (oi, _) in node.outputs.iter().enumerate() {
                 var_names.insert((node.id, oi), var_name.clone());
@@ -685,12 +694,13 @@ pub fn unlit_shader() -> ShaderGraph {
 
     graph.add_node(color_node);
     graph.add_node(output_node);
-    graph.connect(
-        NodePort::new(0, 0),
-        NodePort::new(1, 0),
-    ).unwrap();
+    graph
+        .connect(NodePort::new(0, 0), NodePort::new(1, 0))
+        .unwrap();
 
-    graph.outputs.push(ShaderOutput::new("color", PortType::Vec4));
+    graph
+        .outputs
+        .push(ShaderOutput::new("color", PortType::Vec4));
     graph
 }
 
@@ -707,12 +717,22 @@ pub fn pbr_shader() -> ShaderGraph {
     graph.add_node(output_node);
 
     // UV -> texture.uv
-    graph.connect(NodePort::new(0, 0), NodePort::new(1, 0)).unwrap();
+    graph
+        .connect(NodePort::new(0, 0), NodePort::new(1, 0))
+        .unwrap();
     // texture.color -> FragmentColor.color
-    graph.connect(NodePort::new(1, 0), NodePort::new(2, 0)).unwrap();
+    graph
+        .connect(NodePort::new(1, 0), NodePort::new(2, 0))
+        .unwrap();
 
-    graph.inputs.push(ShaderInput::new("albedo", PortType::Color, "vec4<f32>(1.0, 1.0, 1.0, 1.0)"));
-    graph.outputs.push(ShaderOutput::new("color", PortType::Vec4));
+    graph.inputs.push(ShaderInput::new(
+        "albedo",
+        PortType::Color,
+        "vec4<f32>(1.0, 1.0, 1.0, 1.0)",
+    ));
+    graph
+        .outputs
+        .push(ShaderOutput::new("color", PortType::Vec4));
     graph
 }
 
@@ -728,10 +748,16 @@ pub fn sprite_shader() -> ShaderGraph {
     graph.add_node(tex_node);
     graph.add_node(output_node);
 
-    graph.connect(NodePort::new(0, 0), NodePort::new(1, 0)).unwrap();
-    graph.connect(NodePort::new(1, 0), NodePort::new(2, 0)).unwrap();
+    graph
+        .connect(NodePort::new(0, 0), NodePort::new(1, 0))
+        .unwrap();
+    graph
+        .connect(NodePort::new(1, 0), NodePort::new(2, 0))
+        .unwrap();
 
-    graph.outputs.push(ShaderOutput::new("color", PortType::Vec4));
+    graph
+        .outputs
+        .push(ShaderOutput::new("color", PortType::Vec4));
     graph
 }
 
@@ -994,7 +1020,10 @@ mod tests {
         let e = ShaderError::CycleDetected;
         assert!(e.to_string().contains("cycle"));
 
-        let e = ShaderError::UnconnectedInput { node: 3, port: "a".into() };
+        let e = ShaderError::UnconnectedInput {
+            node: 3,
+            port: "a".into(),
+        };
         assert!(e.to_string().contains("node 3"));
         assert!(e.to_string().contains("a"));
 
@@ -1022,8 +1051,8 @@ mod tests {
     #[test]
     fn test_connect_type_mismatch() {
         let mut g = ShaderGraph::new("g");
-        g.add_node(ShaderNode::new(0, ShaderNodeType::UV));        // outputs Vec2
-        g.add_node(ShaderNode::new(1, ShaderNodeType::Sin));       // expects Float input
+        g.add_node(ShaderNode::new(0, ShaderNodeType::UV)); // outputs Vec2
+        g.add_node(ShaderNode::new(1, ShaderNodeType::Sin)); // expects Float input
         let result = g.connect(NodePort::new(0, 0), NodePort::new(1, 0));
         assert!(matches!(result, Err(ShaderError::TypeMismatch)));
     }

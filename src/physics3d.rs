@@ -85,7 +85,9 @@ impl Collider3D {
     }
 
     pub fn aabb(hx: f32, hy: f32, hz: f32) -> Self {
-        Collider3D::AABB { half_extents: [hx, hy, hz] }
+        Collider3D::AABB {
+            half_extents: [hx, hy, hz],
+        }
     }
 
     pub fn contains_point(&self, point: [f32; 3], position: [f32; 3]) -> bool {
@@ -103,9 +105,12 @@ impl Collider3D {
                 let max_y = position[1] + half_extents[1];
                 let min_z = position[2] - half_extents[2];
                 let max_z = position[2] + half_extents[2];
-                point[0] >= min_x && point[0] <= max_x
-                    && point[1] >= min_y && point[1] <= max_y
-                    && point[2] >= min_z && point[2] <= max_z
+                point[0] >= min_x
+                    && point[0] <= max_x
+                    && point[1] >= min_y
+                    && point[1] <= max_y
+                    && point[2] >= min_z
+                    && point[2] <= max_z
             }
         }
     }
@@ -138,10 +143,12 @@ impl Collider3D {
                 sphere_aabb_contact(0, 0, self_pos, *radius, other_pos, *half_extents)
             }
             (Collider3D::AABB { half_extents }, Collider3D::Sphere { radius }) => {
-                sphere_aabb_contact(0, 0, self_pos, *radius, other_pos, *half_extents).map(|mut c| {
-                    c.normal = neg3(c.normal);
-                    c
-                })
+                sphere_aabb_contact(0, 0, self_pos, *radius, other_pos, *half_extents).map(
+                    |mut c| {
+                        c.normal = neg3(c.normal);
+                        c
+                    },
+                )
             }
             (Collider3D::AABB { half_extents: ha }, Collider3D::AABB { half_extents: hb }) => {
                 aabb_aabb_contact(0, 0, self_pos, *ha, other_pos, *hb)
@@ -189,7 +196,10 @@ impl Constraint3D for DistanceConstraint {
     }
 
     fn solve(&self, bodies: &mut [RigidBody3D], _dt: f32) {
-        let (ia, ib) = match (find_body(bodies, self.entity_a), find_body(bodies, self.entity_b)) {
+        let (ia, ib) = match (
+            find_body(bodies, self.entity_a),
+            find_body(bodies, self.entity_b),
+        ) {
             (Some(a), Some(b)) => (a, b),
             _ => return,
         };
@@ -226,7 +236,11 @@ pub struct PointConstraint {
 
 impl PointConstraint {
     pub fn new(entity: u32, anchor: [f32; 3], stiffness: f32) -> Self {
-        PointConstraint { entity, anchor, stiffness }
+        PointConstraint {
+            entity,
+            anchor,
+            stiffness,
+        }
     }
 }
 
@@ -326,7 +340,8 @@ impl PhysicsWorld3D {
     }
 
     fn body_position(&self, entity: u32) -> [f32; 3] {
-        self.bodies.iter()
+        self.bodies
+            .iter()
             .find(|b| b.entity == entity)
             .map(|b| b.position)
             .unwrap_or([0.0, 0.0, 0.0])
@@ -380,7 +395,10 @@ impl PhysicsWorld3D {
                 self.bodies[ib].velocity = add3(self.bodies[ib].velocity, scale3(impulse, inv_b));
             }
 
-            let tangent = sub3(rel_vel, scale3(contact.normal, dot3(rel_vel, contact.normal)));
+            let tangent = sub3(
+                rel_vel,
+                scale3(contact.normal, dot3(rel_vel, contact.normal)),
+            );
             let t_len = len3(tangent);
             if t_len > 1e-8 {
                 let t = scale3(tangent, 1.0 / t_len);
@@ -393,10 +411,12 @@ impl PhysicsWorld3D {
                 };
 
                 if inv_a > 0.0 {
-                    self.bodies[ia].velocity = sub3(self.bodies[ia].velocity, scale3(friction_impulse, inv_a));
+                    self.bodies[ia].velocity =
+                        sub3(self.bodies[ia].velocity, scale3(friction_impulse, inv_a));
                 }
                 if inv_b > 0.0 {
-                    self.bodies[ib].velocity = add3(self.bodies[ib].velocity, scale3(friction_impulse, inv_b));
+                    self.bodies[ib].velocity =
+                        add3(self.bodies[ib].velocity, scale3(friction_impulse, inv_b));
                 }
             }
         }
@@ -408,9 +428,12 @@ fn find_body(bodies: &[RigidBody3D], entity: u32) -> Option<usize> {
 }
 
 fn sphere_aabb_contact(
-    sphere_entity: u32, aabb_entity: u32,
-    sphere_pos: [f32; 3], radius: f32,
-    aabb_pos: [f32; 3], half_extents: [f32; 3],
+    sphere_entity: u32,
+    aabb_entity: u32,
+    sphere_pos: [f32; 3],
+    radius: f32,
+    aabb_pos: [f32; 3],
+    half_extents: [f32; 3],
 ) -> Option<Contact3D> {
     let min = sub3(aabb_pos, half_extents);
     let max = add3(aabb_pos, half_extents);
@@ -437,13 +460,25 @@ fn sphere_aabb_contact(
         let dy_max = max[1] - sphere_pos[1];
         let dz_min = sphere_pos[2] - min[2];
         let dz_max = max[2] - sphere_pos[2];
-        let min_d = dx_min.min(dx_max).min(dy_min).min(dy_max).min(dz_min).min(dz_max);
-        let n = if min_d == dx_min { [-1.0, 0.0, 0.0] }
-                else if min_d == dx_max { [1.0, 0.0, 0.0] }
-                else if min_d == dy_min { [0.0, -1.0, 0.0] }
-                else if min_d == dy_max { [0.0, 1.0, 0.0] }
-                else if min_d == dz_min { [0.0, 0.0, -1.0] }
-                else { [0.0, 0.0, 1.0] };
+        let min_d = dx_min
+            .min(dx_max)
+            .min(dy_min)
+            .min(dy_max)
+            .min(dz_min)
+            .min(dz_max);
+        let n = if min_d == dx_min {
+            [-1.0, 0.0, 0.0]
+        } else if min_d == dx_max {
+            [1.0, 0.0, 0.0]
+        } else if min_d == dy_min {
+            [0.0, -1.0, 0.0]
+        } else if min_d == dy_max {
+            [0.0, 1.0, 0.0]
+        } else if min_d == dz_min {
+            [0.0, 0.0, -1.0]
+        } else {
+            [0.0, 0.0, 1.0]
+        };
         Some(Contact3D {
             entity_a: sphere_entity,
             entity_b: aabb_entity,
@@ -457,9 +492,12 @@ fn sphere_aabb_contact(
 }
 
 fn aabb_aabb_contact(
-    ea: u32, eb: u32,
-    pa: [f32; 3], ha: [f32; 3],
-    pb: [f32; 3], hb: [f32; 3],
+    ea: u32,
+    eb: u32,
+    pa: [f32; 3],
+    ha: [f32; 3],
+    pb: [f32; 3],
+    hb: [f32; 3],
 ) -> Option<Contact3D> {
     let min_a = sub3(pa, ha);
     let max_a = add3(pa, ha);
@@ -475,13 +513,25 @@ fn aabb_aabb_contact(
     }
 
     let (depth, normal) = if overlap_x <= overlap_y && overlap_x <= overlap_z {
-        let n = if pa[0] < pb[0] { [-1.0, 0.0, 0.0] } else { [1.0, 0.0, 0.0] };
+        let n = if pa[0] < pb[0] {
+            [-1.0, 0.0, 0.0]
+        } else {
+            [1.0, 0.0, 0.0]
+        };
         (overlap_x, n)
     } else if overlap_y <= overlap_z {
-        let n = if pa[1] < pb[1] { [0.0, -1.0, 0.0] } else { [0.0, 1.0, 0.0] };
+        let n = if pa[1] < pb[1] {
+            [0.0, -1.0, 0.0]
+        } else {
+            [0.0, 1.0, 0.0]
+        };
         (overlap_y, n)
     } else {
-        let n = if pa[2] < pb[2] { [0.0, 0.0, -1.0] } else { [0.0, 0.0, 1.0] };
+        let n = if pa[2] < pb[2] {
+            [0.0, 0.0, -1.0]
+        } else {
+            [0.0, 0.0, 1.0]
+        };
         (overlap_z, n)
     };
 

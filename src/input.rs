@@ -19,46 +19,130 @@ use std::collections::HashMap;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum KeyCode {
     // Number row
-    Key0, Key1, Key2, Key3, Key4,
-    Key5, Key6, Key7, Key8, Key9,
+    Key0,
+    Key1,
+    Key2,
+    Key3,
+    Key4,
+    Key5,
+    Key6,
+    Key7,
+    Key8,
+    Key9,
 
     // Letter row 1
-    A, B, C, D, E, F, G, H, I, J, K, L, M,
+    A,
+    B,
+    C,
+    D,
+    E,
+    F,
+    G,
+    H,
+    I,
+    J,
+    K,
+    L,
+    M,
     // Letter row 2
-    N, O, P, Q, R, S, T, U, V, W, X, Y, Z,
+    N,
+    O,
+    P,
+    Q,
+    R,
+    S,
+    T,
+    U,
+    V,
+    W,
+    X,
+    Y,
+    Z,
 
     // Function keys
-    F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12,
+    F1,
+    F2,
+    F3,
+    F4,
+    F5,
+    F6,
+    F7,
+    F8,
+    F9,
+    F10,
+    F11,
+    F12,
 
     // Navigation
-    Up, Down, Left, Right,
-    Home, End, PageUp, PageDown,
-    Insert, Delete,
+    Up,
+    Down,
+    Left,
+    Right,
+    Home,
+    End,
+    PageUp,
+    PageDown,
+    Insert,
+    Delete,
 
     // Modifiers
-    LShift, RShift, LCtrl, RCtrl, LAlt, RAlt,
-    LSuper, RSuper,
+    LShift,
+    RShift,
+    LCtrl,
+    RCtrl,
+    LAlt,
+    RAlt,
+    LSuper,
+    RSuper,
 
     // Editing
-    Tab, Return, Escape, Backspace,
+    Tab,
+    Return,
+    Escape,
+    Backspace,
     Space,
 
     // Brackets and punctuation
-    Minus, Equals, LeftBracket, RightBracket,
-    Backslash, Semicolon, Apostrophe, Grave,
-    Comma, Period, Slash,
+    Minus,
+    Equals,
+    LeftBracket,
+    RightBracket,
+    Backslash,
+    Semicolon,
+    Apostrophe,
+    Grave,
+    Comma,
+    Period,
+    Slash,
 
     // Lock keys
-    CapsLock, NumLock, ScrollLock,
+    CapsLock,
+    NumLock,
+    ScrollLock,
 
     // Numpad
-    Numpad0, Numpad1, Numpad2, Numpad3, Numpad4,
-    Numpad5, Numpad6, Numpad7, Numpad8, Numpad9,
-    NumpadAdd, NumpadSubtract, NumpadMultiply, NumpadDivide,
-    NumpadEnter, NumpadDecimal, NumpadEquals,
+    Numpad0,
+    Numpad1,
+    Numpad2,
+    Numpad3,
+    Numpad4,
+    Numpad5,
+    Numpad6,
+    Numpad7,
+    Numpad8,
+    Numpad9,
+    NumpadAdd,
+    NumpadSubtract,
+    NumpadMultiply,
+    NumpadDivide,
+    NumpadEnter,
+    NumpadDecimal,
+    NumpadEquals,
 
     // Print/SysRq/Pause
-    PrintScreen, Pause, Menu,
+    PrintScreen,
+    Pause,
+    Menu,
 }
 
 /// Mouse buttons.
@@ -76,28 +160,31 @@ pub enum MouseButton {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum GamepadButton {
     // Face buttons (Sony layout: Cross/Circle/Square/Triangle)
-    South,      // Cross / A
-    East,       // Circle / B
-    West,       // Square / X
-    North,      // Triangle / Y
+    South, // Cross / A
+    East,  // Circle / B
+    West,  // Square / X
+    North, // Triangle / Y
 
     // Shoulder
-    LeftShoulder,   // L1 / LB
-    RightShoulder,  // R1 / RB
-    LeftTrigger,    // L2 / LT (digital)
-    RightTrigger,   // R2 / RT (digital)
+    LeftShoulder,  // L1 / LB
+    RightShoulder, // R1 / RB
+    LeftTrigger,   // L2 / LT (digital)
+    RightTrigger,  // R2 / RT (digital)
 
     // Sticks
-    LeftStick,      // L3 (press)
-    RightStick,     // R3 (press)
+    LeftStick,  // L3 (press)
+    RightStick, // R3 (press)
 
     // D-pad
-    DPadUp, DPadDown, DPadLeft, DPadRight,
+    DPadUp,
+    DPadDown,
+    DPadLeft,
+    DPadRight,
 
     // Center
-    Start,  // Options / Menu
-    Back,   // Share / View
-    Home,   // PS / Xbox
+    Start, // Options / Menu
+    Back,  // Share / View
+    Home,  // PS / Xbox
 }
 
 // ──────────────────────────────────────────────
@@ -129,7 +216,9 @@ pub struct Binding {
 impl Binding {
     /// Create a binding from a single source.
     pub fn single(source: InputSource) -> Self {
-        Binding { sources: vec![source] }
+        Binding {
+            sources: vec![source],
+        }
     }
 
     /// Create a binding from multiple sources.
@@ -199,10 +288,7 @@ impl InputContext {
         let idx = self.actions.len();
         let action = ActionBinding::new(name, binding);
         for source in &action.binding.sources {
-            self.source_map
-                .entry(*source)
-                .or_default()
-                .push(idx);
+            self.source_map.entry(*source).or_default().push(idx);
         }
         self.actions.push(action);
         self
@@ -319,8 +405,8 @@ pub enum GamepadAxis {
     LeftStickY,
     RightStickX,
     RightStickY,
-    LeftTrigger,    // 0.0 to 1.0
-    RightTrigger,   // 0.0 to 1.0
+    LeftTrigger,  // 0.0 to 1.0
+    RightTrigger, // 0.0 to 1.0
 }
 
 // ──────────────────────────────────────────────
@@ -484,11 +570,23 @@ impl InputManager {
 
         // Recompute axes
         for axis in &self.axis_bindings {
-            let pos = self.source_pressed.get(&axis.positive).copied().unwrap_or(false);
-            let neg = self.source_pressed.get(&axis.negative).copied().unwrap_or(false);
+            let pos = self
+                .source_pressed
+                .get(&axis.positive)
+                .copied()
+                .unwrap_or(false);
+            let neg = self
+                .source_pressed
+                .get(&axis.negative)
+                .copied()
+                .unwrap_or(false);
             let mut value = 0.0;
-            if pos { value += 1.0; }
-            if neg { value -= 1.0; }
+            if pos {
+                value += 1.0;
+            }
+            if neg {
+                value -= 1.0;
+            }
             self.axis_values.insert(axis.name.clone(), value);
         }
 
@@ -523,7 +621,10 @@ impl InputManager {
 
     /// Get the full state of an action.
     pub fn action_state(&self, action: &str) -> ActionState {
-        self.action_states.get(action).copied().unwrap_or(ActionState::Released)
+        self.action_states
+            .get(action)
+            .copied()
+            .unwrap_or(ActionState::Released)
     }
 
     /// Get the current value of an axis (e.g., "move_x").
@@ -586,7 +687,10 @@ impl InputManager {
         let action_indices = ctx.actions_for_source(source);
         for &idx in action_indices {
             let action_name = &ctx.actions[idx].name;
-            let current = self.action_states.get(action_name.as_str()).copied()
+            let current = self
+                .action_states
+                .get(action_name.as_str())
+                .copied()
                 .unwrap_or(ActionState::Released);
 
             let new_state = match (pressed, current) {
@@ -648,11 +752,13 @@ mod tests {
 
     #[test]
     fn multi_source_binding() {
-        let ctx = InputContext::new("gameplay")
-            .bind("jump", Binding::many(vec![
+        let ctx = InputContext::new("gameplay").bind(
+            "jump",
+            Binding::many(vec![
                 InputSource::Key(KeyCode::Space),
                 InputSource::Gamepad(GamepadButton::South),
-            ]));
+            ]),
+        );
 
         let mut mgr = InputManager::new();
         mgr.add_context(ctx);

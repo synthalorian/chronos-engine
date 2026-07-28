@@ -3,9 +3,9 @@
 //! Provides particle emitter components and a system for
 //! updating particle lifetimes, velocities, and spawning.
 
-use crate::world::World;
-use crate::system::{EventBus, System};
 use crate::component::Position;
+use crate::system::{EventBus, System};
+use crate::world::World;
 
 /// A particle emitter attached to an entity.
 #[derive(Debug, Clone)]

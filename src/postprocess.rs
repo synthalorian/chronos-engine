@@ -2,22 +2,19 @@
 
 #[cfg(feature = "render")]
 use wgpu::{
-    BindGroup, BindGroupDescriptor, BindGroupEntry, BindGroupLayout,
-    BindGroupLayoutDescriptor, BindGroupLayoutEntry, BindingType, Buffer,
-    BufferDescriptor, BufferUsages, ColorTargetState, ColorWrites, Device, Queue,
-    Extent3d, FragmentState, LoadOp, MultisampleState, Operations,
-    PipelineLayoutDescriptor, PrimitiveState, PrimitiveTopology,
-    RenderPassColorAttachment, RenderPassDescriptor, RenderPipeline,
-    RenderPipelineDescriptor, Sampler, SamplerBindingType, SamplerDescriptor,
-    StoreOp, Texture, TextureDescriptor, TextureDimension, TextureFormat,
-    TextureUsages, TextureView, TextureViewDescriptor, VertexAttribute,
+    BindGroup, BindGroupDescriptor, BindGroupEntry, BindGroupLayout, BindGroupLayoutDescriptor,
+    BindGroupLayoutEntry, BindingType, Buffer, BufferDescriptor, BufferUsages, ColorTargetState,
+    ColorWrites, CommandEncoderDescriptor, Device, Extent3d, FragmentState, LoadOp,
+    MultisampleState, Operations, PipelineLayoutDescriptor, PrimitiveState, PrimitiveTopology,
+    Queue, RenderPassColorAttachment, RenderPassDescriptor, RenderPipeline,
+    RenderPipelineDescriptor, Sampler, SamplerBindingType, SamplerDescriptor, ShaderStages,
+    StoreOp, Texture, TextureDescriptor, TextureDimension, TextureFormat, TextureSampleType,
+    TextureUsages, TextureView, TextureViewDescriptor, TextureViewDimension, VertexAttribute,
     VertexBufferLayout, VertexFormat, VertexState, VertexStepMode,
-    ShaderStages, TextureViewDimension, TextureSampleType,
-    CommandEncoderDescriptor,
 };
 
 #[cfg(feature = "render")]
-use wgpu::util::{DeviceExt, BufferInitDescriptor};
+use wgpu::util::{BufferInitDescriptor, DeviceExt};
 
 #[derive(Debug, Clone, Copy)]
 pub struct ColorGradeParams {
@@ -164,10 +161,7 @@ fn fs(input: VSOutput) -> @location(0) vec4<f32> {
 
 #[cfg(feature = "render")]
 const FULLSCREEN_VERTICES: &[f32] = &[
-    -1.0, -1.0, 0.0, 0.0,
-     1.0, -1.0, 1.0, 0.0,
-     1.0,  1.0, 1.0, 1.0,
-    -1.0,  1.0, 0.0, 1.0,
+    -1.0, -1.0, 0.0, 0.0, 1.0, -1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0, -1.0, 1.0, 0.0, 1.0,
 ];
 
 #[cfg(feature = "render")]
@@ -193,7 +187,8 @@ pub struct PostProcessor {
 #[cfg(feature = "render")]
 impl PostProcessor {
     pub fn new(device: &Device, width: u32, height: u32, format: TextureFormat) -> Self {
-        let (render_texture, render_view) = Self::create_render_texture(device, width, height, format);
+        let (render_texture, render_view) =
+            Self::create_render_texture(device, width, height, format);
 
         let sampler = device.create_sampler(&SamplerDescriptor {
             label: Some("postprocess-sampler"),
@@ -204,19 +199,20 @@ impl PostProcessor {
             ..Default::default()
         });
 
-        let params_bind_group_layout = device.create_bind_group_layout(&BindGroupLayoutDescriptor {
-            label: Some("pp-params-bgl"),
-            entries: &[BindGroupLayoutEntry {
-                binding: 0,
-                visibility: ShaderStages::FRAGMENT,
-                ty: BindingType::Buffer {
-                    ty: wgpu::BufferBindingType::Uniform,
-                    has_dynamic_offset: false,
-                    min_binding_size: None,
-                },
-                count: None,
-            }],
-        });
+        let params_bind_group_layout =
+            device.create_bind_group_layout(&BindGroupLayoutDescriptor {
+                label: Some("pp-params-bgl"),
+                entries: &[BindGroupLayoutEntry {
+                    binding: 0,
+                    visibility: ShaderStages::FRAGMENT,
+                    ty: BindingType::Buffer {
+                        ty: wgpu::BufferBindingType::Uniform,
+                        has_dynamic_offset: false,
+                        min_binding_size: None,
+                    },
+                    count: None,
+                }],
+            });
 
         let params_buffer = device.create_buffer(&BufferDescriptor {
             label: Some("pp-params-buffer"),
@@ -234,27 +230,28 @@ impl PostProcessor {
             }],
         });
 
-        let texture_bind_group_layout = device.create_bind_group_layout(&BindGroupLayoutDescriptor {
-            label: Some("pp-texture-bgl"),
-            entries: &[
-                BindGroupLayoutEntry {
-                    binding: 0,
-                    visibility: ShaderStages::FRAGMENT,
-                    ty: BindingType::Texture {
-                        sample_type: TextureSampleType::Float { filterable: true },
-                        view_dimension: TextureViewDimension::D2,
-                        multisampled: false,
+        let texture_bind_group_layout =
+            device.create_bind_group_layout(&BindGroupLayoutDescriptor {
+                label: Some("pp-texture-bgl"),
+                entries: &[
+                    BindGroupLayoutEntry {
+                        binding: 0,
+                        visibility: ShaderStages::FRAGMENT,
+                        ty: BindingType::Texture {
+                            sample_type: TextureSampleType::Float { filterable: true },
+                            view_dimension: TextureViewDimension::D2,
+                            multisampled: false,
+                        },
+                        count: None,
                     },
-                    count: None,
-                },
-                BindGroupLayoutEntry {
-                    binding: 1,
-                    visibility: ShaderStages::FRAGMENT,
-                    ty: BindingType::Sampler(SamplerBindingType::Filtering),
-                    count: None,
-                },
-            ],
-        });
+                    BindGroupLayoutEntry {
+                        binding: 1,
+                        visibility: ShaderStages::FRAGMENT,
+                        ty: BindingType::Sampler(SamplerBindingType::Filtering),
+                        count: None,
+                    },
+                ],
+            });
 
         let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
             label: Some("postprocess.wgsl"),
@@ -277,8 +274,16 @@ impl PostProcessor {
                     array_stride: 16,
                     step_mode: VertexStepMode::Vertex,
                     attributes: &[
-                        VertexAttribute { format: VertexFormat::Float32x2, offset: 0, shader_location: 0 },
-                        VertexAttribute { format: VertexFormat::Float32x2, offset: 8, shader_location: 1 },
+                        VertexAttribute {
+                            format: VertexFormat::Float32x2,
+                            offset: 0,
+                            shader_location: 0,
+                        },
+                        VertexAttribute {
+                            format: VertexFormat::Float32x2,
+                            offset: 8,
+                            shader_location: 1,
+                        },
                     ],
                 }],
                 compilation_options: Default::default(),
@@ -332,10 +337,19 @@ impl PostProcessor {
         }
     }
 
-    fn create_render_texture(device: &Device, width: u32, height: u32, format: TextureFormat) -> (Texture, TextureView) {
+    fn create_render_texture(
+        device: &Device,
+        width: u32,
+        height: u32,
+        format: TextureFormat,
+    ) -> (Texture, TextureView) {
         let texture = device.create_texture(&TextureDescriptor {
             label: Some("pp-render-texture"),
-            size: Extent3d { width, height, depth_or_array_layers: 1 },
+            size: Extent3d {
+                width,
+                height,
+                depth_or_array_layers: 1,
+            },
             mip_level_count: 1,
             sample_count: 1,
             dimension: TextureDimension::D2,

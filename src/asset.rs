@@ -258,9 +258,7 @@ impl HotReloadWatcher {
         while let Ok(res) = self.rx.try_recv() {
             if let Ok(event) = res {
                 match event.kind {
-                    EventKind::Create(_)
-                    | EventKind::Modify(_)
-                    | EventKind::Remove(_) => {
+                    EventKind::Create(_) | EventKind::Modify(_) | EventKind::Remove(_) => {
                         for path in event.paths {
                             if !paths.contains(&path) {
                                 paths.push(path);
@@ -332,7 +330,8 @@ impl AssetLoader {
 
     /// Remove an asset from the loader.
     pub fn unload(&mut self, id: AssetId) {
-        self.tracked_paths.retain(|_, &mut stored_id| stored_id != id);
+        self.tracked_paths
+            .retain(|_, &mut stored_id| stored_id != id);
         self.registry.unload(id);
     }
 

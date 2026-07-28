@@ -4,21 +4,23 @@
 
 #![allow(dead_code)]
 
-mod undo;
-mod grid;
-mod gizmo;
-mod selection;
-mod shortcuts;
-mod settings;
 mod docking;
+mod gizmo;
+mod grid;
+mod selection;
+mod settings;
+mod shortcuts;
+mod undo;
 
-pub use undo::{UndoStack, EditorCommand, UndoAction};
-pub use grid::GridRenderer;
+pub use docking::{
+    DockError, DockLayout, DockNode, DockState, DockZone, DragState, SplitDirection,
+};
 pub use gizmo::GizmoSystem;
+pub use grid::GridRenderer;
 pub use selection::ViewportSelector;
-pub use shortcuts::{ShortcutMap, ShortcutAction, KeyBinding};
 pub use settings::SettingsDialog;
-pub use docking::{DockLayout, DockState, DockNode, DockZone, DockError, DragState, SplitDirection};
+pub use shortcuts::{KeyBinding, ShortcutAction, ShortcutMap};
+pub use undo::{EditorCommand, UndoAction, UndoStack};
 
 use crate::entity::Entity;
 

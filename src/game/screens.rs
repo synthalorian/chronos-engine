@@ -178,10 +178,7 @@ impl ButtonConfig {
     }
 
     pub fn contains_point(&self, px: f32, py: f32) -> bool {
-        px >= self.x
-            && px <= self.x + self.width
-            && py >= self.y
-            && py <= self.y + self.height
+        px >= self.x && px <= self.x + self.width && py >= self.y && py <= self.y + self.height
     }
 }
 
@@ -547,7 +544,8 @@ mod tests {
 
         // Disabled button not found
         let mut layout2 = ScreenLayout::new(ScreenState::MainMenu, "Test");
-        layout2.add_button(ButtonConfig::new("Nope", 10.0, 20.0, 100.0, 50.0, 1).with_enabled(false));
+        layout2
+            .add_button(ButtonConfig::new("Nope", 10.0, 20.0, 100.0, 50.0, 1).with_enabled(false));
         assert!(layout2.button_at(50.0, 40.0).is_none());
 
         // Invisible button not found

@@ -26,7 +26,10 @@ impl TileChunk {
         TileChunk {
             cx,
             cy,
-            tiles: [[Tile { frame: 0, solid: false }; CHUNK_SIZE]; CHUNK_SIZE],
+            tiles: [[Tile {
+                frame: 0,
+                solid: false,
+            }; CHUNK_SIZE]; CHUNK_SIZE],
         }
     }
 

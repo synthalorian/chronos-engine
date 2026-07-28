@@ -1,8 +1,7 @@
-#[cfg(feature = "game")]
-
-use crate::{Entity, World};
 use super::components::MercenaryStats;
-use super::loot::{InventoryItem, ItemType, ItemRarity};
+use super::loot::{InventoryItem, ItemRarity, ItemType};
+#[cfg(feature = "game")]
+use crate::{Entity, World};
 
 // ── EquipSlot ────────────────────────────────────────────────────────
 
@@ -22,13 +21,13 @@ impl EquipSlot {
     /// Maps each slot variant to a stable array index (0–6).
     pub fn as_index(&self) -> usize {
         match self {
-            EquipSlot::Weapon  => 0,
-            EquipSlot::Helmet  => 1,
-            EquipSlot::Chest   => 2,
-            EquipSlot::Legs    => 3,
-            EquipSlot::Boots   => 4,
-            EquipSlot::Ring    => 5,
-            EquipSlot::Amulet  => 6,
+            EquipSlot::Weapon => 0,
+            EquipSlot::Helmet => 1,
+            EquipSlot::Chest => 2,
+            EquipSlot::Legs => 3,
+            EquipSlot::Boots => 4,
+            EquipSlot::Ring => 5,
+            EquipSlot::Amulet => 6,
         }
     }
 
@@ -323,11 +322,7 @@ impl EquipmentSystem {
     /// - Adds an `EquipmentManager` component if the entity lacks one.
     /// - Enforces level requirements via `MercenaryStats`.
     /// - Returns the previously equipped item (if any) inside [`EquipResult::Success`].
-    pub fn equip_item(
-        world: &mut World,
-        entity: Entity,
-        equipment: EquipmentData,
-    ) -> EquipResult {
+    pub fn equip_item(world: &mut World, entity: Entity, equipment: EquipmentData) -> EquipResult {
         // Ensure the entity has an EquipmentManager
         if !world.has_component::<EquipmentManager>(entity) {
             world.add_component(entity, EquipmentManager::new());
@@ -352,11 +347,7 @@ impl EquipmentSystem {
     }
 
     /// Remove whatever is in `slot` and return it.
-    pub fn unequip_slot(
-        world: &mut World,
-        entity: Entity,
-        slot: EquipSlot,
-    ) -> EquipResult {
+    pub fn unequip_slot(world: &mut World, entity: Entity, slot: EquipSlot) -> EquipResult {
         if !world.has_component::<EquipmentManager>(entity) {
             return EquipResult::InvalidSlot;
         }
@@ -375,21 +366,17 @@ impl EquipmentSystem {
     ) -> EffectiveStats {
         let bonuses = equipment.total_bonuses();
         EffectiveStats {
-            strength:     EffectiveStats::clamp_positive(stats.strength, bonuses.strength),
-            dexterity:    EffectiveStats::clamp_positive(stats.dexterity, bonuses.dexterity),
+            strength: EffectiveStats::clamp_positive(stats.strength, bonuses.strength),
+            dexterity: EffectiveStats::clamp_positive(stats.dexterity, bonuses.dexterity),
             intelligence: EffectiveStats::clamp_positive(stats.intelligence, bonuses.intelligence),
-            vitality:     EffectiveStats::clamp_positive(stats.vitality, bonuses.vitality),
+            vitality: EffectiveStats::clamp_positive(stats.vitality, bonuses.vitality),
         }
     }
 
     /// For each slot, equip the candidate with the highest bonus total.
     ///
     /// Skips candidates that fail the entity's level requirement.
-    pub fn auto_equip_best(
-        world: &mut World,
-        entity: Entity,
-        candidates: &[EquipmentData],
-    ) {
+    pub fn auto_equip_best(world: &mut World, entity: Entity, candidates: &[EquipmentData]) {
         if candidates.is_empty() {
             return;
         }
@@ -563,9 +550,9 @@ mod tests {
         let mut mgr = EquipmentManager::new();
         assert_eq!(mgr.total_bonuses().total(), 0);
 
-        mgr.equip(EquipmentData::iron_sword());          // +3 STR
-        mgr.equip(EquipmentData::leather_armor());        // +2 VIT
-        mgr.equip(EquipmentData::apprentice_ring());      // +3 INT
+        mgr.equip(EquipmentData::iron_sword()); // +3 STR
+        mgr.equip(EquipmentData::leather_armor()); // +2 VIT
+        mgr.equip(EquipmentData::apprentice_ring()); // +3 INT
 
         let bonuses = mgr.total_bonuses();
         assert_eq!(bonuses.strength, 3);
@@ -594,7 +581,9 @@ mod tests {
         }
 
         // Manager should still be empty
-        let mgr = world.get_component::<EquipmentManager>(entity).expect("mgr");
+        let mgr = world
+            .get_component::<EquipmentManager>(entity)
+            .expect("mgr");
         assert!(mgr.is_slot_empty(EquipSlot::Weapon));
     }
 
@@ -608,7 +597,9 @@ mod tests {
         let result = EquipmentSystem::equip_item(&mut world, entity, steel);
         assert!(matches!(result, EquipResult::Success { replaced: None }));
 
-        let mgr = world.get_component::<EquipmentManager>(entity).expect("mgr");
+        let mgr = world
+            .get_component::<EquipmentManager>(entity)
+            .expect("mgr");
         assert!(!mgr.is_slot_empty(EquipSlot::Weapon));
     }
 
@@ -618,15 +609,15 @@ mod tests {
     fn effective_stats_base_plus_equipment() {
         let stats = lvl1_stats(); // 10/10/10/10
         let mut mgr = EquipmentManager::new();
-        mgr.equip(EquipmentData::iron_sword());          // +3 STR
-        mgr.equip(EquipmentData::leather_armor());        // +2 VIT
-        mgr.equip(EquipmentData::apprentice_ring());      // +3 INT
+        mgr.equip(EquipmentData::iron_sword()); // +3 STR
+        mgr.equip(EquipmentData::leather_armor()); // +2 VIT
+        mgr.equip(EquipmentData::apprentice_ring()); // +3 INT
 
         let eff = EquipmentSystem::calculate_effective_stats(&stats, &mgr);
-        assert_eq!(eff.strength, 13);     // 10 + 3
-        assert_eq!(eff.dexterity, 10);    // 10 + 0
+        assert_eq!(eff.strength, 13); // 10 + 3
+        assert_eq!(eff.dexterity, 10); // 10 + 0
         assert_eq!(eff.intelligence, 13); // 10 + 3
-        assert_eq!(eff.vitality, 12);     // 10 + 2
+        assert_eq!(eff.vitality, 12); // 10 + 2
     }
 
     #[test]
@@ -643,10 +634,10 @@ mod tests {
         mgr.equip(cursed);
 
         let eff = EquipmentSystem::calculate_effective_stats(&stats, &mgr);
-        assert_eq!(eff.strength, 1);  // 2 - 10 → clamped to 1
+        assert_eq!(eff.strength, 1); // 2 - 10 → clamped to 1
         assert_eq!(eff.dexterity, 1); // 2 - 5 → clamped to 1
         assert_eq!(eff.intelligence, 2); // unchanged
-        assert_eq!(eff.vitality, 2);     // unchanged
+        assert_eq!(eff.vitality, 2); // unchanged
     }
 
     // ── 9. Auto-equip picks best per slot ──
@@ -657,15 +648,17 @@ mod tests {
         let entity = world.create_entity();
         world.add_component(entity, lvl1_stats());
 
-        let iron = EquipmentData::iron_sword();          // weapon, +3 STR, lvl 1
-        let steel = EquipmentData::steel_sword();        // weapon, +6 STR +1 DEX, lvl 5 (too high)
-        let leather = EquipmentData::leather_armor();    // chest, +2 VIT, lvl 1
-        let chain = EquipmentData::chain_mail();         // chest, +4 VIT +1 STR, lvl 3 (too high)
+        let iron = EquipmentData::iron_sword(); // weapon, +3 STR, lvl 1
+        let steel = EquipmentData::steel_sword(); // weapon, +6 STR +1 DEX, lvl 5 (too high)
+        let leather = EquipmentData::leather_armor(); // chest, +2 VIT, lvl 1
+        let chain = EquipmentData::chain_mail(); // chest, +4 VIT +1 STR, lvl 3 (too high)
 
         let candidates = vec![iron, steel, leather, chain];
         EquipmentSystem::auto_equip_best(&mut world, entity, &candidates);
 
-        let mgr = world.get_component::<EquipmentManager>(entity).expect("mgr");
+        let mgr = world
+            .get_component::<EquipmentManager>(entity)
+            .expect("mgr");
         assert_eq!(mgr.equipped_count(), 2); // weapon + chest
 
         // Iron sword wins (only weapon that passes level check)
@@ -700,7 +693,9 @@ mod tests {
         let candidates = vec![weak_ring, strong_ring];
         EquipmentSystem::auto_equip_best(&mut world, entity, &candidates);
 
-        let mgr = world.get_component::<EquipmentManager>(entity).expect("mgr");
+        let mgr = world
+            .get_component::<EquipmentManager>(entity)
+            .expect("mgr");
         let ring = mgr.get(EquipSlot::Ring).expect("ring");
         assert_eq!(ring.item.name, "Platinum Ring");
     }
@@ -763,7 +758,9 @@ mod tests {
             _ => panic!("expected Success, got {:?}", result),
         }
 
-        let mgr = world.get_component::<EquipmentManager>(entity).expect("mgr");
+        let mgr = world
+            .get_component::<EquipmentManager>(entity)
+            .expect("mgr");
         assert!(mgr.is_slot_empty(EquipSlot::Weapon));
     }
 

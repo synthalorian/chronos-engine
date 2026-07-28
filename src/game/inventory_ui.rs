@@ -1,6 +1,5 @@
 #[cfg(feature = "game")]
-
-use super::loot::{InventoryItem, ItemType, ItemRarity};
+use super::loot::{InventoryItem, ItemRarity, ItemType};
 
 // ── SortMethod ──
 
@@ -28,9 +27,7 @@ impl ItemFilter {
             ItemFilter::All => true,
             ItemFilter::ByRarity(rarity) => item.rarity == *rarity,
             ItemFilter::ByType(item_type) => item.item_type == *item_type,
-            ItemFilter::ByText(query) => {
-                item.name.to_lowercase().contains(&query.to_lowercase())
-            }
+            ItemFilter::ByText(query) => item.name.to_lowercase().contains(&query.to_lowercase()),
         }
     }
 }
@@ -73,7 +70,9 @@ impl InventoryManager {
             if existing.can_stack_with(&item) && existing.stack_size < existing.max_stack {
                 let remaining = existing.add_to_stack(item.stack_size);
                 if remaining == 0 {
-                    return AddResult::Stacked { new_size: existing.stack_size };
+                    return AddResult::Stacked {
+                        new_size: existing.stack_size,
+                    };
                 }
                 return AddResult::StackedPartial { remaining };
             }
@@ -115,7 +114,8 @@ impl InventoryManager {
     }
 
     pub fn sort(&mut self, method: SortMethod) {
-        self.items.sort_by(|a, b| ItemComparator::compare(a, b, method));
+        self.items
+            .sort_by(|a, b| ItemComparator::compare(a, b, method));
     }
 
     pub fn filter(&self, filter: &ItemFilter) -> Vec<(usize, &InventoryItem)> {
@@ -157,11 +157,9 @@ impl ItemComparator {
         match method {
             SortMethod::ByName => a.name.cmp(&b.name),
             SortMethod::ByRarity => Self::rarity_tier(a.rarity).cmp(&Self::rarity_tier(b.rarity)),
-            SortMethod::ByItemType => {
-                format!("{:?}", a.item_type)
-                    .cmp(&format!("{:?}", b.item_type))
-                    .then_with(|| a.name.cmp(&b.name))
-            }
+            SortMethod::ByItemType => format!("{:?}", a.item_type)
+                .cmp(&format!("{:?}", b.item_type))
+                .then_with(|| a.name.cmp(&b.name)),
             SortMethod::ByValue => b
                 .gold_value
                 .cmp(&a.gold_value)
@@ -185,8 +183,13 @@ impl ItemComparator {
 #[derive(Debug, Clone, PartialEq)]
 pub enum DragState {
     Idle,
-    Dragging { source_index: usize },
-    Hovering { source_index: usize, target_index: usize },
+    Dragging {
+        source_index: usize,
+    },
+    Hovering {
+        source_index: usize,
+        target_index: usize,
+    },
 }
 
 impl DragState {
@@ -247,17 +250,26 @@ impl InventoryUI {
     }
 
     pub fn begin_drag(&mut self, index: usize) {
-        self.drag_state = DragState::Dragging { source_index: index };
+        self.drag_state = DragState::Dragging {
+            source_index: index,
+        };
     }
 
     pub fn update_hover(&mut self, target: usize) {
         if let DragState::Dragging { source_index } = self.drag_state {
-            self.drag_state = DragState::Hovering { source_index, target_index: target };
+            self.drag_state = DragState::Hovering {
+                source_index,
+                target_index: target,
+            };
         }
     }
 
     pub fn end_drag(&mut self) -> Option<(usize, usize)> {
-        if let DragState::Hovering { source_index, target_index } = self.drag_state {
+        if let DragState::Hovering {
+            source_index,
+            target_index,
+        } = self.drag_state
+        {
             self.drag_state = DragState::Idle;
             Some((source_index, target_index))
         } else {
@@ -306,11 +318,7 @@ impl InventorySystem {
         }
     }
 
-    pub fn move_item(
-        from: &mut InventoryManager,
-        to: &mut InventoryManager,
-        index: usize,
-    ) -> bool {
+    pub fn move_item(from: &mut InventoryManager, to: &mut InventoryManager, index: usize) -> bool {
         let item = match from.remove_item(index) {
             Some(i) => i,
             None => return false,
@@ -327,10 +335,7 @@ impl InventorySystem {
         true
     }
 
-    pub fn use_consumable(
-        inventory: &mut InventoryManager,
-        index: usize,
-    ) -> Option<InventoryItem> {
+    pub fn use_consumable(inventory: &mut InventoryManager, index: usize) -> Option<InventoryItem> {
         let item = inventory.items.get(index)?;
         if item.item_type == ItemType::Consumable {
             inventory.remove_item(index)
@@ -376,9 +381,23 @@ mod tests {
     #[test]
     fn add_stack_existing() {
         let mut inv = InventoryManager::new(10);
-        let potion = make_item("Health Potion", ItemType::Consumable, ItemRarity::Common, 3, 10, 5);
+        let potion = make_item(
+            "Health Potion",
+            ItemType::Consumable,
+            ItemRarity::Common,
+            3,
+            10,
+            5,
+        );
         inv.add_item(potion);
-        let more = make_item("Health Potion", ItemType::Consumable, ItemRarity::Common, 4, 10, 5);
+        let more = make_item(
+            "Health Potion",
+            ItemType::Consumable,
+            ItemRarity::Common,
+            4,
+            10,
+            5,
+        );
         let result = inv.add_item(more);
         assert_eq!(result, AddResult::Stacked { new_size: 7 });
         assert_eq!(inv.items.len(), 1);
@@ -387,9 +406,23 @@ mod tests {
     #[test]
     fn add_stack_partial() {
         let mut inv = InventoryManager::new(10);
-        let potion = make_item("Health Potion", ItemType::Consumable, ItemRarity::Common, 8, 10, 5);
+        let potion = make_item(
+            "Health Potion",
+            ItemType::Consumable,
+            ItemRarity::Common,
+            8,
+            10,
+            5,
+        );
         inv.add_item(potion);
-        let overflow = make_item("Health Potion", ItemType::Consumable, ItemRarity::Common, 5, 10, 5);
+        let overflow = make_item(
+            "Health Potion",
+            ItemType::Consumable,
+            ItemRarity::Common,
+            5,
+            10,
+            5,
+        );
         let result = inv.add_item(overflow);
         assert_eq!(result, AddResult::StackedPartial { remaining: 3 });
         assert_eq!(inv.items[0].stack_size, 10);
@@ -400,7 +433,14 @@ mod tests {
         let mut inv = InventoryManager::new(1);
         let sword = make_item("Iron Sword", ItemType::Weapon, ItemRarity::Common, 1, 1, 10);
         inv.add_item(sword);
-        let shield = make_item("Wooden Shield", ItemType::Armor, ItemRarity::Common, 1, 1, 5);
+        let shield = make_item(
+            "Wooden Shield",
+            ItemType::Armor,
+            ItemRarity::Common,
+            1,
+            1,
+            5,
+        );
         let result = inv.add_item(shield);
         assert_eq!(result, AddResult::Full);
     }
@@ -408,7 +448,14 @@ mod tests {
     #[test]
     fn remove_item_correct() {
         let mut inv = InventoryManager::new(10);
-        inv.add_item(make_item("A", ItemType::Weapon, ItemRarity::Common, 1, 1, 0));
+        inv.add_item(make_item(
+            "A",
+            ItemType::Weapon,
+            ItemRarity::Common,
+            1,
+            1,
+            0,
+        ));
         inv.add_item(make_item("B", ItemType::Armor, ItemRarity::Common, 1, 1, 0));
         let removed = inv.remove_item(0).unwrap();
         assert_eq!(removed.name, "A");
@@ -419,7 +466,14 @@ mod tests {
     #[test]
     fn remove_stack_partial() {
         let mut inv = InventoryManager::new(10);
-        inv.add_item(make_item("Arrows", ItemType::Material, ItemRarity::Common, 20, 50, 1));
+        inv.add_item(make_item(
+            "Arrows",
+            ItemType::Material,
+            ItemRarity::Common,
+            20,
+            50,
+            1,
+        ));
         let removed = inv.remove_stack(0, 5).unwrap();
         assert_eq!(removed.stack_size, 5);
         assert_eq!(inv.items[0].stack_size, 15);
@@ -428,9 +482,30 @@ mod tests {
     #[test]
     fn sort_by_name() {
         let mut inv = InventoryManager::new(10);
-        inv.add_item(make_item("Zephyr Bow", ItemType::Weapon, ItemRarity::Rare, 1, 1, 50));
-        inv.add_item(make_item("Apple", ItemType::Consumable, ItemRarity::Common, 1, 1, 1));
-        inv.add_item(make_item("Mithril Ore", ItemType::Material, ItemRarity::Epic, 1, 1, 100));
+        inv.add_item(make_item(
+            "Zephyr Bow",
+            ItemType::Weapon,
+            ItemRarity::Rare,
+            1,
+            1,
+            50,
+        ));
+        inv.add_item(make_item(
+            "Apple",
+            ItemType::Consumable,
+            ItemRarity::Common,
+            1,
+            1,
+            1,
+        ));
+        inv.add_item(make_item(
+            "Mithril Ore",
+            ItemType::Material,
+            ItemRarity::Epic,
+            1,
+            1,
+            100,
+        ));
         inv.sort(SortMethod::ByName);
         let names: Vec<&str> = inv.items.iter().map(|i| i.name.as_str()).collect();
         assert_eq!(names, vec!["Apple", "Mithril Ore", "Zephyr Bow"]);
@@ -439,11 +514,46 @@ mod tests {
     #[test]
     fn sort_by_rarity() {
         let mut inv = InventoryManager::new(10);
-        inv.add_item(make_item("Epic Gem", ItemType::Material, ItemRarity::Epic, 1, 1, 200));
-        inv.add_item(make_item("Common Rock", ItemType::Material, ItemRarity::Common, 1, 1, 1));
-        inv.add_item(make_item("Legendary Blade", ItemType::Weapon, ItemRarity::Legendary, 1, 1, 999));
-        inv.add_item(make_item("Rare Ring", ItemType::Armor, ItemRarity::Rare, 1, 1, 75));
-        inv.add_item(make_item("Uncommon Helm", ItemType::Armor, ItemRarity::Uncommon, 1, 1, 25));
+        inv.add_item(make_item(
+            "Epic Gem",
+            ItemType::Material,
+            ItemRarity::Epic,
+            1,
+            1,
+            200,
+        ));
+        inv.add_item(make_item(
+            "Common Rock",
+            ItemType::Material,
+            ItemRarity::Common,
+            1,
+            1,
+            1,
+        ));
+        inv.add_item(make_item(
+            "Legendary Blade",
+            ItemType::Weapon,
+            ItemRarity::Legendary,
+            1,
+            1,
+            999,
+        ));
+        inv.add_item(make_item(
+            "Rare Ring",
+            ItemType::Armor,
+            ItemRarity::Rare,
+            1,
+            1,
+            75,
+        ));
+        inv.add_item(make_item(
+            "Uncommon Helm",
+            ItemType::Armor,
+            ItemRarity::Uncommon,
+            1,
+            1,
+            25,
+        ));
         inv.sort(SortMethod::ByRarity);
         let rarities: Vec<ItemRarity> = inv.items.iter().map(|i| i.rarity).collect();
         assert_eq!(
@@ -461,9 +571,30 @@ mod tests {
     #[test]
     fn filter_by_type() {
         let mut inv = InventoryManager::new(10);
-        inv.add_item(make_item("Sword", ItemType::Weapon, ItemRarity::Common, 1, 1, 10));
-        inv.add_item(make_item("Potion", ItemType::Consumable, ItemRarity::Common, 1, 1, 5));
-        inv.add_item(make_item("Bow", ItemType::Weapon, ItemRarity::Uncommon, 1, 1, 20));
+        inv.add_item(make_item(
+            "Sword",
+            ItemType::Weapon,
+            ItemRarity::Common,
+            1,
+            1,
+            10,
+        ));
+        inv.add_item(make_item(
+            "Potion",
+            ItemType::Consumable,
+            ItemRarity::Common,
+            1,
+            1,
+            5,
+        ));
+        inv.add_item(make_item(
+            "Bow",
+            ItemType::Weapon,
+            ItemRarity::Uncommon,
+            1,
+            1,
+            20,
+        ));
         let results = inv.filter(&ItemFilter::ByType(ItemType::Weapon));
         assert_eq!(results.len(), 2);
         assert_eq!(results[0].1.name, "Sword");
@@ -473,9 +604,30 @@ mod tests {
     #[test]
     fn filter_by_text() {
         let mut inv = InventoryManager::new(10);
-        inv.add_item(make_item("Iron Sword", ItemType::Weapon, ItemRarity::Common, 1, 1, 10));
-        inv.add_item(make_item("Iron Shield", ItemType::Armor, ItemRarity::Common, 1, 1, 8));
-        inv.add_item(make_item("Gold Ring", ItemType::Armor, ItemRarity::Rare, 1, 1, 50));
+        inv.add_item(make_item(
+            "Iron Sword",
+            ItemType::Weapon,
+            ItemRarity::Common,
+            1,
+            1,
+            10,
+        ));
+        inv.add_item(make_item(
+            "Iron Shield",
+            ItemType::Armor,
+            ItemRarity::Common,
+            1,
+            1,
+            8,
+        ));
+        inv.add_item(make_item(
+            "Gold Ring",
+            ItemType::Armor,
+            ItemRarity::Rare,
+            1,
+            1,
+            50,
+        ));
         let results = inv.filter(&ItemFilter::ByText("iron".to_string()));
         assert_eq!(results.len(), 2);
         let upper = inv.filter(&ItemFilter::ByText("IRON".to_string()));
@@ -508,7 +660,10 @@ mod tests {
         ui.update_hover(5);
         assert_eq!(
             ui.drag_state,
-            DragState::Hovering { source_index: 2, target_index: 5 }
+            DragState::Hovering {
+                source_index: 2,
+                target_index: 5
+            }
         );
 
         let result = ui.end_drag();
@@ -519,7 +674,14 @@ mod tests {
     #[test]
     fn swap_items() {
         let mut inv = InventoryManager::new(10);
-        inv.add_item(make_item("A", ItemType::Weapon, ItemRarity::Common, 1, 1, 0));
+        inv.add_item(make_item(
+            "A",
+            ItemType::Weapon,
+            ItemRarity::Common,
+            1,
+            1,
+            0,
+        ));
         inv.add_item(make_item("B", ItemType::Armor, ItemRarity::Common, 1, 1, 0));
         InventorySystem::swap_items(&mut inv, 0, 1);
         assert_eq!(inv.items[0].name, "B");
@@ -529,8 +691,22 @@ mod tests {
     #[test]
     fn use_consumable() {
         let mut inv = InventoryManager::new(10);
-        inv.add_item(make_item("Sword", ItemType::Weapon, ItemRarity::Common, 1, 1, 10));
-        inv.add_item(make_item("Potion", ItemType::Consumable, ItemRarity::Common, 1, 1, 5));
+        inv.add_item(make_item(
+            "Sword",
+            ItemType::Weapon,
+            ItemRarity::Common,
+            1,
+            1,
+            10,
+        ));
+        inv.add_item(make_item(
+            "Potion",
+            ItemType::Consumable,
+            ItemRarity::Common,
+            1,
+            1,
+            5,
+        ));
         assert!(InventorySystem::use_consumable(&mut inv, 0).is_none());
         let used = InventorySystem::use_consumable(&mut inv, 1);
         assert!(used.is_some());
@@ -541,9 +717,30 @@ mod tests {
     #[test]
     fn find_by_name() {
         let mut inv = InventoryManager::new(10);
-        inv.add_item(make_item("Alpha", ItemType::Weapon, ItemRarity::Common, 1, 1, 0));
-        inv.add_item(make_item("Beta", ItemType::Armor, ItemRarity::Common, 1, 1, 0));
-        inv.add_item(make_item("Gamma", ItemType::Material, ItemRarity::Common, 1, 1, 0));
+        inv.add_item(make_item(
+            "Alpha",
+            ItemType::Weapon,
+            ItemRarity::Common,
+            1,
+            1,
+            0,
+        ));
+        inv.add_item(make_item(
+            "Beta",
+            ItemType::Armor,
+            ItemRarity::Common,
+            1,
+            1,
+            0,
+        ));
+        inv.add_item(make_item(
+            "Gamma",
+            ItemType::Material,
+            ItemRarity::Common,
+            1,
+            1,
+            0,
+        ));
         assert_eq!(inv.find_by_name("Beta"), Some(1));
         assert_eq!(inv.find_by_name("Omega"), None);
     }

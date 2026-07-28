@@ -1,5 +1,4 @@
 #[cfg(feature = "game")]
-
 use super::components::{LootDrop, MercenaryStats};
 
 // ──────────────────────────────────────────────
@@ -310,14 +309,7 @@ pub struct JobGenerator {
 }
 
 const CLIENT_NAMES: &[&str] = &[
-    "Aldric",
-    "Mira",
-    "Theron",
-    "Selene",
-    "Gareth",
-    "Lyra",
-    "Dorian",
-    "Freya",
+    "Aldric", "Mira", "Theron", "Selene", "Gareth", "Lyra", "Dorian", "Freya",
 ];
 
 const BASE_GOLD: u32 = 50;
@@ -498,7 +490,8 @@ impl JobBoard {
 
     /// Remove expired available jobs, then generate fresh ones for the given level.
     pub fn refresh(&mut self, generator: &mut JobGenerator, count: usize, level: u32) {
-        self.available.retain(|j| !matches!(j.status, JobStatus::Expired));
+        self.available
+            .retain(|j| !matches!(j.status, JobStatus::Expired));
         let new_jobs = generator.generate_jobs(count, JobDifficulty::from_level(level));
         for job in new_jobs {
             self.post_job(job);
@@ -613,10 +606,7 @@ mod tests {
         assert!(contract.is_available());
 
         contract.accept(7);
-        assert_eq!(
-            contract.status,
-            JobStatus::InProgress { accepted_by: 7 }
-        );
+        assert_eq!(contract.status, JobStatus::InProgress { accepted_by: 7 });
         assert!(!contract.is_available());
 
         contract.complete();

@@ -1,7 +1,6 @@
-#[cfg(feature = "game")]
-
-use crate::{Entity, World};
 use super::components::MercenaryStats;
+#[cfg(feature = "game")]
+use crate::{Entity, World};
 
 // ──────────────────────────────────────────────
 // StatType enum
@@ -30,12 +29,7 @@ pub struct StatBonuses {
 }
 
 impl StatBonuses {
-    pub fn new(
-        strength: i32,
-        dexterity: i32,
-        intelligence: i32,
-        vitality: i32,
-    ) -> Self {
+    pub fn new(strength: i32, dexterity: i32, intelligence: i32, vitality: i32) -> Self {
         StatBonuses {
             strength,
             dexterity,
@@ -94,8 +88,7 @@ impl LevelUpTable {
         // Index 0 is unused (level 0 doesn't exist). We keep it at 0.
         xp_table.push(0);
         for level in 1..=Self::MAX_LEVEL {
-            let xp_needed = (Self::BASE_XP as f64)
-                .mul_add((level as f64).powf(1.5), 0.0) as u32;
+            let xp_needed = (Self::BASE_XP as f64).mul_add((level as f64).powf(1.5), 0.0) as u32;
             xp_table.push(xp_needed);
         }
         LevelUpTable { xp_table }
@@ -185,11 +178,7 @@ impl StatGrowth {
     /// Calculate final stats at `target_level` given a `base` stat block.
     ///
     /// Returns `(strength, dexterity, intelligence, vitality)`.
-    pub fn stats_at_level(
-        &self,
-        base: &MercenaryStats,
-        target_level: u32,
-    ) -> (u32, u32, u32, u32) {
+    pub fn stats_at_level(&self, base: &MercenaryStats, target_level: u32) -> (u32, u32, u32, u32) {
         let levels_gained = target_level.saturating_sub(base.level) as f32;
         let str = base.strength + (self.strength_growth * levels_gained).floor() as u32;
         let dex = base.dexterity + (self.dexterity_growth * levels_gained).floor() as u32;
@@ -318,12 +307,13 @@ impl LevelUpSystem {
             stats.xp = stats.xp.saturating_add(amount);
         }
 
-        let new_level = table.max_level().min(
-            match world.get_component::<MercenaryStats>(entity) {
-                Some(s) => table.level_for_xp(s.xp),
-                None => old_level,
-            },
-        );
+        let new_level =
+            table
+                .max_level()
+                .min(match world.get_component::<MercenaryStats>(entity) {
+                    Some(s) => table.level_for_xp(s.xp),
+                    None => old_level,
+                });
 
         if new_level <= old_level {
             return 0;
@@ -581,7 +571,9 @@ mod tests {
         let gained = LevelUpSystem::grant_xp(&mut world, entity, xp_needed);
 
         assert_eq!(gained, 2);
-        let stats = world.get_component::<MercenaryStats>(entity).expect("stats");
+        let stats = world
+            .get_component::<MercenaryStats>(entity)
+            .expect("stats");
         assert_eq!(stats.level, 3);
         assert_eq!(stats.xp, xp_needed);
     }
@@ -594,7 +586,9 @@ mod tests {
 
         let gained = LevelUpSystem::grant_xp(&mut world, entity, 10);
         assert_eq!(gained, 0);
-        let stats = world.get_component::<MercenaryStats>(entity).expect("stats");
+        let stats = world
+            .get_component::<MercenaryStats>(entity)
+            .expect("stats");
         assert_eq!(stats.level, 1);
         assert_eq!(stats.xp, 10);
     }

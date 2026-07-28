@@ -1,6 +1,8 @@
-use crate::component::{CircleRadius, Damage, Dead, Gravity, Grounded, Health, Position, RigidBody, Sprite, Velocity};
+use crate::component::{
+    CircleRadius, Damage, Dead, Gravity, Grounded, Health, Position, RigidBody, Sprite, Velocity,
+};
 use crate::entity::Entity;
-use crate::spatial::{AABB, Quadtree, QuadtreeObject};
+use crate::spatial::{Quadtree, QuadtreeObject, AABB};
 use crate::world::World;
 use std::collections::VecDeque;
 
@@ -113,12 +115,15 @@ impl System for MovementSystem {
             .collect();
 
         // Build velocity lookup
-        let vel_map: std::collections::HashMap<u32, (f32, f32)> =
-            velocities.into_iter().map(|(i, vx, vy)| (i, (vx, vy))).collect();
+        let vel_map: std::collections::HashMap<u32, (f32, f32)> = velocities
+            .into_iter()
+            .map(|(i, vx, vy)| (i, (vx, vy)))
+            .collect();
 
         for (idx, _px, _py) in positions {
             if let Some(&(vx, vy)) = vel_map.get(&idx) {
-                if let Some(pos) = world.get_component_mut::<Position>(world.entity_from_index(idx)) {
+                if let Some(pos) = world.get_component_mut::<Position>(world.entity_from_index(idx))
+                {
                     pos.x += vx * dt as f32;
                     pos.y += vy * dt as f32;
                 }
@@ -392,10 +397,7 @@ impl GravitySystem {
 
 impl System for GravitySystem {
     fn update(&mut self, world: &mut World, _events: &mut EventBus, dt: f64) {
-        let gravity = world
-            .query::<Gravity>()
-            .map(|(_, g)| (g.x, g.y))
-            .next();
+        let gravity = world.query::<Gravity>().map(|(_, g)| (g.x, g.y)).next();
 
         let (gx, gy) = if let Some(g) = gravity { g } else { return };
         let dt = dt as f32;
@@ -404,7 +406,9 @@ impl System for GravitySystem {
             .query::<RigidBody>()
             .filter(|(_, rb)| !rb.is_static())
             .filter_map(|(e, rb)| {
-                world.get_component::<Velocity>(e).map(|v| (e.index(), rb.mass, v.x, v.y, rb.damping))
+                world
+                    .get_component::<Velocity>(e)
+                    .map(|v| (e.index(), rb.mass, v.x, v.y, rb.damping))
             })
             .collect();
 
@@ -458,10 +462,8 @@ impl System for PlatformerSystem {
             .map(|(e, p)| (e.index(), p.x, p.y))
             .collect();
 
-        let grounded_entities: Vec<u32> = world
-            .query::<Grounded>()
-            .map(|(e, _)| e.index())
-            .collect();
+        let grounded_entities: Vec<u32> =
+            world.query::<Grounded>().map(|(e, _)| e.index()).collect();
 
         for idx in grounded_entities {
             let still_grounded = positions.iter().any(|&(other_idx, ox, oy)| {
@@ -543,7 +545,11 @@ impl RaycastSystem {
         hits.iter().map(|obj| (obj.entity, obj.radius)).collect()
     }
 
-    pub fn cast(&self, world: &World, ray: crate::spatial::Ray) -> Vec<(u32, crate::spatial::RaycastHit)> {
+    pub fn cast(
+        &self,
+        world: &World,
+        ray: crate::spatial::Ray,
+    ) -> Vec<(u32, crate::spatial::RaycastHit)> {
         let mut objects: Vec<QuadtreeObject> = Vec::new();
         for (entity, pos) in world.query::<Position>() {
             let radius = if world.has_component::<CircleRadius>(entity) {

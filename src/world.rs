@@ -1,8 +1,8 @@
 use crate::entity::Entity;
 use crate::storage::StorageRegistry;
+use crate::system::EventBus;
 use std::any::TypeId;
 use std::collections::{HashMap, VecDeque};
-use crate::system::EventBus;
 
 /// Represents a unique combination of component types.
 ///
@@ -231,10 +231,7 @@ impl World {
 
     /// Get all alive entities in the world.
     pub fn all_entities(&self) -> Vec<Entity> {
-        self.entities
-            .iter()
-            .filter_map(|e| *e)
-            .collect()
+        self.entities.iter().filter_map(|e| *e).collect()
     }
 
     // ──────────────────────────────────────────────
@@ -442,14 +439,13 @@ pub struct ComponentQuery<'a, T: 'static> {
 impl<'a, T: Send + Sync + 'static> ComponentQuery<'a, T> {
     fn new(storage: &'a StorageRegistry, entities: &'a [Option<Entity>]) -> Self {
         let inner = storage.get::<T>().map(|s| {
-            let iter: Box<dyn Iterator<Item = (Entity, &'a T)> + 'a> = Box::new(
-                s.data.iter().filter_map(move |(idx, boxed)| {
+            let iter: Box<dyn Iterator<Item = (Entity, &'a T)> + 'a> =
+                Box::new(s.data.iter().filter_map(move |(idx, boxed)| {
                     let entity = entities.get(*idx as usize).and_then(|e| *e);
                     boxed
                         .downcast_ref::<T>()
                         .and_then(|comp| entity.map(|e| (e, comp)))
-                }),
-            );
+                }));
             iter
         });
         ComponentQuery { inner }
@@ -474,14 +470,13 @@ pub struct ComponentQueryMut<'a, T: 'static> {
 impl<'a, T: Send + Sync + 'static> ComponentQueryMut<'a, T> {
     fn new(storage: &'a mut StorageRegistry, entities: &'a [Option<Entity>]) -> Self {
         let inner = storage.get_mut::<T>().map(|s| {
-            let iter: Box<dyn Iterator<Item = (Entity, &'a mut T)> + 'a> = Box::new(
-                s.data.iter_mut().filter_map(move |(idx, boxed)| {
+            let iter: Box<dyn Iterator<Item = (Entity, &'a mut T)> + 'a> =
+                Box::new(s.data.iter_mut().filter_map(move |(idx, boxed)| {
                     let entity = entities.get(*idx as usize).and_then(|e| *e);
                     boxed
                         .downcast_mut::<T>()
                         .and_then(|comp| entity.map(|e| (e, comp)))
-                }),
-            );
+                }));
             iter
         });
         ComponentQueryMut { inner }

@@ -177,9 +177,7 @@ impl DockNode {
         match self {
             DockNode::Empty => 0,
             DockNode::Leaf { .. } => 1,
-            DockNode::Split { children, .. } => {
-                children.0.panel_count() + children.1.panel_count()
-            }
+            DockNode::Split { children, .. } => children.0.panel_count() + children.1.panel_count(),
             DockNode::Tabbed { tabs, .. } => tabs.len(),
         }
     }
@@ -192,9 +190,7 @@ impl DockNode {
                 *size_ratio = size_ratio.clamp(0.0, 1.0);
             }
             DockNode::Split {
-                ratio,
-                children,
-                ..
+                ratio, children, ..
             } => {
                 *ratio = ratio.clamp(0.01, 0.99);
                 children.0.normalize_ratios();
@@ -434,10 +430,7 @@ impl DockLayout {
         );
 
         // Bottom row: tabbed console / asset browser
-        let bottom = DockNode::tabbed(vec![
-            "console".into(),
-            "asset_browser".into(),
-        ]);
+        let bottom = DockNode::tabbed(vec!["console".into(), "asset_browser".into()]);
 
         // Root: vertical split — top area 75%, bottom 25%
         let root = DockNode::v_split(0.75, top, bottom);
@@ -511,12 +504,7 @@ impl DockLayout {
     /// The existing node at `parent_path` becomes one child of a new
     /// split, and the new panel becomes the other. `slot` determines
     /// the split direction. The new panel is placed as the second child.
-    pub fn add_panel(
-        &mut self,
-        parent_path: &[usize],
-        slot: SplitDirection,
-        panel_id: String,
-    ) {
+    pub fn add_panel(&mut self, parent_path: &[usize], slot: SplitDirection, panel_id: String) {
         if let Some(target) = self.get_node_mut(parent_path) {
             let old = std::mem::replace(target, DockNode::Empty);
             *target = DockNode::Split {
@@ -531,12 +519,7 @@ impl DockLayout {
     ///
     /// The panel is removed from its current node and inserted as a new
     /// split at `to_path` with the given target slot direction.
-    pub fn move_panel(
-        &mut self,
-        from: &str,
-        to_path: &[usize],
-        target_slot: SplitDirection,
-    ) {
+    pub fn move_panel(&mut self, from: &str, to_path: &[usize], target_slot: SplitDirection) {
         // Remove from current location.
         if !self.remove_panel(from) {
             return;
@@ -569,11 +552,7 @@ impl DockLayout {
         for &idx in path {
             match current {
                 DockNode::Split { children, .. } => {
-                    current = if idx == 0 {
-                        &children.0
-                    } else {
-                        &children.1
-                    };
+                    current = if idx == 0 { &children.0 } else { &children.1 };
                 }
                 _ => return None,
             }
@@ -601,10 +580,9 @@ impl DockLayout {
                     None
                 }
             }
-            DockNode::Split { children, .. } => {
-                self.find_active_panel_in_node(&children.0, tab_id)
-                    .or_else(|| self.find_active_panel_in_node(&children.1, tab_id))
-            }
+            DockNode::Split { children, .. } => self
+                .find_active_panel_in_node(&children.0, tab_id)
+                .or_else(|| self.find_active_panel_in_node(&children.1, tab_id)),
             DockNode::Tabbed { tabs, active, .. } => {
                 if tabs.iter().any(|t| t == tab_id) {
                     tabs.get(*active).cloned()
@@ -618,8 +596,7 @@ impl DockLayout {
     /// Serialize the layout to a JSON string.
     #[cfg(feature = "serialize")]
     pub fn serialize(&self) -> Result<String, DockError> {
-        serde_json::to_string_pretty(self)
-            .map_err(|e| DockError::SerializationError(e.to_string()))
+        serde_json::to_string_pretty(self).map_err(|e| DockError::SerializationError(e.to_string()))
     }
 
     /// Serialize the layout to a JSON string (no-op without serialize feature).
@@ -633,8 +610,7 @@ impl DockLayout {
     /// Deserialize a layout from a JSON string.
     #[cfg(feature = "serialize")]
     pub fn deserialize(json: &str) -> Result<Self, DockError> {
-        serde_json::from_str(json)
-            .map_err(|e| DockError::SerializationError(e.to_string()))
+        serde_json::from_str(json).map_err(|e| DockError::SerializationError(e.to_string()))
     }
 
     /// Deserialize a layout from a JSON string (no-op without serialize feature).
@@ -795,7 +771,7 @@ impl DockState {
                                 egui::pos2(split_x, rect.top()),
                                 egui::pos2(split_x, rect.bottom()),
                             ],
-                            egui::Stroke::new(2.0, egui::Color32::from_rgb(60, 60, 60)),
+                            egui::Stroke::new(2.0f32, egui::Color32::from_rgb(60, 60, 60)),
                         );
                     }
                     SplitDirection::Vertical => {
@@ -805,7 +781,7 @@ impl DockState {
                                 egui::pos2(rect.left(), split_y),
                                 egui::pos2(rect.right(), split_y),
                             ],
-                            egui::Stroke::new(2.0, egui::Color32::from_rgb(60, 60, 60)),
+                            egui::Stroke::new(2.0f32, egui::Color32::from_rgb(60, 60, 60)),
                         );
                     }
                 }
@@ -831,11 +807,7 @@ impl DockState {
 
                 // Draw tab bar background.
                 let painter = ctx.layer_painter(egui::LayerId::background());
-                painter.rect_filled(
-                    tab_bar_rect,
-                    0.0,
-                    egui::Color32::from_rgb(40, 40, 40),
-                );
+                painter.rect_filled(tab_bar_rect, 0.0, egui::Color32::from_rgb(40, 40, 40));
 
                 // Draw tabs.
                 let mut tab_x = rect.left();
@@ -875,8 +847,10 @@ impl DockState {
                 if let Some(active_id) = tabs.get(*active) {
                     if self.is_panel_visible(active_id) {
                         rects.insert(active_id.clone(), content_rect);
-                        self.panel_sizes
-                            .insert(active_id.clone(), (content_rect.width(), content_rect.height()));
+                        self.panel_sizes.insert(
+                            active_id.clone(),
+                            (content_rect.width(), content_rect.height()),
+                        );
                     }
                 }
             }
@@ -893,10 +867,7 @@ impl DockState {
 
     /// Check if a panel is currently visible.
     pub fn is_panel_visible(&self, panel_id: &str) -> bool {
-        self.panel_visibility
-            .get(panel_id)
-            .copied()
-            .unwrap_or(true)
+        self.panel_visibility.get(panel_id).copied().unwrap_or(true)
     }
 
     /// Save the current layout to a JSON string.
@@ -961,7 +932,10 @@ mod tests {
     fn test_dock_node_leaf_creation() {
         let node = DockNode::leaf("viewport");
         match &node {
-            DockNode::Leaf { panel_id, size_ratio } => {
+            DockNode::Leaf {
+                panel_id,
+                size_ratio,
+            } => {
                 assert_eq!(panel_id, "viewport");
                 assert!((size_ratio - 1.0).abs() < f32::EPSILON);
             }
@@ -973,7 +947,11 @@ mod tests {
     fn test_dock_node_split_creation() {
         let node = DockNode::h_split(0.3, DockNode::leaf("a"), DockNode::leaf("b"));
         match &node {
-            DockNode::Split { direction, ratio, children } => {
+            DockNode::Split {
+                direction,
+                ratio,
+                children,
+            } => {
                 assert_eq!(*direction, SplitDirection::Horizontal);
                 assert!((ratio - 0.3).abs() < 0.01);
                 assert!(matches!(&children.0, DockNode::Leaf { panel_id, .. } if panel_id == "a"));
@@ -1013,7 +991,9 @@ mod tests {
     fn test_default_layout_root_is_vertical_split() {
         let layout = DockLayout::default_layout();
         match &layout.root {
-            DockNode::Split { direction, ratio, .. } => {
+            DockNode::Split {
+                direction, ratio, ..
+            } => {
                 assert_eq!(*direction, SplitDirection::Vertical);
                 assert!((ratio - 0.75).abs() < 0.01);
             }
@@ -1078,7 +1058,9 @@ mod tests {
     fn test_add_panel_creates_split() {
         let mut layout = DockLayout::new();
         // Add "timeline" panel next to viewport.
-        let viewport_path = layout.find_panel("viewport").expect("viewport should exist");
+        let viewport_path = layout
+            .find_panel("viewport")
+            .expect("viewport should exist");
         // Navigate to the split parent — path goes to a split child.
         let parent_path = &viewport_path[..viewport_path.len().saturating_sub(1)];
         layout.add_panel(parent_path, SplitDirection::Vertical, "timeline".into());
@@ -1136,7 +1118,9 @@ mod tests {
         assert_eq!(active, "console");
 
         // "asset_browser" is the second tab — active tab is still console.
-        let active = layout.active_panel_in_tab("asset_browser").expect("should find");
+        let active = layout
+            .active_panel_in_tab("asset_browser")
+            .expect("should find");
         assert_eq!(active, "console");
     }
 
@@ -1168,7 +1152,11 @@ mod tests {
         assert!(drag.preview_zone.is_none());
         assert!(!drag.has_preview());
 
-        state.drag_state.as_mut().unwrap().set_preview_zone(Some(DockZone::Right));
+        state
+            .drag_state
+            .as_mut()
+            .unwrap()
+            .set_preview_zone(Some(DockZone::Right));
         assert!(state.drag_state.as_ref().unwrap().has_preview());
 
         let ended = state.end_drag().expect("should end drag");
@@ -1213,8 +1201,14 @@ mod tests {
 
     #[test]
     fn test_split_direction_invert() {
-        assert_eq!(SplitDirection::Horizontal.invert(), SplitDirection::Vertical);
-        assert_eq!(SplitDirection::Vertical.invert(), SplitDirection::Horizontal);
+        assert_eq!(
+            SplitDirection::Horizontal.invert(),
+            SplitDirection::Vertical
+        );
+        assert_eq!(
+            SplitDirection::Vertical.invert(),
+            SplitDirection::Horizontal
+        );
     }
 
     #[test]
@@ -1244,7 +1238,9 @@ mod tests {
         node.normalize_ratios();
 
         match &node {
-            DockNode::Split { ratio, children, .. } => {
+            DockNode::Split {
+                ratio, children, ..
+            } => {
                 assert!(*ratio <= 0.99 && *ratio >= 0.01);
                 match &children.0 {
                     DockNode::Leaf { size_ratio, .. } => {
@@ -1267,10 +1263,22 @@ mod tests {
 
     #[test]
     fn test_dock_zone_split_direction() {
-        assert_eq!(DockZone::Left.split_direction(), Some(SplitDirection::Horizontal));
-        assert_eq!(DockZone::Right.split_direction(), Some(SplitDirection::Horizontal));
-        assert_eq!(DockZone::Top.split_direction(), Some(SplitDirection::Vertical));
-        assert_eq!(DockZone::Bottom.split_direction(), Some(SplitDirection::Vertical));
+        assert_eq!(
+            DockZone::Left.split_direction(),
+            Some(SplitDirection::Horizontal)
+        );
+        assert_eq!(
+            DockZone::Right.split_direction(),
+            Some(SplitDirection::Horizontal)
+        );
+        assert_eq!(
+            DockZone::Top.split_direction(),
+            Some(SplitDirection::Vertical)
+        );
+        assert_eq!(
+            DockZone::Bottom.split_direction(),
+            Some(SplitDirection::Vertical)
+        );
         assert_eq!(DockZone::Center.split_direction(), None);
     }
 

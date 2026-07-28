@@ -1,7 +1,7 @@
+use super::components::*;
+use crate::component::{Dead, Health, Transform};
 #[cfg(feature = "game")]
 use crate::{Entity, World};
-use crate::component::{Health, Transform, Dead};
-use super::components::*;
 
 /// Rarity tier for loot items, each with a distinct UI color.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -93,9 +93,7 @@ impl InventoryItem {
 
     /// Two items can stack if they share name, type, and rarity.
     pub fn can_stack_with(&self, other: &InventoryItem) -> bool {
-        self.name == other.name
-            && self.item_type == other.item_type
-            && self.rarity == other.rarity
+        self.name == other.name && self.item_type == other.item_type && self.rarity == other.rarity
     }
 
     /// Add `count` items to this stack. Returns the amount that overflowed.
@@ -282,10 +280,7 @@ impl LootSpawner {
                 entity,
                 Transform::new(position[0] + offset_x, position[1], position[2] + offset_z),
             );
-            world.add_component(
-                entity,
-                LootPickup::new().with_gold(loot.gold),
-            );
+            world.add_component(entity, LootPickup::new().with_gold(loot.gold));
             world.add_component(entity, PickupRadius::new(2.0));
             entities.push(entity);
             idx += 1;
@@ -315,7 +310,10 @@ impl LootSpawner {
     /// Convenience: spawn a single gold pile.
     pub fn spawn_gold_pile(world: &mut World, position: [f32; 3], amount: u32) -> Entity {
         let entity = world.create_entity();
-        world.add_component(entity, Transform::new(position[0], position[1], position[2]));
+        world.add_component(
+            entity,
+            Transform::new(position[0], position[1], position[2]),
+        );
         world.add_component(entity, LootPickup::new().with_gold(amount));
         world.add_component(entity, PickupRadius::new(2.0));
         entity
@@ -581,13 +579,17 @@ mod tests {
 
         // Verify gold entity
         let gold_entity = entities[0];
-        let gold_pickup = world.get_component::<LootPickup>(gold_entity).expect("pickup");
+        let gold_pickup = world
+            .get_component::<LootPickup>(gold_entity)
+            .expect("pickup");
         assert_eq!(gold_pickup.gold_amount, 25);
         assert!(gold_pickup.item.is_none());
 
         // Verify item entity
         let item_entity = entities[1];
-        let item_pickup = world.get_component::<LootPickup>(item_entity).expect("pickup");
+        let item_pickup = world
+            .get_component::<LootPickup>(item_entity)
+            .expect("pickup");
         assert_eq!(item_pickup.gold_amount, 0); // item entity has no gold
         assert!(item_pickup.item.is_some());
         assert_eq!(item_pickup.item.as_ref().unwrap().name, "Rusty Dagger");

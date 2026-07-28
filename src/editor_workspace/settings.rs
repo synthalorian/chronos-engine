@@ -75,7 +75,9 @@ impl EditorSettings {
         self.gizmo_size = self.gizmo_size.clamp(20.0, 200.0);
         self.pick_radius = self.pick_radius.clamp(1.0, 50.0);
         self.default_camera_distance = self.default_camera_distance.clamp(1.0, 1000.0);
-        self.default_camera_pitch_rad = self.default_camera_pitch_rad.clamp(0.0, std::f32::consts::FRAC_PI_2);
+        self.default_camera_pitch_rad = self
+            .default_camera_pitch_rad
+            .clamp(0.0, std::f32::consts::FRAC_PI_2);
         self.camera_speed = self.camera_speed.clamp(0.1, 10.0);
         self.zoom_speed = self.zoom_speed.clamp(0.1, 10.0);
     }
@@ -176,10 +178,7 @@ impl SettingsDialog {
         ui.add_space(4.0);
 
         ui.checkbox(&mut s.vsync, "VSync");
-        ui.add(
-            egui::Slider::new(&mut s.max_fps, 30..=240)
-                .text("Max FPS"),
-        );
+        ui.add(egui::Slider::new(&mut s.max_fps, 30..=240).text("Max FPS"));
 
         ui.add_space(8.0);
         ui.heading("Background");
@@ -192,14 +191,8 @@ impl SettingsDialog {
         ui.heading("Grid");
         ui.checkbox(&mut s.grid_visible, "Show Grid");
         ui.add_enabled_ui(s.grid_visible, |ui| {
-            ui.add(
-                egui::Slider::new(&mut s.grid_spacing, 0.1..=100.0)
-                    .text("Grid Spacing"),
-            );
-            ui.add(
-                egui::Slider::new(&mut s.grid_major_every, 2..=20)
-                    .text("Major Every N"),
-            );
+            ui.add(egui::Slider::new(&mut s.grid_spacing, 0.1..=100.0).text("Grid Spacing"));
+            ui.add(egui::Slider::new(&mut s.grid_major_every, 2..=20).text("Major Every N"));
         });
     }
 
@@ -211,10 +204,7 @@ impl SettingsDialog {
         ui.heading("General");
         ui.add_space(4.0);
 
-        ui.add(
-            egui::Slider::new(&mut s.undo_history_size, 10..=1000)
-                .text("Undo History Size"),
-        );
+        ui.add(egui::Slider::new(&mut s.undo_history_size, 10..=1000).text("Undo History Size"));
 
         // Auto-save
         ui.add_space(4.0);
@@ -226,8 +216,7 @@ impl SettingsDialog {
         }
         ui.add_enabled_ui(toggle, |ui| {
             ui.add(
-                egui::Slider::new(&mut s.auto_save_interval_secs, 30..=3600)
-                    .text("Interval (s)"),
+                egui::Slider::new(&mut s.auto_save_interval_secs, 30..=3600).text("Interval (s)"),
             );
         });
 
@@ -235,22 +224,13 @@ impl SettingsDialog {
         ui.heading("Snap");
         ui.checkbox(&mut s.snap_enabled, "Enable Snap");
         ui.add_enabled_ui(s.snap_enabled, |ui| {
-            ui.add(
-                egui::Slider::new(&mut s.snap_size, 0.01..=100.0)
-                    .text("Snap Size"),
-            );
+            ui.add(egui::Slider::new(&mut s.snap_size, 0.01..=100.0).text("Snap Size"));
         });
 
         ui.add_space(8.0);
         ui.heading("Tools");
-        ui.add(
-            egui::Slider::new(&mut s.gizmo_size, 20.0..=200.0)
-                .text("Gizmo Size (px)"),
-        );
-        ui.add(
-            egui::Slider::new(&mut s.pick_radius, 1.0..=50.0)
-                .text("Pick Radius (px)"),
-        );
+        ui.add(egui::Slider::new(&mut s.gizmo_size, 20.0..=200.0).text("Gizmo Size (px)"));
+        ui.add(egui::Slider::new(&mut s.pick_radius, 1.0..=50.0).text("Pick Radius (px)"));
 
         ui.add_space(8.0);
         ui.heading("Viewport Camera");
@@ -262,14 +242,8 @@ impl SettingsDialog {
             egui::Slider::new(&mut s.default_camera_pitch_rad, 0.0..=1.5707964)
                 .text("Default Pitch (rad)"),
         );
-        ui.add(
-            egui::Slider::new(&mut s.camera_speed, 0.1..=10.0)
-                .text("Camera Speed"),
-        );
-        ui.add(
-            egui::Slider::new(&mut s.zoom_speed, 0.1..=10.0)
-                .text("Zoom Speed"),
-        );
+        ui.add(egui::Slider::new(&mut s.camera_speed, 0.1..=10.0).text("Camera Speed"));
+        ui.add(egui::Slider::new(&mut s.zoom_speed, 0.1..=10.0).text("Zoom Speed"));
     }
 
     // ── Shortcuts tab (placeholder) ───────────────

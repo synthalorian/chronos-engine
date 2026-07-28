@@ -559,9 +559,7 @@ mod tests {
     #[test]
     fn test_lifecycle_execution_error_propagates() {
         let mut engine = rhai::Engine::new();
-        let ast = engine
-            .compile("fn on_start() { throw \"boom\"; }")
-            .unwrap();
+        let ast = engine.compile("fn on_start() { throw \"boom\"; }").unwrap();
         let mut scope = rhai::Scope::new();
         let mut lc = ScriptLifecycle::new();
 

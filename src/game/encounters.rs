@@ -1,6 +1,4 @@
 #[cfg(feature = "game")]
-
-
 use std::collections::HashMap;
 
 // ── EncounterType ──
@@ -458,7 +456,7 @@ mod tests {
         assert!(mgr.nearest_active(0.0, 0.0, 0.0).is_none());
 
         mgr.spawn_encounter(EncounterType::Ambush, 10.0, 0.0, 0.0, 3); // id 0, dist=10
-        mgr.spawn_encounter(EncounterType::Patrol, 2.0, 0.0, 0.0, 3);  // id 1, dist=2
+        mgr.spawn_encounter(EncounterType::Patrol, 2.0, 0.0, 0.0, 3); // id 1, dist=2
         mgr.spawn_encounter(EncounterType::Wildlife, 50.0, 0.0, 0.0, 3); // id 2, dist=50
 
         let nearest = mgr.nearest_active(0.0, 0.0, 0.0).unwrap();
@@ -472,14 +470,38 @@ mod tests {
 
     #[test]
     fn system_generate_encounter() {
-        assert_eq!(EncounterSystem::generate_encounter_for_region(0), EncounterType::Ambush);
-        assert_eq!(EncounterSystem::generate_encounter_for_region(1), EncounterType::Patrol);
-        assert_eq!(EncounterSystem::generate_encounter_for_region(2), EncounterType::Bandit);
-        assert_eq!(EncounterSystem::generate_encounter_for_region(3), EncounterType::Wildlife);
-        assert_eq!(EncounterSystem::generate_encounter_for_region(4), EncounterType::Trader);
-        assert_eq!(EncounterSystem::generate_encounter_for_region(5), EncounterType::Mystery);
-        assert_eq!(EncounterSystem::generate_encounter_for_region(6), EncounterType::Boss);
-        assert_eq!(EncounterSystem::generate_encounter_for_region(7), EncounterType::Ambush); // wraps
+        assert_eq!(
+            EncounterSystem::generate_encounter_for_region(0),
+            EncounterType::Ambush
+        );
+        assert_eq!(
+            EncounterSystem::generate_encounter_for_region(1),
+            EncounterType::Patrol
+        );
+        assert_eq!(
+            EncounterSystem::generate_encounter_for_region(2),
+            EncounterType::Bandit
+        );
+        assert_eq!(
+            EncounterSystem::generate_encounter_for_region(3),
+            EncounterType::Wildlife
+        );
+        assert_eq!(
+            EncounterSystem::generate_encounter_for_region(4),
+            EncounterType::Trader
+        );
+        assert_eq!(
+            EncounterSystem::generate_encounter_for_region(5),
+            EncounterType::Mystery
+        );
+        assert_eq!(
+            EncounterSystem::generate_encounter_for_region(6),
+            EncounterType::Boss
+        );
+        assert_eq!(
+            EncounterSystem::generate_encounter_for_region(7),
+            EncounterType::Ambush
+        ); // wraps
     }
 
     #[test]

@@ -26,10 +26,7 @@ pub enum ModError {
         engine: String,
     },
     /// A dependency referenced by the mod is not loaded.
-    MissingDependency {
-        mod_name: String,
-        missing: String,
-    },
+    MissingDependency { mod_name: String, missing: String },
     /// A dependency cycle was detected.
     CircularDependency(Vec<String>),
     /// Failed to parse mod data (e.g. malformed JSON).
@@ -52,14 +49,9 @@ impl fmt::Display for ModError {
                 "mod '{}' requires engine version {}, but running {}",
                 mod_name, required, engine
             ),
-            ModError::MissingDependency {
-                mod_name,
-                missing,
-            } => write!(
-                f,
-                "mod '{}' is missing dependency: {}",
-                mod_name, missing
-            ),
+            ModError::MissingDependency { mod_name, missing } => {
+                write!(f, "mod '{}' is missing dependency: {}", mod_name, missing)
+            }
             ModError::CircularDependency(cycle) => {
                 write!(f, "circular dependency detected: {}", cycle.join(" -> "))
             }
@@ -192,7 +184,10 @@ impl ModMetadata {
             // skip colon and whitespace
             let rest = after_key.trim_start();
             if !rest.starts_with(':') {
-                return Err(ModError::ParseError(format!("expected ':' after key {}", key)));
+                return Err(ModError::ParseError(format!(
+                    "expected ':' after key {}",
+                    key
+                )));
             }
             let rest = rest[1..].trim_start();
 
@@ -311,7 +306,8 @@ impl Mod {
 
     /// Get the source code of the entry-point script, if present.
     pub fn entry_point_source(&self) -> Option<&str> {
-        self.get_script(&self.metadata.entry_point).map(|e| e.source.as_str())
+        self.get_script(&self.metadata.entry_point)
+            .map(|e| e.source.as_str())
     }
 
     /// Enable the mod.
@@ -482,9 +478,7 @@ impl ModLoader {
     pub fn enabled_mods(&self) -> Vec<&Mod> {
         self.load_order
             .iter()
-            .filter_map(|name| {
-                self.mods.get(name).filter(|m| m.enabled)
-            })
+            .filter_map(|name| self.mods.get(name).filter(|m| m.enabled))
             .collect()
     }
 
@@ -667,9 +661,9 @@ fn parse_json_string_array(json: &str, key: &str) -> Result<Vec<String>, ModErro
         .ok_or_else(|| ModError::ParseError(format!("missing key: {}", key)))?;
     let rest = &json[start + pattern.len()..];
     let rest = rest.trim_start();
-    let rest = rest.strip_prefix(':').ok_or_else(|| {
-        ModError::ParseError(format!("expected ':' after key {}", key))
-    })?;
+    let rest = rest
+        .strip_prefix(':')
+        .ok_or_else(|| ModError::ParseError(format!("expected ':' after key {}", key)))?;
     let rest = rest.trim_start();
 
     if !rest.starts_with('[') {
@@ -910,12 +904,8 @@ mod tests {
     #[test]
     fn loader_list_and_enabled() {
         let mut loader = ModLoader::new("0.3.0");
-        loader
-            .load_mod(ModMetadata::new("a", "1.0.0"))
-            .unwrap();
-        loader
-            .load_mod(ModMetadata::new("b", "1.0.0"))
-            .unwrap();
+        loader.load_mod(ModMetadata::new("a", "1.0.0")).unwrap();
+        loader.load_mod(ModMetadata::new("b", "1.0.0")).unwrap();
 
         assert_eq!(loader.list_mods(), vec!["a", "b"]);
         assert_eq!(loader.enabled_mods().len(), 2);
@@ -932,17 +922,26 @@ mod tests {
     fn loader_all_scripts() {
         let mut loader = ModLoader::new("0.3.0");
         loader.load_mod(ModMetadata::new("s1", "1.0.0")).unwrap();
-        loader.add_script_to_mod("s1", "main.rhai", "code_a").unwrap();
+        loader
+            .add_script_to_mod("s1", "main.rhai", "code_a")
+            .unwrap();
 
         loader.load_mod(ModMetadata::new("s2", "1.0.0")).unwrap();
-        loader.add_script_to_mod("s2", "main.rhai", "code_b").unwrap();
-        loader.add_script_to_mod("s2", "util.rhai", "code_c").unwrap();
+        loader
+            .add_script_to_mod("s2", "main.rhai", "code_b")
+            .unwrap();
+        loader
+            .add_script_to_mod("s2", "util.rhai", "code_c")
+            .unwrap();
 
         // Disable s2 — only s1 scripts should appear
         loader.get_mod_mut("s2").unwrap().disable();
         let scripts = loader.all_scripts();
         assert_eq!(scripts.len(), 1);
-        assert_eq!(scripts[0], ("s1".to_string(), "main.rhai".to_string(), "code_a"));
+        assert_eq!(
+            scripts[0],
+            ("s1".to_string(), "main.rhai".to_string(), "code_a")
+        );
     }
 
     // ---- ModLoader: resolve_dependencies ----
@@ -952,18 +951,12 @@ mod tests {
         let mut loader = ModLoader::new("0.3.0");
 
         // base <- mid <- top
+        loader.load_mod(ModMetadata::new("base", "1.0.0")).unwrap();
         loader
-            .load_mod(ModMetadata::new("base", "1.0.0"))
+            .load_mod(ModMetadata::new("mid", "1.0.0").with_dependency("base"))
             .unwrap();
         loader
-            .load_mod(
-                ModMetadata::new("mid", "1.0.0").with_dependency("base"),
-            )
-            .unwrap();
-        loader
-            .load_mod(
-                ModMetadata::new("top", "1.0.0").with_dependency("mid"),
-            )
+            .load_mod(ModMetadata::new("top", "1.0.0").with_dependency("mid"))
             .unwrap();
 
         let order = loader.resolve_dependencies().unwrap();
@@ -975,14 +968,10 @@ mod tests {
         let mut loader = ModLoader::new("0.3.0");
 
         loader
-            .load_mod(
-                ModMetadata::new("x", "1.0.0").with_dependency("y"),
-            )
+            .load_mod(ModMetadata::new("x", "1.0.0").with_dependency("y"))
             .unwrap();
         loader
-            .load_mod(
-                ModMetadata::new("y", "1.0.0").with_dependency("x"),
-            )
+            .load_mod(ModMetadata::new("y", "1.0.0").with_dependency("x"))
             .unwrap();
 
         let result = loader.resolve_dependencies();
@@ -1047,13 +1036,13 @@ mod tests {
         loader.add_script_to_mod("good", "main.rhai", "ok").unwrap();
 
         // Mod missing entry point
-        loader.load_mod(ModMetadata::new("no_entry", "1.0.0")).unwrap();
+        loader
+            .load_mod(ModMetadata::new("no_entry", "1.0.0"))
+            .unwrap();
 
         // Mod with missing dependency
         loader
-            .load_mod(
-                ModMetadata::new("orphan", "1.0.0").with_dependency("nonexistent"),
-            )
+            .load_mod(ModMetadata::new("orphan", "1.0.0").with_dependency("nonexistent"))
             .unwrap();
 
         let result = loader.validate_all();
@@ -1070,10 +1059,7 @@ mod tests {
         let mut loader = ModLoader::new("0.3.0");
         let meta = ModMetadata::new("old", "1.0.0").with_game_version("0.2");
         let result = loader.load_mod(meta);
-        assert!(matches!(
-            result,
-            Err(ModError::IncompatibleVersion { .. })
-        ));
+        assert!(matches!(result, Err(ModError::IncompatibleVersion { .. })));
     }
 
     // ---- add_script_to_mod errors ----

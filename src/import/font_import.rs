@@ -369,9 +369,9 @@ impl FontImporter {
                     if px < w && py < h {
                         let idx = ((py * w + px) * 4) as usize;
                         if idx + 3 < pixels.len() {
-                            pixels[idx] = 255;       // R
-                            pixels[idx + 1] = 255;   // G
-                            pixels[idx + 2] = 255;   // B
+                            pixels[idx] = 255; // R
+                            pixels[idx + 1] = 255; // G
+                            pixels[idx + 2] = 255; // B
                             pixels[idx + 3] = (v * 255.0).round() as u8; // A
                         }
                     }
@@ -552,29 +552,50 @@ mod tests {
             "file not found",
         ));
         let msg = io_err.to_string();
-        assert!(msg.contains("IO error:"), "expected 'IO error:' in '{}'", msg);
-        assert!(msg.contains("file not found"), "expected 'file not found' in '{}'", msg);
+        assert!(
+            msg.contains("IO error:"),
+            "expected 'IO error:' in '{}'",
+            msg
+        );
+        assert!(
+            msg.contains("file not found"),
+            "expected 'file not found' in '{}'",
+            msg
+        );
 
         let invalid = FontImportError::InvalidFont("bad magic".into());
         let msg = invalid.to_string();
-        assert!(msg.contains("Invalid font:"), "expected 'Invalid font:' in '{}'", msg);
-        assert!(msg.contains("bad magic"), "expected 'bad magic' in '{}'", msg);
+        assert!(
+            msg.contains("Invalid font:"),
+            "expected 'Invalid font:' in '{}'",
+            msg
+        );
+        assert!(
+            msg.contains("bad magic"),
+            "expected 'bad magic' in '{}'",
+            msg
+        );
 
         let raster = FontImportError::RasterizationFailed("overflow".into());
         let msg = raster.to_string();
-        assert!(msg.contains("Rasterization failed:"), "expected 'Rasterization failed:' in '{}'", msg);
+        assert!(
+            msg.contains("Rasterization failed:"),
+            "expected 'Rasterization failed:' in '{}'",
+            msg
+        );
 
         let atlas = FontImportError::AtlasTooSmall;
         let msg = atlas.to_string();
-        assert!(msg.contains("too small"), "expected 'too small' in '{}'", msg);
+        assert!(
+            msg.contains("too small"),
+            "expected 'too small' in '{}'",
+            msg
+        );
     }
 
     #[test]
     fn test_error_source_chain() {
-        let io_err = FontImportError::Io(std::io::Error::new(
-            std::io::ErrorKind::NotFound,
-            "gone",
-        ));
+        let io_err = FontImportError::Io(std::io::Error::new(std::io::ErrorKind::NotFound, "gone"));
         assert!(std::error::Error::source(&io_err).is_some());
 
         let invalid = FontImportError::InvalidFont("x".into());
@@ -696,16 +717,14 @@ mod tests {
 
     #[test]
     fn test_pack_atlas_too_small() {
-        let glyphs = vec![
-            GlyphMetrics {
-                character: 'X',
-                width: 10,
-                height: MAX_ATLAS_HEIGHT + 1,
-                advance_w: 12.0,
-                bearing_x: 0.0,
-                bearing_y: 0.0,
-            },
-        ];
+        let glyphs = vec![GlyphMetrics {
+            character: 'X',
+            width: 10,
+            height: MAX_ATLAS_HEIGHT + 1,
+            advance_w: 12.0,
+            bearing_x: 0.0,
+            bearing_y: 0.0,
+        }];
 
         let result = FontImporter::pack_glyphs(&glyphs, 100, 1);
         assert!(result.is_err());

@@ -42,14 +42,17 @@ impl BitmapFont {
             let _frame_name = format!("glyph_{}", ch as u32);
             let col = i as u32 % columns;
             let row = i as u32 / columns;
-            self.glyphs.insert(ch, GlyphInfo {
-                frame_name: format!("tile_{}", row * columns + col),
-                metrics: GlyphMetrics {
-                    advance_w: self.glyph_size as f32,
-                    bearing_x: 0.0,
-                    bearing_y: 0.0,
+            self.glyphs.insert(
+                ch,
+                GlyphInfo {
+                    frame_name: format!("tile_{}", row * columns + col),
+                    metrics: GlyphMetrics {
+                        advance_w: self.glyph_size as f32,
+                        bearing_x: 0.0,
+                        bearing_y: 0.0,
+                    },
                 },
-            });
+            );
         }
     }
 
@@ -61,14 +64,17 @@ impl BitmapFont {
         bearing_x: f32,
         bearing_y: f32,
     ) {
-        self.glyphs.insert(ch, GlyphInfo {
-            frame_name: frame_name.to_string(),
-            metrics: GlyphMetrics {
-                advance_w,
-                bearing_x,
-                bearing_y,
+        self.glyphs.insert(
+            ch,
+            GlyphInfo {
+                frame_name: frame_name.to_string(),
+                metrics: GlyphMetrics {
+                    advance_w,
+                    bearing_x,
+                    bearing_y,
+                },
             },
-        });
+        );
     }
 
     pub fn set_kerning(&mut self, left: char, right: char, offset: f32) {
@@ -115,10 +121,12 @@ impl BitmapFont {
                     let gw = frame.pixel_w as f32 * scale;
                     let gh = frame.pixel_h as f32 * scale;
 
-                    sprites.push(RenderSprite::new(gx + gw * 0.5, gy + gh * 0.5, gw, gh)
-                        .with_uv(frame.u, frame.v, frame.u + frame.du, frame.v + frame.dv)
-                        .with_layer(layer)
-                        .with_color(color[0], color[1], color[2], color[3]));
+                    sprites.push(
+                        RenderSprite::new(gx + gw * 0.5, gy + gh * 0.5, gw, gh)
+                            .with_uv(frame.u, frame.v, frame.u + frame.du, frame.v + frame.dv)
+                            .with_layer(layer)
+                            .with_color(color[0], color[1], color[2], color[3]),
+                    );
 
                     cursor_x += glyph.metrics.advance_w * scale;
                 } else {

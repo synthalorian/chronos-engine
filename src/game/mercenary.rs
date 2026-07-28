@@ -1,8 +1,7 @@
-#[cfg(feature = "game")]
-
-use crate::{Entity, World};
-use crate::component::{Health, Transform, Velocity};
 use super::components::*;
+use crate::component::{Health, Transform, Velocity};
+#[cfg(feature = "game")]
+use crate::{Entity, World};
 
 /// Preset mercenary archetypes with distinct stat profiles.
 #[derive(Debug, Clone, Copy)]
@@ -47,10 +46,12 @@ impl MercenaryFactory {
         let entity = world.create_entity();
 
         let (str, dex, int, vit) = template.base_stats();
-        let stats = MercenaryStats::new(template.default_name())
-            .with_stats(str, dex, int, vit);
+        let stats = MercenaryStats::new(template.default_name()).with_stats(str, dex, int, vit);
 
-        world.add_component(entity, Transform::new(position[0], position[1], position[2]));
+        world.add_component(
+            entity,
+            Transform::new(position[0], position[1], position[2]),
+        );
         world.add_component(entity, Velocity::new(0.0, 0.0));
         world.add_component(entity, Health::new(vit * 10));
         world.add_component(entity, stats);
@@ -107,7 +108,9 @@ mod tests {
         assert!(world.has_component::<Team>(entity));
         assert!(world.has_component::<Selectable>(entity));
 
-        let stats = world.get_component::<MercenaryStats>(entity).expect("stats");
+        let stats = world
+            .get_component::<MercenaryStats>(entity)
+            .expect("stats");
         assert_eq!(stats.strength, 15);
         assert_eq!(stats.vitality, 12);
     }

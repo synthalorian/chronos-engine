@@ -203,8 +203,16 @@ impl GizmoSystem {
         let radius = length * 0.65;
         let segments = [
             (GizmoAxis::X, 0.0, std::f32::consts::PI * 2.0),
-            (GizmoAxis::Y, std::f32::consts::FRAC_PI_3, std::f32::consts::PI * 2.0 + std::f32::consts::FRAC_PI_3),
-            (GizmoAxis::Z, std::f32::consts::FRAC_PI_6, std::f32::consts::PI * 2.0 + std::f32::consts::FRAC_PI_6),
+            (
+                GizmoAxis::Y,
+                std::f32::consts::FRAC_PI_3,
+                std::f32::consts::PI * 2.0 + std::f32::consts::FRAC_PI_3,
+            ),
+            (
+                GizmoAxis::Z,
+                std::f32::consts::FRAC_PI_6,
+                std::f32::consts::PI * 2.0 + std::f32::consts::FRAC_PI_6,
+            ),
         ];
 
         for (axis, start, end) in segments {
@@ -251,10 +259,7 @@ impl GizmoSystem {
             };
 
             // Axis line (no arrow — the box cap replaces the arrowhead).
-            painter.line_segment(
-                [center, end],
-                egui::Stroke::new(thickness, color),
-            );
+            painter.line_segment([center, end], egui::Stroke::new(thickness, color));
             draw_box_cap(painter, end, BOX_CAP_HALF, color);
         }
     }
@@ -267,11 +272,7 @@ impl GizmoSystem {
     /// * Returns `None` when no drag is in progress.
     /// * Returns `Some(GizmoResult)` each frame while dragging.
     /// * Clears state automatically on mouse release.
-    pub fn handle_input(
-        &mut self,
-        ui: &mut egui::Ui,
-        center: egui::Pos2,
-    ) -> Option<GizmoResult> {
+    pub fn handle_input(&mut self, ui: &mut egui::Ui, center: egui::Pos2) -> Option<GizmoResult> {
         let mouse_pos = ui.input(|i| i.pointer.interact_pos());
         let primary_down = ui.input(|i| i.pointer.primary_down());
         let pointer_delta = ui.input(|i| i.pointer.delta());
@@ -430,10 +431,7 @@ fn draw_arrow(
     thickness: f32,
 ) {
     // Shaft.
-    painter.line_segment(
-        [start, end],
-        egui::Stroke::new(thickness, color),
-    );
+    painter.line_segment([start, end], egui::Stroke::new(thickness, color));
 
     // Arrowhead triangle.
     let dir = (end - start).normalized();
@@ -447,7 +445,7 @@ fn draw_arrow(
     painter.add(egui::Shape::convex_polygon(
         vec![tip, left, right],
         color,
-        egui::Stroke::new(1.0, color),
+        egui::Stroke::new(1.0f32, color),
     ));
 }
 
@@ -474,19 +472,13 @@ fn draw_arc(
     }
 
     for window in points.windows(2) {
-        painter.line_segment(
-            [window[0], window[1]],
-            egui::Stroke::new(thickness, color),
-        );
+        painter.line_segment([window[0], window[1]], egui::Stroke::new(thickness, color));
     }
 }
 
 /// Draw a filled box cap at `pos` (small square marker).
 fn draw_box_cap(painter: &egui::Painter, pos: egui::Pos2, half_size: f32, color: egui::Color32) {
-    let rect = egui::Rect::from_center_size(
-        pos,
-        egui::Vec2::splat(half_size * 2.0),
-    );
+    let rect = egui::Rect::from_center_size(pos, egui::Vec2::splat(half_size * 2.0));
     painter.rect_filled(rect, 0.0, color);
 }
 
@@ -587,10 +579,7 @@ mod tests {
         let center = egui::pos2(200.0, 200.0);
         let end_z = GizmoSystem::axis_end_z(center, gizmo.gizmo_size);
         // Place mouse at the midpoint of the Z axis.
-        let mid = egui::pos2(
-            (center.x + end_z.x) / 2.0,
-            (center.y + end_z.y) / 2.0,
-        );
+        let mid = egui::pos2((center.x + end_z.x) / 2.0, (center.y + end_z.y) / 2.0);
         assert_eq!(gizmo.hit_test(mid, center), Some(GizmoAxis::Z));
     }
 

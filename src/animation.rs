@@ -240,17 +240,28 @@ impl BlendTree {
 
         match &self.blend_type {
             BlendType::Blend1D { parameter } => {
-                let value = params.iter().find_map(|p| {
-                    if let AnimParam::Float { name, value } = p {
-                        if name == parameter { Some(*value) } else { None }
-                    } else {
-                        None
-                    }
-                }).unwrap_or(0.0);
+                let value = params
+                    .iter()
+                    .find_map(|p| {
+                        if let AnimParam::Float { name, value } = p {
+                            if name == parameter {
+                                Some(*value)
+                            } else {
+                                None
+                            }
+                        } else {
+                            None
+                        }
+                    })
+                    .unwrap_or(0.0);
 
                 // Sort children by position[0] to find neighbors
                 let mut sorted: Vec<&BlendChild> = self.children.iter().collect();
-                sorted.sort_by(|a, b| a.position[0].partial_cmp(&b.position[0]).unwrap_or(std::cmp::Ordering::Equal));
+                sorted.sort_by(|a, b| {
+                    a.position[0]
+                        .partial_cmp(&b.position[0])
+                        .unwrap_or(std::cmp::Ordering::Equal)
+                });
 
                 // Clamp to first/last
                 if value <= sorted[0].position[0] {
@@ -266,7 +277,11 @@ impl BlendTree {
                     let hi = sorted[i + 1].position[0];
                     if value >= lo && value <= hi {
                         let range = hi - lo;
-                        let t = if range.abs() < 1e-8 { 0.0 } else { (value - lo) / range };
+                        let t = if range.abs() < 1e-8 {
+                            0.0
+                        } else {
+                            (value - lo) / range
+                        };
                         // Return the lower child with weight (1-t), or upper with weight t
                         // We return the dominant clip and its weight
                         if t <= 0.5 {
@@ -279,21 +294,35 @@ impl BlendTree {
                 (sorted[0].clip_index, 1.0)
             }
             BlendType::Blend2D { param_x, param_y } => {
-                let x = params.iter().find_map(|p| {
-                    if let AnimParam::Float { name, value } = p {
-                        if name == param_x { Some(*value) } else { None }
-                    } else {
-                        None
-                    }
-                }).unwrap_or(0.0);
+                let x = params
+                    .iter()
+                    .find_map(|p| {
+                        if let AnimParam::Float { name, value } = p {
+                            if name == param_x {
+                                Some(*value)
+                            } else {
+                                None
+                            }
+                        } else {
+                            None
+                        }
+                    })
+                    .unwrap_or(0.0);
 
-                let y = params.iter().find_map(|p| {
-                    if let AnimParam::Float { name, value } = p {
-                        if name == param_y { Some(*value) } else { None }
-                    } else {
-                        None
-                    }
-                }).unwrap_or(0.0);
+                let y = params
+                    .iter()
+                    .find_map(|p| {
+                        if let AnimParam::Float { name, value } = p {
+                            if name == param_y {
+                                Some(*value)
+                            } else {
+                                None
+                            }
+                        } else {
+                            None
+                        }
+                    })
+                    .unwrap_or(0.0);
 
                 // Find nearest child by distance
                 let mut best_idx = 0;
@@ -388,7 +417,11 @@ pub enum AnimStateUpdate {
     /// Currently playing a state at the given local time.
     Playing { state: String, time: f32 },
     /// Currently crossfading between two states.
-    Transitioning { from: String, to: String, progress: f32 },
+    Transitioning {
+        from: String,
+        to: String,
+        progress: f32,
+    },
     /// The animation has finished (non-looping state reached the end).
     Finished,
 }
@@ -543,7 +576,11 @@ impl AnimStateMachine {
         let transitions: Vec<AnimTransition> = state.transitions.clone();
         for transition in &transitions {
             if transition.all_conditions_met(&self.parameters) {
-                if let Some(target_idx) = self.states.iter().position(|s| s.name == transition.target_state) {
+                if let Some(target_idx) = self
+                    .states
+                    .iter()
+                    .position(|s| s.name == transition.target_state)
+                {
                     if target_idx != self.current_state_index {
                         // Begin transition
                         self.transitioning_from = Some(self.current_state_index);
@@ -613,7 +650,10 @@ pub struct SpriteFrame {
 impl SpriteFrame {
     /// Create a new sprite frame.
     pub fn new(sprite_index: usize, duration: f32) -> Self {
-        SpriteFrame { sprite_index, duration }
+        SpriteFrame {
+            sprite_index,
+            duration,
+        }
     }
 }
 
@@ -838,7 +878,11 @@ impl TimelineTrack {
         let prev = &self.keyframes[idx - 1];
         let next = &self.keyframes[idx];
         let range = next.time - prev.time;
-        let t = if range.abs() < 1e-8 { 0.0 } else { (time - prev.time) / range };
+        let t = if range.abs() < 1e-8 {
+            0.0
+        } else {
+            (time - prev.time) / range
+        };
 
         match next.interpolation {
             Interpolation::Step => Some(prev.value.clone()),
@@ -969,21 +1013,17 @@ fn interpolate_value(a: &KeyframeValue, b: &KeyframeValue, t: f32) -> KeyframeVa
         (KeyframeValue::Float(va), KeyframeValue::Float(vb)) => {
             KeyframeValue::Float(va + (vb - va) * t)
         }
-        (KeyframeValue::Vec3(va), KeyframeValue::Vec3(vb)) => {
-            KeyframeValue::Vec3([
-                va[0] + (vb[0] - va[0]) * t,
-                va[1] + (vb[1] - va[1]) * t,
-                va[2] + (vb[2] - va[2]) * t,
-            ])
-        }
-        (KeyframeValue::Color(va), KeyframeValue::Color(vb)) => {
-            KeyframeValue::Color([
-                va[0] + (vb[0] - va[0]) * t,
-                va[1] + (vb[1] - va[1]) * t,
-                va[2] + (vb[2] - va[2]) * t,
-                va[3] + (vb[3] - va[3]) * t,
-            ])
-        }
+        (KeyframeValue::Vec3(va), KeyframeValue::Vec3(vb)) => KeyframeValue::Vec3([
+            va[0] + (vb[0] - va[0]) * t,
+            va[1] + (vb[1] - va[1]) * t,
+            va[2] + (vb[2] - va[2]) * t,
+        ]),
+        (KeyframeValue::Color(va), KeyframeValue::Color(vb)) => KeyframeValue::Color([
+            va[0] + (vb[0] - va[0]) * t,
+            va[1] + (vb[1] - va[1]) * t,
+            va[2] + (vb[2] - va[2]) * t,
+            va[3] + (vb[3] - va[3]) * t,
+        ]),
         // For mismatched types or events, return the target at t > 0.5
         (_, vb) => {
             if t > 0.5 {
@@ -1007,68 +1047,130 @@ mod tests {
 
     #[test]
     fn test_animparam_creation_and_matching() {
-        let p1 = AnimParam::Bool { name: "alive".to_string(), value: true };
-        let p2 = AnimParam::Float { name: "speed".to_string(), value: 5.5 };
-        let p3 = AnimParam::Trigger { name: "jump".to_string(), triggered: true };
-        let p4 = AnimParam::Int { name: "combo".to_string(), value: 3 };
+        let p1 = AnimParam::Bool {
+            name: "alive".to_string(),
+            value: true,
+        };
+        let p2 = AnimParam::Float {
+            name: "speed".to_string(),
+            value: 5.5,
+        };
+        let p3 = AnimParam::Trigger {
+            name: "jump".to_string(),
+            triggered: true,
+        };
+        let p4 = AnimParam::Int {
+            name: "combo".to_string(),
+            value: 3,
+        };
 
         assert_eq!(p1.name(), "alive");
         assert_eq!(p2.name(), "speed");
         assert_eq!(p3.name(), "jump");
         assert_eq!(p4.name(), "combo");
 
-        assert_eq!(p1, AnimParam::Bool { name: "alive".to_string(), value: true });
+        assert_eq!(
+            p1,
+            AnimParam::Bool {
+                name: "alive".to_string(),
+                value: true
+            }
+        );
     }
 
     // --- AnimCondition Tests ---
 
     #[test]
     fn test_condition_bool_equals() {
-        let params = vec![AnimParam::Bool { name: "grounded".to_string(), value: true }];
-        let cond = AnimCondition::BoolEquals { param: "grounded".to_string(), value: true };
+        let params = vec![AnimParam::Bool {
+            name: "grounded".to_string(),
+            value: true,
+        }];
+        let cond = AnimCondition::BoolEquals {
+            param: "grounded".to_string(),
+            value: true,
+        };
         assert!(cond.evaluate(&params));
 
-        let cond_false = AnimCondition::BoolEquals { param: "grounded".to_string(), value: false };
+        let cond_false = AnimCondition::BoolEquals {
+            param: "grounded".to_string(),
+            value: false,
+        };
         assert!(!cond_false.evaluate(&params));
     }
 
     #[test]
     fn test_condition_float_greater_than() {
-        let params = vec![AnimParam::Float { name: "speed".to_string(), value: 3.5 }];
-        let cond = AnimCondition::FloatGreaterThan { param: "speed".to_string(), threshold: 3.0 };
+        let params = vec![AnimParam::Float {
+            name: "speed".to_string(),
+            value: 3.5,
+        }];
+        let cond = AnimCondition::FloatGreaterThan {
+            param: "speed".to_string(),
+            threshold: 3.0,
+        };
         assert!(cond.evaluate(&params));
 
-        let cond_high = AnimCondition::FloatGreaterThan { param: "speed".to_string(), threshold: 4.0 };
+        let cond_high = AnimCondition::FloatGreaterThan {
+            param: "speed".to_string(),
+            threshold: 4.0,
+        };
         assert!(!cond_high.evaluate(&params));
     }
 
     #[test]
     fn test_condition_float_less_than() {
-        let params = vec![AnimParam::Float { name: "health".to_string(), value: 25.0 }];
-        let cond = AnimCondition::FloatLessThan { param: "health".to_string(), threshold: 50.0 };
+        let params = vec![AnimParam::Float {
+            name: "health".to_string(),
+            value: 25.0,
+        }];
+        let cond = AnimCondition::FloatLessThan {
+            param: "health".to_string(),
+            threshold: 50.0,
+        };
         assert!(cond.evaluate(&params));
 
-        let cond_low = AnimCondition::FloatLessThan { param: "health".to_string(), threshold: 10.0 };
+        let cond_low = AnimCondition::FloatLessThan {
+            param: "health".to_string(),
+            threshold: 10.0,
+        };
         assert!(!cond_low.evaluate(&params));
     }
 
     #[test]
     fn test_condition_trigger_active() {
-        let params = vec![AnimParam::Trigger { name: "shoot".to_string(), triggered: true }];
-        let cond = AnimCondition::TriggerActive { param: "shoot".to_string() };
+        let params = vec![AnimParam::Trigger {
+            name: "shoot".to_string(),
+            triggered: true,
+        }];
+        let cond = AnimCondition::TriggerActive {
+            param: "shoot".to_string(),
+        };
         assert!(cond.evaluate(&params));
 
-        let params_off = vec![AnimParam::Trigger { name: "shoot".to_string(), triggered: false }];
+        let params_off = vec![AnimParam::Trigger {
+            name: "shoot".to_string(),
+            triggered: false,
+        }];
         assert!(!cond.evaluate(&params_off));
     }
 
     #[test]
     fn test_condition_int_equals() {
-        let params = vec![AnimParam::Int { name: "weapon".to_string(), value: 2 }];
-        let cond = AnimCondition::IntEquals { param: "weapon".to_string(), value: 2 };
+        let params = vec![AnimParam::Int {
+            name: "weapon".to_string(),
+            value: 2,
+        }];
+        let cond = AnimCondition::IntEquals {
+            param: "weapon".to_string(),
+            value: 2,
+        };
         assert!(cond.evaluate(&params));
 
-        let cond_wrong = AnimCondition::IntEquals { param: "weapon".to_string(), value: 5 };
+        let cond_wrong = AnimCondition::IntEquals {
+            param: "weapon".to_string(),
+            value: 5,
+        };
         assert!(!cond_wrong.evaluate(&params));
     }
 
@@ -1076,26 +1178,49 @@ mod tests {
 
     #[test]
     fn test_transition_single_condition() {
-        let params = vec![AnimParam::Bool { name: "grounded".to_string(), value: true }];
-        let transition = AnimTransition::new("idle")
-            .with_condition(AnimCondition::BoolEquals { param: "grounded".to_string(), value: true });
+        let params = vec![AnimParam::Bool {
+            name: "grounded".to_string(),
+            value: true,
+        }];
+        let transition = AnimTransition::new("idle").with_condition(AnimCondition::BoolEquals {
+            param: "grounded".to_string(),
+            value: true,
+        });
         assert!(transition.all_conditions_met(&params));
     }
 
     #[test]
     fn test_transition_multiple_conditions() {
         let params = vec![
-            AnimParam::Bool { name: "grounded".to_string(), value: true },
-            AnimParam::Float { name: "speed".to_string(), value: 5.0 },
+            AnimParam::Bool {
+                name: "grounded".to_string(),
+                value: true,
+            },
+            AnimParam::Float {
+                name: "speed".to_string(),
+                value: 5.0,
+            },
         ];
         let transition = AnimTransition::new("run")
-            .with_condition(AnimCondition::BoolEquals { param: "grounded".to_string(), value: true })
-            .with_condition(AnimCondition::FloatGreaterThan { param: "speed".to_string(), threshold: 3.0 });
+            .with_condition(AnimCondition::BoolEquals {
+                param: "grounded".to_string(),
+                value: true,
+            })
+            .with_condition(AnimCondition::FloatGreaterThan {
+                param: "speed".to_string(),
+                threshold: 3.0,
+            });
         assert!(transition.all_conditions_met(&params));
 
         let params_slow = vec![
-            AnimParam::Bool { name: "grounded".to_string(), value: true },
-            AnimParam::Float { name: "speed".to_string(), value: 1.0 },
+            AnimParam::Bool {
+                name: "grounded".to_string(),
+                value: true,
+            },
+            AnimParam::Float {
+                name: "speed".to_string(),
+                value: 1.0,
+            },
         ];
         assert!(!transition.all_conditions_met(&params_slow));
     }
@@ -1105,11 +1230,12 @@ mod tests {
     #[test]
     fn test_anim_state_creation_and_transitions() {
         let state = AnimState::new("idle", 0)
-            .with_transition(AnimTransition::new("walk")
-                .with_condition(AnimCondition::FloatGreaterThan {
+            .with_transition(AnimTransition::new("walk").with_condition(
+                AnimCondition::FloatGreaterThan {
                     param: "speed".to_string(),
                     threshold: 0.5,
-                }))
+                },
+            ))
             .with_looping(true)
             .with_speed(1.0);
 
@@ -1124,61 +1250,96 @@ mod tests {
     #[test]
     fn test_state_machine_bool_trigger_transition() {
         let mut sm = AnimStateMachine::new();
-        sm.add_state(AnimState::new("idle", 0)
-            .with_transition(AnimTransition::new("jump")
-                .with_condition(AnimCondition::TriggerActive {
-                    param: "jump".to_string(),
-                })));
+        sm.add_state(AnimState::new("idle", 0).with_transition(
+            AnimTransition::new("jump").with_condition(AnimCondition::TriggerActive {
+                param: "jump".to_string(),
+            }),
+        ));
         sm.add_state(AnimState::new("jump", 1));
 
-        sm.set_parameter("jump", AnimParam::Trigger { name: "jump".to_string(), triggered: true });
+        sm.set_parameter(
+            "jump",
+            AnimParam::Trigger {
+                name: "jump".to_string(),
+                triggered: true,
+            },
+        );
 
         assert_eq!(sm.current_state().name, "idle");
         let result = sm.update(0.016);
-        assert!(matches!(result, AnimStateUpdate::Transitioning { ref from, ref to, .. } if from == "idle" && to == "jump"));
+        assert!(
+            matches!(result, AnimStateUpdate::Transitioning { ref from, ref to, .. } if from == "idle" && to == "jump")
+        );
     }
 
     #[test]
     fn test_state_machine_float_threshold_transition() {
         let mut sm = AnimStateMachine::new();
-        sm.add_state(AnimState::new("idle", 0)
-            .with_transition(AnimTransition::new("walk")
-                .with_condition(AnimCondition::FloatGreaterThan {
-                    param: "speed".to_string(),
-                    threshold: 0.5,
-                })));
+        sm.add_state(AnimState::new("idle", 0).with_transition(
+            AnimTransition::new("walk").with_condition(AnimCondition::FloatGreaterThan {
+                param: "speed".to_string(),
+                threshold: 0.5,
+            }),
+        ));
         sm.add_state(AnimState::new("walk", 1));
 
         // Speed below threshold — should stay idle
-        sm.set_parameter("speed", AnimParam::Float { name: "speed".to_string(), value: 0.2 });
+        sm.set_parameter(
+            "speed",
+            AnimParam::Float {
+                name: "speed".to_string(),
+                value: 0.2,
+            },
+        );
         let result = sm.update(0.016);
         assert!(matches!(result, AnimStateUpdate::Playing { ref state, .. } if state == "idle"));
 
         // Speed above threshold — should transition
-        sm.set_parameter("speed", AnimParam::Float { name: "speed".to_string(), value: 1.0 });
+        sm.set_parameter(
+            "speed",
+            AnimParam::Float {
+                name: "speed".to_string(),
+                value: 1.0,
+            },
+        );
         let result = sm.update(0.016);
-        assert!(matches!(result, AnimStateUpdate::Transitioning { ref from, ref to, .. } if from == "idle" && to == "walk"));
+        assert!(
+            matches!(result, AnimStateUpdate::Transitioning { ref from, ref to, .. } if from == "idle" && to == "walk")
+        );
     }
 
     #[test]
     fn test_state_machine_crossfade_progress() {
         let mut sm = AnimStateMachine::new();
-        sm.add_state(AnimState::new("idle", 0)
-            .with_transition(AnimTransition::new("walk")
-                .with_condition(AnimCondition::BoolEquals {
-                    param: "moving".to_string(),
-                    value: true,
-                })
-                .with_duration(0.3)));
+        sm.add_state(
+            AnimState::new("idle", 0).with_transition(
+                AnimTransition::new("walk")
+                    .with_condition(AnimCondition::BoolEquals {
+                        param: "moving".to_string(),
+                        value: true,
+                    })
+                    .with_duration(0.3),
+            ),
+        );
         sm.add_state(AnimState::new("walk", 1));
 
-        sm.set_parameter("moving", AnimParam::Bool { name: "moving".to_string(), value: true });
+        sm.set_parameter(
+            "moving",
+            AnimParam::Bool {
+                name: "moving".to_string(),
+                value: true,
+            },
+        );
         sm.update(0.016); // Start transition
 
         // Advance partway through crossfade
         let result = sm.update(0.1);
         if let AnimStateUpdate::Transitioning { progress, .. } = result {
-            assert!(progress > 0.0 && progress < 1.0, "progress should be between 0 and 1, got {}", progress);
+            assert!(
+                progress > 0.0 && progress < 1.0,
+                "progress should be between 0 and 1, got {}",
+                progress
+            );
         } else {
             panic!("Expected Transitioning, got {:?}", result);
         }
@@ -1210,7 +1371,13 @@ mod tests {
         sm.add_state(AnimState::new("idle", 0));
         sm.add_state(AnimState::new("run", 1));
 
-        sm.set_parameter("jump", AnimParam::Trigger { name: "jump".to_string(), triggered: true });
+        sm.set_parameter(
+            "jump",
+            AnimParam::Trigger {
+                name: "jump".to_string(),
+                triggered: true,
+            },
+        );
         sm.force_state("run");
         sm.local_time = 5.0;
 
@@ -1231,33 +1398,48 @@ mod tests {
     #[test]
     fn test_blend_tree_1d_sampling() {
         let mut tree = BlendTree::new_1d("speed");
-        tree.add_child(BlendChild::new_1d(0, 0.0));   // idle at speed 0
-        tree.add_child(BlendChild::new_1d(1, 3.0));   // walk at speed 3
-        tree.add_child(BlendChild::new_1d(2, 6.0));   // run at speed 6
+        tree.add_child(BlendChild::new_1d(0, 0.0)); // idle at speed 0
+        tree.add_child(BlendChild::new_1d(1, 3.0)); // walk at speed 3
+        tree.add_child(BlendChild::new_1d(2, 6.0)); // run at speed 6
 
         // At speed 0, should get idle
-        let params = vec![AnimParam::Float { name: "speed".to_string(), value: 0.0 }];
+        let params = vec![AnimParam::Float {
+            name: "speed".to_string(),
+            value: 0.0,
+        }];
         let (clip, weight) = tree.sample(&params);
         assert_eq!(clip, 0);
         assert!((weight - 1.0).abs() < 0.01);
 
         // At speed 3, should get walk
-        let params = vec![AnimParam::Float { name: "speed".to_string(), value: 3.0 }];
+        let params = vec![AnimParam::Float {
+            name: "speed".to_string(),
+            value: 3.0,
+        }];
         let (clip, _weight) = tree.sample(&params);
         assert_eq!(clip, 1);
 
         // At speed 6, should get run
-        let params = vec![AnimParam::Float { name: "speed".to_string(), value: 6.0 }];
+        let params = vec![AnimParam::Float {
+            name: "speed".to_string(),
+            value: 6.0,
+        }];
         let (clip, _weight) = tree.sample(&params);
         assert_eq!(clip, 2);
 
         // At speed 1.5, between idle and walk — should lean idle
-        let params = vec![AnimParam::Float { name: "speed".to_string(), value: 1.5 }];
+        let params = vec![AnimParam::Float {
+            name: "speed".to_string(),
+            value: 1.5,
+        }];
         let (clip, _weight) = tree.sample(&params);
         assert_eq!(clip, 0); // t = 0.5, returns lower child
 
         // At speed 4.5, between walk and run — t=0.5, returns lower child (walk)
-        let params = vec![AnimParam::Float { name: "speed".to_string(), value: 4.5 }];
+        let params = vec![AnimParam::Float {
+            name: "speed".to_string(),
+            value: 4.5,
+        }];
         let (clip, _weight) = tree.sample(&params);
         assert_eq!(clip, 1); // t = 0.5, lower child (walk at index 1)
     }
@@ -1265,21 +1447,33 @@ mod tests {
     #[test]
     fn test_blend_tree_2d_sampling() {
         let mut tree = BlendTree::new_2d("speed", "angle");
-        tree.add_child(BlendChild::new_2d(0, 0.0, 0.0));  // idle
-        tree.add_child(BlendChild::new_2d(1, 1.0, 0.0));  // forward
+        tree.add_child(BlendChild::new_2d(0, 0.0, 0.0)); // idle
+        tree.add_child(BlendChild::new_2d(1, 1.0, 0.0)); // forward
         tree.add_child(BlendChild::new_2d(2, -1.0, 0.0)); // backward
-        tree.add_child(BlendChild::new_2d(3, 0.0, 1.0));  // strafe right
+        tree.add_child(BlendChild::new_2d(3, 0.0, 1.0)); // strafe right
 
         let params = vec![
-            AnimParam::Float { name: "speed".to_string(), value: 1.0 },
-            AnimParam::Float { name: "angle".to_string(), value: 0.0 },
+            AnimParam::Float {
+                name: "speed".to_string(),
+                value: 1.0,
+            },
+            AnimParam::Float {
+                name: "angle".to_string(),
+                value: 0.0,
+            },
         ];
         let (clip, _) = tree.sample(&params);
         assert_eq!(clip, 1); // Nearest to (1,0)
 
         let params = vec![
-            AnimParam::Float { name: "speed".to_string(), value: 0.0 },
-            AnimParam::Float { name: "angle".to_string(), value: 0.9 },
+            AnimParam::Float {
+                name: "speed".to_string(),
+                value: 0.0,
+            },
+            AnimParam::Float {
+                name: "angle".to_string(),
+                value: 0.9,
+            },
         ];
         let (clip, _) = tree.sample(&params);
         assert_eq!(clip, 3); // Nearest to (0,1)
@@ -1305,10 +1499,7 @@ mod tests {
 
     #[test]
     fn test_sprite_animation_looping() {
-        let frames = vec![
-            SpriteFrame::new(0, 0.1),
-            SpriteFrame::new(1, 0.1),
-        ];
+        let frames = vec![SpriteFrame::new(0, 0.1), SpriteFrame::new(1, 0.1)];
         let mut anim = SpriteAnimation::new(frames).with_looping(true);
 
         anim.update(0.1); // frame 0 → 1
@@ -1319,10 +1510,7 @@ mod tests {
 
     #[test]
     fn test_sprite_animation_non_looping_finishes() {
-        let frames = vec![
-            SpriteFrame::new(0, 0.1),
-            SpriteFrame::new(1, 0.1),
-        ];
+        let frames = vec![SpriteFrame::new(0, 0.1), SpriteFrame::new(1, 0.1)];
         let mut anim = SpriteAnimation::new(frames).with_looping(false);
 
         let result = anim.update(0.1);
@@ -1335,10 +1523,7 @@ mod tests {
 
     #[test]
     fn test_sprite_animation_speed_variation() {
-        let frames = vec![
-            SpriteFrame::new(0, 0.2),
-            SpriteFrame::new(1, 0.2),
-        ];
+        let frames = vec![SpriteFrame::new(0, 0.2), SpriteFrame::new(1, 0.2)];
         let mut anim = SpriteAnimation::new(frames).with_speed(2.0);
 
         anim.update(0.1); // At speed 2x, 0.1 * 2 = 0.2, which equals frame duration
@@ -1448,7 +1633,11 @@ mod tests {
         tl.play();
 
         tl.update(2.5);
-        assert!((tl.time - 0.5).abs() < 0.001, "time should wrap to 0.5, got {}", tl.time);
+        assert!(
+            (tl.time - 0.5).abs() < 0.001,
+            "time should wrap to 0.5, got {}",
+            tl.time
+        );
         assert!(tl.is_playing());
     }
 
@@ -1473,8 +1662,14 @@ mod tests {
         tl.add_track(track_a);
 
         let mut track_b = TimelineTrack::new("color");
-        track_b.add_keyframe(Keyframe::new(0.0, KeyframeValue::Color([0.0, 0.0, 0.0, 1.0])));
-        track_b.add_keyframe(Keyframe::new(2.0, KeyframeValue::Color([1.0, 1.0, 1.0, 1.0])));
+        track_b.add_keyframe(Keyframe::new(
+            0.0,
+            KeyframeValue::Color([0.0, 0.0, 0.0, 1.0]),
+        ));
+        track_b.add_keyframe(Keyframe::new(
+            2.0,
+            KeyframeValue::Color([1.0, 1.0, 1.0, 1.0]),
+        ));
         tl.add_track(track_b);
 
         tl.seek(1.0);

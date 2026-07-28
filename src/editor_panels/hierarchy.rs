@@ -4,8 +4,8 @@
 //! single / multi-selection, search filtering, and context-menu
 //! operations (create, delete, rename, duplicate).
 
-use crate::entity::Entity;
 use super::{EditorPanel, EditorState};
+use crate::entity::Entity;
 
 // ──────────────────────────────────────────────
 // HierarchyPanel
@@ -73,7 +73,9 @@ impl HierarchyPanel {
             return true;
         }
         let label = format_entity(entity);
-        label.to_lowercase().contains(&self.search_filter.to_lowercase())
+        label
+            .to_lowercase()
+            .contains(&self.search_filter.to_lowercase())
     }
 
     /// Create an empty entity and immediately select it.
@@ -225,10 +227,7 @@ impl EditorPanel for HierarchyPanel {
 
                 // ── Right-click context menu on empty space ──
                 if filtered.is_empty() {
-                    let empty = ui.allocate_response(
-                        ui.available_size(),
-                        egui::Sense::click(),
-                    );
+                    let empty = ui.allocate_response(ui.available_size(), egui::Sense::click());
                     empty.context_menu(|ui| {
                         if ui.button("Create Empty Entity").clicked() {
                             Self::create_empty_entity(state);

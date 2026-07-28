@@ -110,7 +110,9 @@ impl ToolbarPanel {
             // Filled / highlighted variant.
             ui.add(
                 egui::Button::new(
-                    egui::RichText::new(label).strong().color(egui::Color32::WHITE),
+                    egui::RichText::new(label)
+                        .strong()
+                        .color(egui::Color32::WHITE),
                 )
                 .fill(fill_color),
             )
@@ -197,10 +199,16 @@ impl ToolbarPanel {
             ui.separator();
 
             // Snap toggle.
-            let snap_label = if state.snap_enabled { "Snap: ON" } else { "Snap: OFF" };
+            let snap_label = if state.snap_enabled {
+                "Snap: ON"
+            } else {
+                "Snap: OFF"
+            };
             let snap_button = if state.snap_enabled {
                 egui::Button::new(
-                    egui::RichText::new(snap_label).strong().color(egui::Color32::WHITE),
+                    egui::RichText::new(snap_label)
+                        .strong()
+                        .color(egui::Color32::WHITE),
                 )
                 .fill(ui.visuals().selection.bg_fill)
             } else {
@@ -226,7 +234,11 @@ impl ToolbarPanel {
     fn show_grid_toggle(&mut self, ui: &mut egui::Ui) {
         ui.horizontal(|ui| {
             ui.separator();
-            let label = if self.grid_visible { "Grid: ON" } else { "Grid: OFF" };
+            let label = if self.grid_visible {
+                "Grid: ON"
+            } else {
+                "Grid: OFF"
+            };
             if ui.button(label).clicked() {
                 self.grid_visible = !self.grid_visible;
             }

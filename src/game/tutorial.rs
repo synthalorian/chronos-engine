@@ -326,7 +326,12 @@ impl TutorialPresets {
                 1,
                 "Welcome",
                 "Welcome to Chronos Company! Let's learn the basics.",
-                Objective::new(1, ObjectiveType::Complete, "Welcome", "Acknowledge the welcome message"),
+                Objective::new(
+                    1,
+                    ObjectiveType::Complete,
+                    "Welcome",
+                    "Acknowledge the welcome message",
+                ),
             )
             .with_hint("Use WASD to move the camera, left-click to select units")
             .with_auto_advance(true),
@@ -335,8 +340,13 @@ impl TutorialPresets {
                 2,
                 "Select Your Squad",
                 "Click on a unit to select it for battle.",
-                Objective::new(2, ObjectiveType::SelectUnits, "Select Units", "Select your first unit")
-                    .with_target(1),
+                Objective::new(
+                    2,
+                    ObjectiveType::SelectUnits,
+                    "Select Units",
+                    "Select your first unit",
+                )
+                .with_target(1),
             )
             .with_hint("Left-click on a unit portrait to select it")
             .with_highlight("squad_panel"),
@@ -345,8 +355,13 @@ impl TutorialPresets {
                 3,
                 "Move to the Marker",
                 "Right-click on the minimap marker to move your squad.",
-                Objective::new(3, ObjectiveType::MoveToLocation, "Move to Marker", "Navigate to the marked location")
-                    .with_target(1),
+                Objective::new(
+                    3,
+                    ObjectiveType::MoveToLocation,
+                    "Move to Marker",
+                    "Navigate to the marked location",
+                )
+                .with_target(1),
             )
             .with_hint("Right-click on the ground or minimap to issue a move command")
             .with_highlight("minimap"),
@@ -355,8 +370,13 @@ impl TutorialPresets {
                 4,
                 "Defeat the Enemies",
                 "Engage and defeat the enemy forces ahead.",
-                Objective::new(4, ObjectiveType::KillEnemies, "Defeat Enemies", "Eliminate all hostile targets")
-                    .with_target(3),
+                Objective::new(
+                    4,
+                    ObjectiveType::KillEnemies,
+                    "Defeat Enemies",
+                    "Eliminate all hostile targets",
+                )
+                .with_target(3),
             )
             .with_hint("Use abilities by clicking their icons or pressing hotkeys 1-5")
             .with_highlight("abilities"),
@@ -365,9 +385,14 @@ impl TutorialPresets {
                 5,
                 "Talk to the Commander",
                 "Approach the commander to complete your training.",
-                Objective::new(5, ObjectiveType::TalkToNpc, "Talk to Commander", "Speak with the field commander")
-                    .with_target(1)
-                    .with_rewards(100, 50),
+                Objective::new(
+                    5,
+                    ObjectiveType::TalkToNpc,
+                    "Talk to Commander",
+                    "Speak with the field commander",
+                )
+                .with_target(1)
+                .with_rewards(100, 50),
             )
             .with_hint("Walk near an NPC and press E to interact")
             .with_auto_advance(true),
@@ -385,8 +410,8 @@ mod tests {
 
     #[test]
     fn objective_advance() {
-        let mut obj = Objective::new(1, ObjectiveType::KillEnemies, "Kill", "Defeat enemies")
-            .with_target(3);
+        let mut obj =
+            Objective::new(1, ObjectiveType::KillEnemies, "Kill", "Defeat enemies").with_target(3);
         assert!(!obj.advance(1));
         assert_eq!(obj.current_progress, 1);
         assert!(!obj.completed);
@@ -406,23 +431,23 @@ mod tests {
 
     #[test]
     fn objective_progress_fraction() {
-        let mut obj = Objective::new(1, ObjectiveType::KillEnemies, "Kill", "Defeat enemies")
-            .with_target(4);
+        let mut obj =
+            Objective::new(1, ObjectiveType::KillEnemies, "Kill", "Defeat enemies").with_target(4);
         assert!((obj.progress_fraction() - 0.0).abs() < f32::EPSILON);
         obj.advance(1);
         assert!((obj.progress_fraction() - 0.25).abs() < f32::EPSILON);
         obj.advance(3);
         assert!((obj.progress_fraction() - 1.0).abs() < f32::EPSILON);
 
-        let zero_target = Objective::new(2, ObjectiveType::Complete, "Done", "Complete")
-            .with_target(0);
+        let zero_target =
+            Objective::new(2, ObjectiveType::Complete, "Done", "Complete").with_target(0);
         assert!((zero_target.progress_fraction() - 1.0).abs() < f32::EPSILON);
     }
 
     #[test]
     fn tutorial_step_completion() {
-        let obj = Objective::new(1, ObjectiveType::MoveToLocation, "Move", "Move there")
-            .with_target(1);
+        let obj =
+            Objective::new(1, ObjectiveType::MoveToLocation, "Move", "Move there").with_target(1);
         let mut step = TutorialStep::new(1, "Move", "Go there", obj);
         assert!(!step.is_complete());
         assert!(step.advance_objective(1));
@@ -431,18 +456,27 @@ mod tests {
 
     #[test]
     fn tutorial_step_auto_advance() {
-        let obj = Objective::new(1, ObjectiveType::Complete, "Welcome", "Acknowledge")
-            .with_target(1);
-        let step = TutorialStep::new(1, "Welcome", "Hi", obj)
-            .with_auto_advance(true);
+        let obj =
+            Objective::new(1, ObjectiveType::Complete, "Welcome", "Acknowledge").with_target(1);
+        let step = TutorialStep::new(1, "Welcome", "Hi", obj).with_auto_advance(true);
         assert!(step.auto_advance);
     }
 
     #[test]
     fn tutorial_sequence_flow() {
         let steps = vec![
-            TutorialStep::new(1, "Step 1", "First", Objective::new(1, ObjectiveType::Complete, "S1", "First").with_target(1)),
-            TutorialStep::new(2, "Step 2", "Second", Objective::new(2, ObjectiveType::Complete, "S2", "Second").with_target(1)),
+            TutorialStep::new(
+                1,
+                "Step 1",
+                "First",
+                Objective::new(1, ObjectiveType::Complete, "S1", "First").with_target(1),
+            ),
+            TutorialStep::new(
+                2,
+                "Step 2",
+                "Second",
+                Objective::new(2, ObjectiveType::Complete, "S2", "Second").with_target(1),
+            ),
         ];
         let mut seq = TutorialSequence::new("Test", steps);
         seq.start();
@@ -460,8 +494,18 @@ mod tests {
     #[test]
     fn tutorial_sequence_skip() {
         let steps = vec![
-            TutorialStep::new(1, "A", "a", Objective::new(1, ObjectiveType::Complete, "A", "a")),
-            TutorialStep::new(2, "B", "b", Objective::new(2, ObjectiveType::Complete, "B", "b")),
+            TutorialStep::new(
+                1,
+                "A",
+                "a",
+                Objective::new(1, ObjectiveType::Complete, "A", "a"),
+            ),
+            TutorialStep::new(
+                2,
+                "B",
+                "b",
+                Objective::new(2, ObjectiveType::Complete, "B", "b"),
+            ),
         ];
         let mut seq = TutorialSequence::new("Test", steps);
         seq.start();
@@ -474,9 +518,24 @@ mod tests {
     #[test]
     fn tutorial_sequence_completed_steps_count() {
         let steps = vec![
-            TutorialStep::new(1, "A", "a", Objective::new(1, ObjectiveType::Complete, "A", "a").with_target(1)),
-            TutorialStep::new(2, "B", "b", Objective::new(2, ObjectiveType::Complete, "B", "b").with_target(1)),
-            TutorialStep::new(3, "C", "c", Objective::new(3, ObjectiveType::Complete, "C", "c").with_target(1)),
+            TutorialStep::new(
+                1,
+                "A",
+                "a",
+                Objective::new(1, ObjectiveType::Complete, "A", "a").with_target(1),
+            ),
+            TutorialStep::new(
+                2,
+                "B",
+                "b",
+                Objective::new(2, ObjectiveType::Complete, "B", "b").with_target(1),
+            ),
+            TutorialStep::new(
+                3,
+                "C",
+                "c",
+                Objective::new(3, ObjectiveType::Complete, "C", "c").with_target(1),
+            ),
         ];
         let mut seq = TutorialSequence::new("Test", steps);
         assert_eq!(seq.completed_step_count(), 0);
@@ -535,19 +594,40 @@ mod tests {
         let seq = TutorialPresets::basic_training();
         assert_eq!(seq.steps.len(), 5);
         assert_eq!(seq.name, "Basic Training");
-        assert_eq!(seq.steps[0].objective.objective_type, ObjectiveType::Complete);
-        assert_eq!(seq.steps[1].objective.objective_type, ObjectiveType::SelectUnits);
-        assert_eq!(seq.steps[2].objective.objective_type, ObjectiveType::MoveToLocation);
-        assert_eq!(seq.steps[3].objective.objective_type, ObjectiveType::KillEnemies);
+        assert_eq!(
+            seq.steps[0].objective.objective_type,
+            ObjectiveType::Complete
+        );
+        assert_eq!(
+            seq.steps[1].objective.objective_type,
+            ObjectiveType::SelectUnits
+        );
+        assert_eq!(
+            seq.steps[2].objective.objective_type,
+            ObjectiveType::MoveToLocation
+        );
+        assert_eq!(
+            seq.steps[3].objective.objective_type,
+            ObjectiveType::KillEnemies
+        );
         assert_eq!(seq.steps[3].objective.target_progress, 3);
-        assert_eq!(seq.steps[4].objective.objective_type, ObjectiveType::TalkToNpc);
+        assert_eq!(
+            seq.steps[4].objective.objective_type,
+            ObjectiveType::TalkToNpc
+        );
         assert_eq!(seq.steps[4].objective.reward_xp, 100);
         assert_eq!(seq.steps[4].objective.reward_gold, 50);
         assert!(seq.steps[0].auto_advance);
         assert!(seq.steps[4].auto_advance);
-        assert_eq!(seq.steps[1].highlight_element, Some("squad_panel".to_string()));
+        assert_eq!(
+            seq.steps[1].highlight_element,
+            Some("squad_panel".to_string())
+        );
         assert_eq!(seq.steps[2].highlight_element, Some("minimap".to_string()));
-        assert_eq!(seq.steps[3].highlight_element, Some("abilities".to_string()));
+        assert_eq!(
+            seq.steps[3].highlight_element,
+            Some("abilities".to_string())
+        );
     }
 
     #[test]

@@ -192,7 +192,10 @@ impl DevConsole {
 
         match trimmed {
             "help" => {
-                self.log_with_level(LogLevel::Info, "Available commands: help, clear, entities, fps");
+                self.log_with_level(
+                    LogLevel::Info,
+                    "Available commands: help, clear, entities, fps",
+                );
             }
             "clear" => {
                 self.log.clear();
@@ -444,7 +447,8 @@ impl SceneTree {
     }
 
     pub fn get_selected(&self) -> Option<Entity> {
-        self.selected.and_then(|i| self.entries.get(i).map(|e| e.entity))
+        self.selected
+            .and_then(|i| self.entries.get(i).map(|e| e.entity))
     }
 
     pub fn entries(&self) -> &[SceneEntry] {
@@ -579,9 +583,9 @@ pub struct OverlayRenderData<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Position, Velocity, Health, Damage, Dead, Transform, Gravity};
-    use crate::component::{Sprite, CircleRadius, RigidBody, Grounded};
+    use crate::component::{CircleRadius, Grounded, RigidBody, Sprite};
     use crate::World;
+    use crate::{Damage, Dead, Gravity, Health, Position, Transform, Velocity};
 
     // ── Stats tracking ──
 
@@ -593,7 +597,11 @@ mod tests {
             panel.update_fps(16.667);
         }
         let stats = panel.get_stats();
-        assert!((stats.fps - 60.0).abs() < 1.0, "FPS should be ~60, got {}", stats.fps);
+        assert!(
+            (stats.fps - 60.0).abs() < 1.0,
+            "FPS should be ~60, got {}",
+            stats.fps
+        );
         assert!((stats.frame_time_ms - 16.667).abs() < 0.5);
     }
 
@@ -621,7 +629,9 @@ mod tests {
         con.submit("foobar");
         let log = con.get_log();
         assert_eq!(log[log.len() - 1].level, LogLevel::Warn);
-        assert!(log[log.len() - 1].message.contains("Unknown command: foobar"));
+        assert!(log[log.len() - 1]
+            .message
+            .contains("Unknown command: foobar"));
     }
 
     #[test]
@@ -690,7 +700,11 @@ mod tests {
         assert!(names.contains(&"Gravity"));
 
         // Verify field values
-        let pos = report.components.iter().find(|c| c.name == "Position").unwrap();
+        let pos = report
+            .components
+            .iter()
+            .find(|c| c.name == "Position")
+            .unwrap();
         assert_eq!(pos.fields[0].0, "x");
         assert_eq!(pos.fields[0].1, "10.00");
     }

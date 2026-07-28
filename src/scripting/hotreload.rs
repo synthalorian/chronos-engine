@@ -89,17 +89,11 @@ impl ScriptFile {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ScriptChange {
     /// A new script was detected.
-    Created {
-        name: String,
-    },
+    Created { name: String },
     /// An existing script was modified.
-    Modified {
-        name: String,
-    },
+    Modified { name: String },
     /// A script was removed.
-    Deleted {
-        name: String,
-    },
+    Deleted { name: String },
 }
 
 // ──────────────────────────────────────────────
@@ -202,8 +196,8 @@ impl ScriptWatcher {
             return Err(ScriptWatchError::InvalidName(path.to_string()));
         }
 
-        let source = std::fs::read_to_string(path)
-            .map_err(|e| ScriptWatchError::IoError(e.to_string()))?;
+        let source =
+            std::fs::read_to_string(path).map_err(|e| ScriptWatchError::IoError(e.to_string()))?;
 
         let mut file = ScriptFile::from_source(&name, &source);
         file.path = path.to_string();
@@ -243,14 +237,10 @@ impl ScriptWatcher {
         for (name, file) in &self.scripts {
             match self.snapshot.get(name) {
                 None => {
-                    changes.push(ScriptChange::Created {
-                        name: name.clone(),
-                    });
+                    changes.push(ScriptChange::Created { name: name.clone() });
                 }
                 Some(&prev_ts) if file.last_modified != prev_ts => {
-                    changes.push(ScriptChange::Modified {
-                        name: name.clone(),
-                    });
+                    changes.push(ScriptChange::Modified { name: name.clone() });
                 }
                 _ => {}
             }
@@ -259,9 +249,7 @@ impl ScriptWatcher {
         // Detect deleted scripts.
         for name in self.snapshot.keys() {
             if !self.scripts.contains_key(name) {
-                changes.push(ScriptChange::Deleted {
-                    name: name.clone(),
-                });
+                changes.push(ScriptChange::Deleted { name: name.clone() });
             }
         }
 
@@ -331,9 +319,7 @@ pub enum ReloadPolicy {
     /// Reload immediately when a change is detected.
     Immediate,
     /// Wait for changes to settle before reloading (delay in milliseconds).
-    Debounced {
-        delay_ms: u64,
-    },
+    Debounced { delay_ms: u64 },
     /// Only reload when explicitly requested via
     /// [`ScriptReloader::force_reload`].
     Manual,
@@ -823,7 +809,10 @@ mod tests {
         let mut reloader = ScriptReloader::new(watcher, ReloadPolicy::Manual);
 
         let changed = reloader.poll();
-        assert!(changed.is_empty(), "Manual policy should not return from poll");
+        assert!(
+            changed.is_empty(),
+            "Manual policy should not return from poll"
+        );
         assert_eq!(reloader.pending_count(), 1);
 
         // Force-reload dequeues it.

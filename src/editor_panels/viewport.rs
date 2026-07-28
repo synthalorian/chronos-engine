@@ -110,10 +110,10 @@ impl ViewportPanel {
         let input = ui.input(|i| {
             (
                 i.pointer.delta(),
-                i.pointer.primary_down(),   // RMB on some OSes
+                i.pointer.primary_down(), // RMB on some OSes
                 i.pointer.middle_down(),
                 i.smooth_scroll_delta.y,
-                i.pointer.secondary_down(),  // RMB
+                i.pointer.secondary_down(), // RMB
             )
         });
 
@@ -122,9 +122,7 @@ impl ViewportPanel {
         // ── Orbit: RMB drag ──
         if secondary_down {
             self.camera_yaw += delta.x * ORBIT_SENSITIVITY;
-            self.camera_pitch = Self::clamp_pitch(
-                self.camera_pitch - delta.y * ORBIT_SENSITIVITY,
-            );
+            self.camera_pitch = Self::clamp_pitch(self.camera_pitch - delta.y * ORBIT_SENSITIVITY);
         }
 
         // ── Pan: MMB drag ──
@@ -154,21 +152,15 @@ impl ViewportPanel {
             // Vertical lines
             let x = center_x + offset;
             painter.line_segment(
-                [
-                    egui::pos2(x, rect.top()),
-                    egui::pos2(x, rect.bottom()),
-                ],
-                egui::Stroke::new(1.0, GRID_COLOR),
+                [egui::pos2(x, rect.top()), egui::pos2(x, rect.bottom())],
+                egui::Stroke::new(1.0f32, GRID_COLOR),
             );
 
             // Horizontal lines
             let y = center_y + offset;
             painter.line_segment(
-                [
-                    egui::pos2(rect.left(), y),
-                    egui::pos2(rect.right(), y),
-                ],
-                egui::Stroke::new(1.0, GRID_COLOR),
+                [egui::pos2(rect.left(), y), egui::pos2(rect.right(), y)],
+                egui::Stroke::new(1.0f32, GRID_COLOR),
             );
         }
     }
@@ -255,10 +247,8 @@ impl EditorPanel for ViewportPanel {
             .id_salt("viewport_surface")
             .show(ui, |ui| {
                 let available = ui.available_size();
-                let (rect, _response) = ui.allocate_exact_size(
-                    available,
-                    egui::Sense::click_and_drag(),
-                );
+                let (rect, _response) =
+                    ui.allocate_exact_size(available, egui::Sense::click_and_drag());
                 self.last_viewport_rect = Some(rect);
 
                 let painter = ui.painter_at(rect);
@@ -283,7 +273,11 @@ impl EditorPanel for ViewportPanel {
 
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                 // Grid toggle
-                let grid_label = if self.grid_visible { "Grid: ON" } else { "Grid: OFF" };
+                let grid_label = if self.grid_visible {
+                    "Grid: ON"
+                } else {
+                    "Grid: OFF"
+                };
                 if ui.small_button(grid_label).clicked() {
                     self.grid_visible = !self.grid_visible;
                 }
@@ -309,8 +303,10 @@ mod tests {
     fn new_has_correct_defaults() {
         let vp = ViewportPanel::new();
         assert!((vp.camera_yaw - 0.0).abs() < f32::EPSILON);
-        assert!((vp.camera_pitch - std::f32::consts::FRAC_PI_4).abs() < f32::EPSILON,
-            "default pitch should be 45 degrees");
+        assert!(
+            (vp.camera_pitch - std::f32::consts::FRAC_PI_4).abs() < f32::EPSILON,
+            "default pitch should be 45 degrees"
+        );
         assert!((vp.camera_distance - 10.0).abs() < f32::EPSILON);
         assert_eq!(vp.camera_target, [0.0, 0.0, 0.0]);
         assert!(vp.grid_visible, "grid should be visible by default");
@@ -340,13 +336,19 @@ mod tests {
     fn pitch_clamp_exceeds_positive() {
         // Pitch past the limit should be clamped
         let clamped = ViewportPanel::clamp_pitch(2.0);
-        assert!(clamped <= PITCH_LIMIT, "pitch should not exceed PITCH_LIMIT");
+        assert!(
+            clamped <= PITCH_LIMIT,
+            "pitch should not exceed PITCH_LIMIT"
+        );
     }
 
     #[test]
     fn pitch_clamp_exceeds_negative() {
         let clamped = ViewportPanel::clamp_pitch(-2.0);
-        assert!(clamped >= -PITCH_LIMIT, "pitch should not go below -PITCH_LIMIT");
+        assert!(
+            clamped >= -PITCH_LIMIT,
+            "pitch should not go below -PITCH_LIMIT"
+        );
     }
 
     // ── Grid toggle ──
@@ -365,14 +367,20 @@ mod tests {
 
     #[test]
     fn fps_display_format() {
-        let vp = ViewportPanel { fps: 144.7, ..ViewportPanel::new() };
+        let vp = ViewportPanel {
+            fps: 144.7,
+            ..ViewportPanel::new()
+        };
         let text = format!("FPS: {:.0}", vp.fps);
         assert_eq!(text, "FPS: 145");
     }
 
     #[test]
     fn frame_time_display_format() {
-        let vp = ViewportPanel { frame_time_ms: 6.944, ..ViewportPanel::new() };
+        let vp = ViewportPanel {
+            frame_time_ms: 6.944,
+            ..ViewportPanel::new()
+        };
         let text = format!("Frame: {:.2} ms", vp.frame_time_ms);
         assert_eq!(text, "Frame: 6.94 ms");
     }

@@ -260,7 +260,12 @@ impl AudioImporter {
         }
 
         let probed = symphonia::default::get_probe()
-            .format(&hint, mss, &FormatOptions::default(), &MetadataOptions::default())
+            .format(
+                &hint,
+                mss,
+                &FormatOptions::default(),
+                &MetadataOptions::default(),
+            )
             .map_err(|e| AudioImportError::DecodeFailed(e.to_string()))?;
 
         let mut format_reader = probed.format;
@@ -347,11 +352,7 @@ fn decode_file(path: &Path) -> Result<(Vec<f32>, u32, u16), AudioImportError> {
         .ok_or(AudioImportError::NoAudioTrack)?;
 
     let sample_rate = track.codec_params.sample_rate.unwrap_or(44100);
-    let num_channels = track
-        .codec_params
-        .channels
-        .map(|c| c.count())
-        .unwrap_or(1);
+    let num_channels = track.codec_params.channels.map(|c| c.count()).unwrap_or(1);
 
     let mut decoder = symphonia::default::get_codecs()
         .make(&track.codec_params, &DecoderOptions::default())
@@ -386,10 +387,15 @@ fn decode_file(path: &Path) -> Result<(Vec<f32>, u32, u16), AudioImportError> {
         };
 
         if sample_buf.is_none()
-            || sample_buf.as_ref().map_or(true, |sb| sb.capacity() < decoded.capacity())
+            || sample_buf
+                .as_ref()
+                .map_or(true, |sb| sb.capacity() < decoded.capacity())
         {
             let spec = decoded.spec();
-            sample_buf = Some(SampleBuffer::<f32>::new(decoded.capacity() as u64, spec.clone()));
+            sample_buf = Some(SampleBuffer::<f32>::new(
+                decoded.capacity() as u64,
+                spec.clone(),
+            ));
         }
 
         if let Some(ref mut sb) = sample_buf {
@@ -711,11 +717,7 @@ mod tests {
         // Each mono sample should be (1.0 + (-1.0)) / 2 = 0.0
         // Allow quantization error from i16 round-trip
         for &s in &audio.samples {
-            assert!(
-                s.abs() < 0.1,
-                "mono sample should be near 0.0, got {}",
-                s
-            );
+            assert!(s.abs() < 0.1, "mono sample should be near 0.0, got {}", s);
         }
     }
 
@@ -781,10 +783,12 @@ mod tests {
 
         // 0.5 seconds of audio at 44100 Hz mono
         let num_samples = 44100 / 2; // 22050 samples = 0.5s
-        let samples: Vec<i16> = (0..num_samples).map(|i| {
-            let t = i as f32 / 44100.0;
-            ((2.0 * std::f32::consts::PI * 440.0 * t).sin() * 32767.0) as i16
-        }).collect();
+        let samples: Vec<i16> = (0..num_samples)
+            .map(|i| {
+                let t = i as f32 / 44100.0;
+                ((2.0 * std::f32::consts::PI * 440.0 * t).sin() * 32767.0) as i16
+            })
+            .collect();
         write_wav(&path, &samples, 1, 44100).expect("write wav");
 
         let meta = AudioImporter::read_metadata(&path).expect("read_metadata");

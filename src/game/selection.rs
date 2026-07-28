@@ -1,8 +1,7 @@
-#[cfg(feature = "game")]
-
-use crate::{Entity, World};
-use crate::component::Position;
 use super::components::{Selectable, Selected};
+use crate::component::Position;
+#[cfg(feature = "game")]
+use crate::{Entity, World};
 
 #[derive(Debug, Clone, Copy)]
 pub struct SelectionBox {
@@ -100,10 +99,8 @@ impl SelectionManager {
             None => return,
         };
 
-        let positions: Vec<(Entity, Position)> = world
-            .query::<Position>()
-            .map(|(e, p)| (e, *p))
-            .collect();
+        let positions: Vec<(Entity, Position)> =
+            world.query::<Position>().map(|(e, p)| (e, *p)).collect();
 
         let mut matched = Vec::new();
         for (entity, pos) in &positions {

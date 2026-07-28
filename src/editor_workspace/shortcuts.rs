@@ -320,18 +320,9 @@ mod tests {
     fn new_has_blender_defaults() {
         let map = ShortcutMap::new();
         // Spot-check a few critical bindings.
-        assert_eq!(
-            map.get(&A::Save),
-            Some(&KeyBinding::ctrl(K::S))
-        );
-        assert_eq!(
-            map.get(&A::Undo),
-            Some(&KeyBinding::ctrl(K::Z))
-        );
-        assert_eq!(
-            map.get(&A::GizmoTranslate),
-            Some(&KeyBinding::key(K::W))
-        );
+        assert_eq!(map.get(&A::Save), Some(&KeyBinding::ctrl(K::S)));
+        assert_eq!(map.get(&A::Undo), Some(&KeyBinding::ctrl(K::Z)));
+        assert_eq!(map.get(&A::GizmoTranslate), Some(&KeyBinding::key(K::W)));
     }
 
     #[test]
@@ -357,7 +348,10 @@ mod tests {
         // Ctrl+S → Save (not SaveAs)
         assert_eq!(map.find_action(K::S, true, false, false), Some(A::Save));
         // Ctrl+D → Duplicate
-        assert_eq!(map.find_action(K::D, true, false, false), Some(A::Duplicate));
+        assert_eq!(
+            map.find_action(K::D, true, false, false),
+            Some(A::Duplicate)
+        );
     }
 
     #[test]
@@ -371,9 +365,18 @@ mod tests {
 
     #[test]
     fn label_for_action_format() {
-        assert_eq!(ShortcutAction::label_for_action(&A::NewProject), "New Project");
-        assert_eq!(ShortcutAction::label_for_action(&A::ToggleGrid), "Toggle Grid");
-        assert_eq!(ShortcutAction::label_for_action(&A::PlayStop), "Play / Stop");
+        assert_eq!(
+            ShortcutAction::label_for_action(&A::NewProject),
+            "New Project"
+        );
+        assert_eq!(
+            ShortcutAction::label_for_action(&A::ToggleGrid),
+            "Toggle Grid"
+        );
+        assert_eq!(
+            ShortcutAction::label_for_action(&A::PlayStop),
+            "Play / Stop"
+        );
     }
 
     #[test]
@@ -386,10 +389,7 @@ mod tests {
             KeyBinding::label_for_binding(&KeyBinding::shift(K::A)),
             "Shift+A"
         );
-        assert_eq!(
-            KeyBinding::label_for_binding(&KeyBinding::key(K::W)),
-            "W"
-        );
+        assert_eq!(KeyBinding::label_for_binding(&KeyBinding::key(K::W)), "W");
         assert_eq!(
             KeyBinding::label_for_binding(&KeyBinding::ctrl_shift(K::S)),
             "Ctrl+Shift+S"

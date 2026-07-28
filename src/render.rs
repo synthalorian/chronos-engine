@@ -16,22 +16,22 @@
 //! renderer.render(&camera, &batch, &texture_view, &sampler);
 //! ```
 
-use wgpu::{
-    BindGroup, BindGroupDescriptor, BindGroupEntry, BindGroupLayout,
-    BindGroupLayoutDescriptor, BindGroupLayoutEntry, BindingType, Buffer,
-    BufferDescriptor, BufferUsages, Color, ColorTargetState, ColorWrites, CommandEncoderDescriptor, CompositeAlphaMode, Device, FragmentState, FrontFace,
-    IndexFormat, LoadOp, MultisampleState, Operations, PipelineLayoutDescriptor, PresentMode,
-    PrimitiveState, PrimitiveTopology, RenderPass, RenderPassColorAttachment, RenderPipeline,
-    RenderPipelineDescriptor, Sampler, SamplerBindingType, StoreOp, Surface, SurfaceConfiguration,
-    TextureFormat, TextureUsages, TextureView, TextureViewDescriptor, VertexAttribute,
-    VertexBufferLayout, VertexFormat, VertexState, VertexStepMode, Queue, RenderPassDescriptor,
-    DeviceDescriptor, ShaderStages, BufferBindingType, TextureViewDimension, TextureSampleType,
-    BlendState,
-};
-use wgpu::util::{BufferInitDescriptor, DeviceExt};
 use bytemuck::{Pod, Zeroable};
 use std::sync::Arc;
+use wgpu::util::{BufferInitDescriptor, DeviceExt};
 use wgpu::BindingResource;
+use wgpu::{
+    BindGroup, BindGroupDescriptor, BindGroupEntry, BindGroupLayout, BindGroupLayoutDescriptor,
+    BindGroupLayoutEntry, BindingType, BlendState, Buffer, BufferBindingType, BufferDescriptor,
+    BufferUsages, Color, ColorTargetState, ColorWrites, CommandEncoderDescriptor,
+    CompositeAlphaMode, Device, DeviceDescriptor, FragmentState, FrontFace, IndexFormat, LoadOp,
+    MultisampleState, Operations, PipelineLayoutDescriptor, PresentMode, PrimitiveState,
+    PrimitiveTopology, Queue, RenderPass, RenderPassColorAttachment, RenderPassDescriptor,
+    RenderPipeline, RenderPipelineDescriptor, Sampler, SamplerBindingType, ShaderStages, StoreOp,
+    Surface, SurfaceConfiguration, TextureFormat, TextureSampleType, TextureUsages, TextureView,
+    TextureViewDescriptor, TextureViewDimension, VertexAttribute, VertexBufferLayout, VertexFormat,
+    VertexState, VertexStepMode,
+};
 
 #[cfg(not(feature = "render"))]
 compile_error!("render.rs should not compile without the 'render' feature");
@@ -115,10 +115,22 @@ impl Camera {
         let ty = (pos[0] * sin_a - pos[1] * cos_a) / half_h;
 
         let proj = [
-            cos_a / half_w,   -sin_a / half_w,   0.0, 0.0,
-            sin_a / half_h,    cos_a / half_h,   0.0, 0.0,
-            0.0,               0.0,               1.0, 0.0,
-            tx,                ty,                0.0, 1.0,
+            cos_a / half_w,
+            -sin_a / half_w,
+            0.0,
+            0.0,
+            sin_a / half_h,
+            cos_a / half_h,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            tx,
+            ty,
+            0.0,
+            1.0,
         ];
 
         device.create_buffer_init(&BufferInitDescriptor {
@@ -176,7 +188,10 @@ pub struct RenderSprite {
 impl RenderSprite {
     pub fn new(x: f32, y: f32, width: f32, height: f32) -> Self {
         RenderSprite {
-            x, y, width, height,
+            x,
+            y,
+            width,
+            height,
             uv: (0.0, 0.0, 1.0, 1.0),
             layer: 0,
             color: [1.0, 1.0, 1.0, 1.0],
@@ -255,20 +270,26 @@ impl SpriteBatch {
     /// Sprites are sorted by layer (ascending) before upload so that
     /// lower layers are drawn first.
     pub fn upload(&self, queue: &Queue, sprites: &mut [RenderSprite]) {
-        assert!(sprites.len() <= self.capacity, "Too many sprites for batch capacity");
+        assert!(
+            sprites.len() <= self.capacity,
+            "Too many sprites for batch capacity"
+        );
 
         sprites.sort_by_key(|s| s.layer);
 
-        let instances: Vec<SpriteInstance> = sprites.iter().map(|s| SpriteInstance {
-            x: s.x,
-            y: s.y,
-            width: s.width,
-            height: s.height,
-            uv: [s.uv.0, s.uv.1, s.uv.2 - s.uv.0, s.uv.3 - s.uv.1],
-            layer: s.layer as f32,
-            color: s.color,
-            parallax: s.parallax,
-        }).collect();
+        let instances: Vec<SpriteInstance> = sprites
+            .iter()
+            .map(|s| SpriteInstance {
+                x: s.x,
+                y: s.y,
+                width: s.width,
+                height: s.height,
+                uv: [s.uv.0, s.uv.1, s.uv.2 - s.uv.0, s.uv.3 - s.uv.1],
+                layer: s.layer as f32,
+                color: s.color,
+                parallax: s.parallax,
+            })
+            .collect();
 
         let data = bytemuck::cast_slice(&instances);
         queue.write_buffer(&self.instances, 0, data);
@@ -289,17 +310,34 @@ impl SpriteBatch {
 
 /// The quad vertex layout (position + UV, 16 bytes per vertex, 4 vertices).
 pub const QUAD_VERTICES: &[QuadVertex] = &[
-    QuadVertex { x: -0.5, y: -0.5, u: 0.0, v: 0.0 },
-    QuadVertex { x:  0.5, y: -0.5, u: 1.0, v: 0.0 },
-    QuadVertex { x:  0.5, y:  0.5, u: 1.0, v: 1.0 },
-    QuadVertex { x: -0.5, y:  0.5, u: 0.0, v: 1.0 },
+    QuadVertex {
+        x: -0.5,
+        y: -0.5,
+        u: 0.0,
+        v: 0.0,
+    },
+    QuadVertex {
+        x: 0.5,
+        y: -0.5,
+        u: 1.0,
+        v: 0.0,
+    },
+    QuadVertex {
+        x: 0.5,
+        y: 0.5,
+        u: 1.0,
+        v: 1.0,
+    },
+    QuadVertex {
+        x: -0.5,
+        y: 0.5,
+        u: 0.0,
+        v: 1.0,
+    },
 ];
 
 /// The quad index layout (2 triangles, 6 indices).
-pub const QUAD_INDICES: &[u16] = &[
-    0, 1, 2,
-    0, 2, 3,
-];
+pub const QUAD_INDICES: &[u16] = &[0, 1, 2, 0, 2, 3];
 
 // ──────────────────────────────────────────────
 // Renderer — wgpu Pipeline
@@ -364,7 +402,11 @@ pub struct Renderer {
 }
 
 impl Renderer {
-     pub async fn new(window: Arc<winit::window::Window>, width: u32, height: u32) -> Result<Self, RendererError> {
+    pub async fn new(
+        window: Arc<winit::window::Window>,
+        width: u32,
+        height: u32,
+    ) -> Result<Self, RendererError> {
         let instance = wgpu::Instance::default();
 
         let surface = instance
@@ -377,10 +419,7 @@ impl Renderer {
             .ok_or(RendererError::NoAdapter)?;
 
         let (device, queue) = adapter
-            .request_device(
-                &DeviceDescriptor::default(),
-                None,
-            )
+            .request_device(&DeviceDescriptor::default(), None)
             .await
             .map_err(RendererError::RequestDevice)?;
 
@@ -398,7 +437,9 @@ impl Renderer {
     ) -> Result<Self, RendererError> {
         // Query the surface capabilities to find a supported format.
         let caps = surface.get_capabilities(adapter);
-        let format = caps.formats.first()
+        let format = caps
+            .formats
+            .first()
             .copied()
             .unwrap_or(TextureFormat::Bgra8UnormSrgb);
 
@@ -433,19 +474,20 @@ impl Renderer {
         let quad_index_count = QUAD_INDICES.len() as u32;
 
         // Camera bind group layout
-        let camera_bind_group_layout = device.create_bind_group_layout(&BindGroupLayoutDescriptor {
-            label: Some("camera-bgl"),
-            entries: &[BindGroupLayoutEntry {
-                binding: 0,
-                visibility: ShaderStages::VERTEX,
-                ty: BindingType::Buffer {
-                    ty: BufferBindingType::Uniform,
-                    has_dynamic_offset: false,
-                    min_binding_size: None,
-                },
-                count: None,
-            }],
-        });
+        let camera_bind_group_layout =
+            device.create_bind_group_layout(&BindGroupLayoutDescriptor {
+                label: Some("camera-bgl"),
+                entries: &[BindGroupLayoutEntry {
+                    binding: 0,
+                    visibility: ShaderStages::VERTEX,
+                    ty: BindingType::Buffer {
+                        ty: BufferBindingType::Uniform,
+                        has_dynamic_offset: false,
+                        min_binding_size: None,
+                    },
+                    count: None,
+                }],
+            });
 
         // Camera buffer (4x4 matrix = 16 f32 = 64 bytes)
         let camera_buffer = device.create_buffer(&BufferDescriptor {
@@ -465,27 +507,28 @@ impl Renderer {
         });
 
         // Texture bind group layout
-        let texture_bind_group_layout = device.create_bind_group_layout(&BindGroupLayoutDescriptor {
-            label: Some("texture-bgl"),
-            entries: &[
-                BindGroupLayoutEntry {
-                    binding: 0,
-                    visibility: ShaderStages::FRAGMENT,
-                    ty: BindingType::Texture {
-                        sample_type: TextureSampleType::Float { filterable: true },
-                        view_dimension: TextureViewDimension::D2,
-                        multisampled: false,
+        let texture_bind_group_layout =
+            device.create_bind_group_layout(&BindGroupLayoutDescriptor {
+                label: Some("texture-bgl"),
+                entries: &[
+                    BindGroupLayoutEntry {
+                        binding: 0,
+                        visibility: ShaderStages::FRAGMENT,
+                        ty: BindingType::Texture {
+                            sample_type: TextureSampleType::Float { filterable: true },
+                            view_dimension: TextureViewDimension::D2,
+                            multisampled: false,
+                        },
+                        count: None,
                     },
-                    count: None,
-                },
-                BindGroupLayoutEntry {
-                    binding: 1,
-                    visibility: ShaderStages::FRAGMENT,
-                    ty: BindingType::Sampler(SamplerBindingType::Filtering),
-                    count: None,
-                },
-            ],
-        });
+                    BindGroupLayoutEntry {
+                        binding: 1,
+                        visibility: ShaderStages::FRAGMENT,
+                        ty: BindingType::Sampler(SamplerBindingType::Filtering),
+                        count: None,
+                    },
+                ],
+            });
 
         // Sprite batch for instanced rendering
         let sprite_batch = SpriteBatch::new(&device, 1024);
@@ -653,9 +696,13 @@ impl Renderer {
         });
 
         // Acquire swapchain texture.
-        let output = self.surface.get_current_texture()
+        let output = self
+            .surface
+            .get_current_texture()
             .expect("Failed to acquire swapchain texture");
-        let view = output.texture.create_view(&TextureViewDescriptor::default());
+        let view = output
+            .texture
+            .create_view(&TextureViewDescriptor::default());
 
         // Create texture bind group.
         let texture_bind_group = self.device.create_bind_group(&BindGroupDescriptor {
@@ -673,9 +720,11 @@ impl Renderer {
             ],
         });
 
-        let mut encoder = self.device.create_command_encoder(&CommandEncoderDescriptor {
-            label: Some("render-encoder"),
-        });
+        let mut encoder = self
+            .device
+            .create_command_encoder(&CommandEncoderDescriptor {
+                label: Some("render-encoder"),
+            });
 
         {
             let mut render_pass = encoder.begin_render_pass(&RenderPassDescriptor {

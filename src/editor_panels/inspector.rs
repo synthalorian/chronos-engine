@@ -167,18 +167,34 @@ impl EditorPanel for InspectorPanel {
         self.show_component::<Position>(ui, state, entity, "Position", |ui, pos| {
             ui.horizontal(|ui| {
                 ui.label("x");
-                ui.add(egui::DragValue::new(&mut pos.x).range(-1000.0..=1000.0).speed(0.1));
+                ui.add(
+                    egui::DragValue::new(&mut pos.x)
+                        .range(-1000.0..=1000.0)
+                        .speed(0.1),
+                );
                 ui.label("y");
-                ui.add(egui::DragValue::new(&mut pos.y).range(-1000.0..=1000.0).speed(0.1));
+                ui.add(
+                    egui::DragValue::new(&mut pos.y)
+                        .range(-1000.0..=1000.0)
+                        .speed(0.1),
+                );
             });
         });
 
         self.show_component::<Velocity>(ui, state, entity, "Velocity", |ui, vel| {
             ui.horizontal(|ui| {
                 ui.label("x");
-                ui.add(egui::DragValue::new(&mut vel.x).range(-100.0..=100.0).speed(0.1));
+                ui.add(
+                    egui::DragValue::new(&mut vel.x)
+                        .range(-100.0..=100.0)
+                        .speed(0.1),
+                );
                 ui.label("y");
-                ui.add(egui::DragValue::new(&mut vel.y).range(-100.0..=100.0).speed(0.1));
+                ui.add(
+                    egui::DragValue::new(&mut vel.y)
+                        .range(-100.0..=100.0)
+                        .speed(0.1),
+                );
             });
         });
 
@@ -200,17 +216,37 @@ impl EditorPanel for InspectorPanel {
         self.show_component::<Transform>(ui, state, entity, "Transform", |ui, tr| {
             ui.horizontal(|ui| {
                 ui.label("x");
-                ui.add(egui::DragValue::new(&mut tr.x).range(-1000.0..=1000.0).speed(0.1));
+                ui.add(
+                    egui::DragValue::new(&mut tr.x)
+                        .range(-1000.0..=1000.0)
+                        .speed(0.1),
+                );
                 ui.label("y");
-                ui.add(egui::DragValue::new(&mut tr.y).range(-1000.0..=1000.0).speed(0.1));
+                ui.add(
+                    egui::DragValue::new(&mut tr.y)
+                        .range(-1000.0..=1000.0)
+                        .speed(0.1),
+                );
                 ui.label("z");
-                ui.add(egui::DragValue::new(&mut tr.z).range(-1000.0..=1000.0).speed(0.1));
+                ui.add(
+                    egui::DragValue::new(&mut tr.z)
+                        .range(-1000.0..=1000.0)
+                        .speed(0.1),
+                );
             });
             ui.horizontal(|ui| {
                 ui.label("rotation");
-                ui.add(egui::DragValue::new(&mut tr.rotation).range(-360.0..=360.0).speed(1.0));
+                ui.add(
+                    egui::DragValue::new(&mut tr.rotation)
+                        .range(-360.0..=360.0)
+                        .speed(1.0),
+                );
                 ui.label("scale");
-                ui.add(egui::DragValue::new(&mut tr.scale).range(0.01..=100.0).speed(0.01));
+                ui.add(
+                    egui::DragValue::new(&mut tr.scale)
+                        .range(0.01..=100.0)
+                        .speed(0.01),
+                );
             });
         });
 
@@ -218,7 +254,10 @@ impl EditorPanel for InspectorPanel {
             ui.horizontal(|ui| {
                 ui.label("symbol");
                 let mut sym = spr.symbol.to_string();
-                if ui.add(egui::TextEdit::singleline(&mut sym).desired_width(30.0)).changed() {
+                if ui
+                    .add(egui::TextEdit::singleline(&mut sym).desired_width(30.0))
+                    .changed()
+                {
                     spr.symbol = sym.chars().next().unwrap_or('?');
                 }
                 ui.label("layer");
@@ -239,30 +278,58 @@ impl EditorPanel for InspectorPanel {
         self.show_component::<RigidBody>(ui, state, entity, "RigidBody", |ui, rb| {
             ui.horizontal(|ui| {
                 ui.label("mass");
-                ui.add(egui::DragValue::new(&mut rb.mass).range(0.0..=1000.0).speed(0.1));
+                ui.add(
+                    egui::DragValue::new(&mut rb.mass)
+                        .range(0.0..=1000.0)
+                        .speed(0.1),
+                );
                 ui.label("damping");
-                ui.add(egui::DragValue::new(&mut rb.damping).range(0.0..=1.0).speed(0.01));
+                ui.add(
+                    egui::DragValue::new(&mut rb.damping)
+                        .range(0.0..=1.0)
+                        .speed(0.01),
+                );
             });
             ui.horizontal(|ui| {
                 ui.label("restitution");
-                ui.add(egui::DragValue::new(&mut rb.restitution).range(0.0..=1.0).speed(0.01));
+                ui.add(
+                    egui::DragValue::new(&mut rb.restitution)
+                        .range(0.0..=1.0)
+                        .speed(0.01),
+                );
             });
-            ui.label(if rb.is_static() { "Static body" } else { "Dynamic body" });
+            ui.label(if rb.is_static() {
+                "Static body"
+            } else {
+                "Dynamic body"
+            });
         });
 
         self.show_component::<CircleRadius>(ui, state, entity, "CircleRadius", |ui, cr| {
             ui.horizontal(|ui| {
                 ui.label("radius");
-                ui.add(egui::DragValue::new(&mut cr.0).range(0.0..=100.0).speed(0.1));
+                ui.add(
+                    egui::DragValue::new(&mut cr.0)
+                        .range(0.0..=100.0)
+                        .speed(0.1),
+                );
             });
         });
 
         self.show_component::<Gravity>(ui, state, entity, "Gravity", |ui, g| {
             ui.horizontal(|ui| {
                 ui.label("x");
-                ui.add(egui::DragValue::new(&mut g.x).range(-100.0..=100.0).speed(0.1));
+                ui.add(
+                    egui::DragValue::new(&mut g.x)
+                        .range(-100.0..=100.0)
+                        .speed(0.1),
+                );
                 ui.label("y");
-                ui.add(egui::DragValue::new(&mut g.y).range(-100.0..=100.0).speed(0.1));
+                ui.add(
+                    egui::DragValue::new(&mut g.y)
+                        .range(-100.0..=100.0)
+                        .speed(0.1),
+                );
             });
         });
 
@@ -302,8 +369,12 @@ impl EditorPanel for InspectorPanel {
             add_component_button(ui, state, entity, "Position", || Position::new(0.0, 0.0));
             add_component_button(ui, state, entity, "Velocity", || Velocity::new(0.0, 0.0));
             add_component_button(ui, state, entity, "Health", || Health::new(100));
-            add_component_button(ui, state, entity, "Transform", || Transform::new(0.0, 0.0, 0.0));
-            add_component_button(ui, state, entity, "Sprite", || Sprite::new('?', 255, 255, 255));
+            add_component_button(ui, state, entity, "Transform", || {
+                Transform::new(0.0, 0.0, 0.0)
+            });
+            add_component_button(ui, state, entity, "Sprite", || {
+                Sprite::new('?', 255, 255, 255)
+            });
             add_component_button(ui, state, entity, "RigidBody", || RigidBody::dynamic(1.0));
             add_component_button(ui, state, entity, "CircleRadius", || CircleRadius::new(1.0));
             add_component_button(ui, state, entity, "Gravity", || Gravity::down(9.81));
@@ -346,7 +417,6 @@ fn color_to_hex(c: egui::Color32) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
 
     // ── new() defaults ──
 
@@ -359,7 +429,10 @@ mod tests {
             "all component types should start expanded"
         );
         for name in KNOWN_COMPONENTS {
-            assert!(panel.is_expanded(name), "{name} should be expanded by default");
+            assert!(
+                panel.is_expanded(name),
+                "{name} should be expanded by default"
+            );
         }
     }
 
@@ -404,9 +477,15 @@ mod tests {
         let mut panel = InspectorPanel::new();
         assert!(panel.is_expanded("Position"));
         panel.toggle_expanded("Position");
-        assert!(!panel.is_expanded("Position"), "should be collapsed after toggle");
+        assert!(
+            !panel.is_expanded("Position"),
+            "should be collapsed after toggle"
+        );
         panel.toggle_expanded("Position");
-        assert!(panel.is_expanded("Position"), "should be expanded after second toggle");
+        assert!(
+            panel.is_expanded("Position"),
+            "should be expanded after second toggle"
+        );
     }
 
     #[test]
@@ -415,7 +494,11 @@ mod tests {
         // Double-expand should not create duplicates.
         panel.toggle_expanded("Position"); // collapse
         panel.toggle_expanded("Position"); // expand
-        let count = panel.expanded_components.iter().filter(|s| *s == "Position").count();
+        let count = panel
+            .expanded_components
+            .iter()
+            .filter(|s| *s == "Position")
+            .count();
         assert_eq!(count, 1, "should not duplicate entries");
     }
 
@@ -424,8 +507,17 @@ mod tests {
     #[test]
     fn known_components_covers_all_types() {
         let expected = [
-            "Position", "Velocity", "Health", "Transform", "Sprite",
-            "RigidBody", "CircleRadius", "Gravity", "Damage", "Dead", "Grounded",
+            "Position",
+            "Velocity",
+            "Health",
+            "Transform",
+            "Sprite",
+            "RigidBody",
+            "CircleRadius",
+            "Gravity",
+            "Damage",
+            "Dead",
+            "Grounded",
         ];
         for name in &expected {
             assert!(KNOWN_COMPONENTS.contains(name), "missing {name}");

@@ -1,5 +1,4 @@
 #[cfg(feature = "game")]
-
 use std::collections::HashMap;
 
 // ──────────────────────────────────────────────
@@ -30,12 +29,10 @@ impl DialogueCondition {
     pub fn is_met(&self, context: &DialogueContext) -> bool {
         match self {
             DialogueCondition::HasItem { name } => context.has_item(name),
-            DialogueCondition::StatCheck { stat, min_value } => {
-                context
-                    .get_variable(stat)
-                    .and_then(|v| v.parse::<u32>().ok())
-                    .map_or(false, |v| v >= *min_value)
-            }
+            DialogueCondition::StatCheck { stat, min_value } => context
+                .get_variable(stat)
+                .and_then(|v| v.parse::<u32>().ok())
+                .map_or(false, |v| v >= *min_value),
             DialogueCondition::LevelCheck { min_level } => context.player_level >= *min_level,
             DialogueCondition::QuestComplete { quest_id } => context.has_quest(*quest_id),
             DialogueCondition::ReputationCheck { faction, min_value } => {
@@ -443,8 +440,14 @@ mod tests {
     #[test]
     fn context_has_item_check() {
         let ctx = DialogueContext::new().with_items(vec!["Rusty Key", "Health Potion"]);
-        assert!(DialogueCondition::HasItem { name: "Rusty Key".into() }.is_met(&ctx));
-        assert!(!DialogueCondition::HasItem { name: "Golden Key".into() }.is_met(&ctx));
+        assert!(DialogueCondition::HasItem {
+            name: "Rusty Key".into()
+        }
+        .is_met(&ctx));
+        assert!(!DialogueCondition::HasItem {
+            name: "Golden Key".into()
+        }
+        .is_met(&ctx));
     }
 
     #[test]
@@ -578,12 +581,11 @@ mod tests {
             vec![
                 DialogueNode::new("Merchant", "Buy my wares?")
                     .with_action(DialogueAction::GiveGold { amount: 10 })
-                    .with_choice(
-                        DialogueChoice::new("Sure!", 1)
-                            .with_action(DialogueAction::GiveItem {
-                                name: "Potion".into(),
-                            }),
-                    ),
+                    .with_choice(DialogueChoice::new("Sure!", 1).with_action(
+                        DialogueAction::GiveItem {
+                            name: "Potion".into(),
+                        },
+                    )),
                 DialogueNode::new("Merchant", "Pleasure doing business."),
             ],
         );
@@ -745,8 +747,7 @@ mod tests {
         mgr.register(DialogueTree::new(
             200,
             vec![
-                DialogueNode::new("Ghost", "Boo!")
-                    .with_choice(DialogueChoice::new("Run away!", 1)),
+                DialogueNode::new("Ghost", "Boo!").with_choice(DialogueChoice::new("Run away!", 1)),
                 DialogueNode::new("Ghost", "See you never..."),
             ],
         ));
@@ -776,13 +777,12 @@ mod tests {
         let mut tree = DialogueTree::new(
             300,
             vec![
-                DialogueNode::new("Sage", "Remember this word.")
-                    .with_choice(
-                        DialogueChoice::new("I will.", 1).with_action(DialogueAction::SetVariable {
-                            key: "magic_word".into(),
-                            value: "open_sesame".into(),
-                        }),
-                    ),
+                DialogueNode::new("Sage", "Remember this word.").with_choice(
+                    DialogueChoice::new("I will.", 1).with_action(DialogueAction::SetVariable {
+                        key: "magic_word".into(),
+                        value: "open_sesame".into(),
+                    }),
+                ),
                 DialogueNode::new("Sage", "Good."),
             ],
         );
@@ -806,15 +806,14 @@ mod tests {
         let mut tree = DialogueTree::new(
             301,
             vec![
-                DialogueNode::new("Rebel", "Join us?")
-                    .with_choice(
-                        DialogueChoice::new("I'm in.", 1).with_action(
-                            DialogueAction::ModifyReputation {
-                                faction: "Rebels".into(),
-                                delta: 25,
-                            },
-                        ),
+                DialogueNode::new("Rebel", "Join us?").with_choice(
+                    DialogueChoice::new("I'm in.", 1).with_action(
+                        DialogueAction::ModifyReputation {
+                            faction: "Rebels".into(),
+                            delta: 25,
+                        },
                     ),
+                ),
                 DialogueNode::new("Rebel", "Welcome to the cause."),
             ],
         );
@@ -838,11 +837,10 @@ mod tests {
         let mut tree = DialogueTree::new(
             302,
             vec![
-                DialogueNode::new("King", "Slay the dragon.")
-                    .with_choice(
-                        DialogueChoice::new("Consider it done.", 1)
-                            .with_action(DialogueAction::StartQuest { quest_id: 77 }),
-                    ),
+                DialogueNode::new("King", "Slay the dragon.").with_choice(
+                    DialogueChoice::new("Consider it done.", 1)
+                        .with_action(DialogueAction::StartQuest { quest_id: 77 }),
+                ),
                 DialogueNode::new("King", "You have my thanks.")
                     .with_action(DialogueAction::CompleteQuest { quest_id: 77 }),
             ],
@@ -878,8 +876,12 @@ mod tests {
 
         let result = tree.select_choice(0, &ctx);
         assert_eq!(result.actions.len(), 2); // 2 node + 0 choice actions
-        assert!(result.actions.contains(&DialogueAction::GiveXp { amount: 500 }));
-        assert!(result.actions.contains(&DialogueAction::GiveGold { amount: 250 }));
+        assert!(result
+            .actions
+            .contains(&DialogueAction::GiveXp { amount: 500 }));
+        assert!(result
+            .actions
+            .contains(&DialogueAction::GiveGold { amount: 250 }));
     }
 
     // ── None action does nothing harmful ────────
@@ -910,8 +912,7 @@ mod tests {
         let mut tree = DialogueTree::new(
             400,
             vec![
-                DialogueNode::new("NPC", "Pick one.")
-                    .with_choice(DialogueChoice::new("A", 1)),
+                DialogueNode::new("NPC", "Pick one.").with_choice(DialogueChoice::new("A", 1)),
                 DialogueNode::new("NPC", "Done."),
             ],
         );

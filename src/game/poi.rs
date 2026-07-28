@@ -27,7 +27,10 @@ impl PoiType {
     }
 
     pub fn is_enterable(&self) -> bool {
-        matches!(self, PoiType::Town | PoiType::Dungeon | PoiType::Camp | PoiType::Shrine)
+        matches!(
+            self,
+            PoiType::Town | PoiType::Dungeon | PoiType::Camp | PoiType::Shrine
+        )
     }
 
     pub fn icon(&self) -> &str {
@@ -106,9 +109,7 @@ impl PointOfInterest {
     }
 
     pub fn can_enter(&self, player_level: u32) -> bool {
-        self.discovered
-            && player_level >= self.level_requirement
-            && self.poi_type.is_enterable()
+        self.discovered && player_level >= self.level_requirement && self.poi_type.is_enterable()
     }
 }
 
@@ -159,20 +160,27 @@ impl PoiRegistry {
     }
 
     pub fn by_type(&self, poi_type: PoiType) -> Vec<&PointOfInterest> {
-        self.pois.values().filter(|p| p.poi_type == poi_type).collect()
+        self.pois
+            .values()
+            .filter(|p| p.poi_type == poi_type)
+            .collect()
     }
 
     pub fn nearest(&self, x: f32, y: f32, z: f32) -> Option<&PointOfInterest> {
-        self.pois
-            .values()
-            .min_by(|a, b| {
-                a.distance_to(x, y, z)
-                    .partial_cmp(&b.distance_to(x, y, z))
-                    .unwrap_or(std::cmp::Ordering::Equal)
-            })
+        self.pois.values().min_by(|a, b| {
+            a.distance_to(x, y, z)
+                .partial_cmp(&b.distance_to(x, y, z))
+                .unwrap_or(std::cmp::Ordering::Equal)
+        })
     }
 
-    pub fn nearest_of_type(&self, poi_type: PoiType, x: f32, y: f32, z: f32) -> Option<&PointOfInterest> {
+    pub fn nearest_of_type(
+        &self,
+        poi_type: PoiType,
+        x: f32,
+        y: f32,
+        z: f32,
+    ) -> Option<&PointOfInterest> {
         self.pois
             .values()
             .filter(|p| p.poi_type == poi_type)
@@ -303,8 +311,7 @@ mod tests {
         assert!(poi.can_enter(10));
         assert!(poi.can_enter(20));
         // non-enterable type
-        let mut landmark =
-            PointOfInterest::new(2, "Obelisk", PoiType::Landmark, 0.0, 0.0, 0.0);
+        let mut landmark = PointOfInterest::new(2, "Obelisk", PoiType::Landmark, 0.0, 0.0, 0.0);
         landmark.discover();
         assert!(!landmark.can_enter(1));
     }
@@ -354,9 +361,30 @@ mod tests {
     #[test]
     fn registry_by_type() {
         let mut reg = PoiRegistry::new();
-        reg.register(PointOfInterest::new(1, "Town1", PoiType::Town, 0.0, 0.0, 0.0));
-        reg.register(PointOfInterest::new(2, "Crypt", PoiType::Dungeon, 0.0, 0.0, 0.0));
-        reg.register(PointOfInterest::new(3, "Town2", PoiType::Town, 5.0, 5.0, 5.0));
+        reg.register(PointOfInterest::new(
+            1,
+            "Town1",
+            PoiType::Town,
+            0.0,
+            0.0,
+            0.0,
+        ));
+        reg.register(PointOfInterest::new(
+            2,
+            "Crypt",
+            PoiType::Dungeon,
+            0.0,
+            0.0,
+            0.0,
+        ));
+        reg.register(PointOfInterest::new(
+            3,
+            "Town2",
+            PoiType::Town,
+            5.0,
+            5.0,
+            5.0,
+        ));
         let towns = reg.by_type(PoiType::Town);
         assert_eq!(towns.len(), 2);
         let dungeons = reg.by_type(PoiType::Dungeon);
@@ -368,14 +396,37 @@ mod tests {
     #[test]
     fn registry_nearest() {
         let mut reg = PoiRegistry::new();
-        reg.register(PointOfInterest::new(1, "Far", PoiType::Town, 100.0, 0.0, 0.0));
-        reg.register(PointOfInterest::new(2, "Close", PoiType::Town, 1.0, 0.0, 0.0));
-        reg.register(PointOfInterest::new(3, "Mid", PoiType::Town, 10.0, 0.0, 0.0));
+        reg.register(PointOfInterest::new(
+            1,
+            "Far",
+            PoiType::Town,
+            100.0,
+            0.0,
+            0.0,
+        ));
+        reg.register(PointOfInterest::new(
+            2,
+            "Close",
+            PoiType::Town,
+            1.0,
+            0.0,
+            0.0,
+        ));
+        reg.register(PointOfInterest::new(
+            3,
+            "Mid",
+            PoiType::Town,
+            10.0,
+            0.0,
+            0.0,
+        ));
         let nearest = reg.nearest(0.0, 0.0, 0.0).unwrap();
         assert_eq!(nearest.name, "Close");
         let nearest_town = reg.nearest_of_type(PoiType::Town, 0.0, 0.0, 0.0).unwrap();
         assert_eq!(nearest_town.name, "Close");
-        assert!(reg.nearest_of_type(PoiType::Shrine, 0.0, 0.0, 0.0).is_none());
+        assert!(reg
+            .nearest_of_type(PoiType::Shrine, 0.0, 0.0, 0.0)
+            .is_none());
     }
 
     #[test]

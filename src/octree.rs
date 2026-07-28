@@ -16,7 +16,14 @@ pub struct AABB3D {
 
 impl AABB3D {
     pub fn new(min_x: f32, min_y: f32, min_z: f32, max_x: f32, max_y: f32, max_z: f32) -> Self {
-        AABB3D { min_x, min_y, min_z, max_x, max_y, max_z }
+        AABB3D {
+            min_x,
+            min_y,
+            min_z,
+            max_x,
+            max_y,
+            max_z,
+        }
     }
 
     pub fn center(&self) -> (f32, f32, f32) {
@@ -28,7 +35,12 @@ impl AABB3D {
     }
 
     pub fn contains_point(&self, px: f32, py: f32, pz: f32) -> bool {
-        px >= self.min_x && px <= self.max_x && py >= self.min_y && py <= self.max_y && pz >= self.min_z && pz <= self.max_z
+        px >= self.min_x
+            && px <= self.max_x
+            && py >= self.min_y
+            && py <= self.max_y
+            && pz >= self.min_z
+            && pz <= self.max_z
     }
 
     pub fn overlaps_sphere(&self, cx: f32, cy: f32, cz: f32, cr: f32) -> bool {
@@ -129,14 +141,70 @@ impl Octree {
         let cz = self.bounds.min_z + half_d;
 
         let octants = [
-            AABB3D::new(self.bounds.min_x, self.bounds.min_y, self.bounds.min_z, cx, cy, cz),
-            AABB3D::new(cx, self.bounds.min_y, self.bounds.min_z, self.bounds.max_x, cy, cz),
-            AABB3D::new(self.bounds.min_x, cy, self.bounds.min_z, cx, self.bounds.max_y, cz),
-            AABB3D::new(cx, cy, self.bounds.min_z, self.bounds.max_x, self.bounds.max_y, cz),
-            AABB3D::new(self.bounds.min_x, self.bounds.min_y, cz, cx, cy, self.bounds.max_z),
-            AABB3D::new(cx, self.bounds.min_y, cz, self.bounds.max_x, cy, self.bounds.max_z),
-            AABB3D::new(self.bounds.min_x, cy, cz, cx, self.bounds.max_y, self.bounds.max_z),
-            AABB3D::new(cx, cy, cz, self.bounds.max_x, self.bounds.max_y, self.bounds.max_z),
+            AABB3D::new(
+                self.bounds.min_x,
+                self.bounds.min_y,
+                self.bounds.min_z,
+                cx,
+                cy,
+                cz,
+            ),
+            AABB3D::new(
+                cx,
+                self.bounds.min_y,
+                self.bounds.min_z,
+                self.bounds.max_x,
+                cy,
+                cz,
+            ),
+            AABB3D::new(
+                self.bounds.min_x,
+                cy,
+                self.bounds.min_z,
+                cx,
+                self.bounds.max_y,
+                cz,
+            ),
+            AABB3D::new(
+                cx,
+                cy,
+                self.bounds.min_z,
+                self.bounds.max_x,
+                self.bounds.max_y,
+                cz,
+            ),
+            AABB3D::new(
+                self.bounds.min_x,
+                self.bounds.min_y,
+                cz,
+                cx,
+                cy,
+                self.bounds.max_z,
+            ),
+            AABB3D::new(
+                cx,
+                self.bounds.min_y,
+                cz,
+                self.bounds.max_x,
+                cy,
+                self.bounds.max_z,
+            ),
+            AABB3D::new(
+                self.bounds.min_x,
+                cy,
+                cz,
+                cx,
+                self.bounds.max_y,
+                self.bounds.max_z,
+            ),
+            AABB3D::new(
+                cx,
+                cy,
+                cz,
+                self.bounds.max_x,
+                self.bounds.max_y,
+                self.bounds.max_z,
+            ),
         ];
 
         for octant in octants {
@@ -264,7 +332,13 @@ impl Octree {
         let t1 = (-b - sqrt_d) / (2.0 * a);
         let t2 = (-b + sqrt_d) / (2.0 * a);
 
-        let t = if t1 > 0.0 { t1 } else if t2 > 0.0 { t2 } else { return None };
+        let t = if t1 > 0.0 {
+            t1
+        } else if t2 > 0.0 {
+            t2
+        } else {
+            return None;
+        };
 
         Some(RayHit3D {
             entity: 0,

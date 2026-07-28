@@ -11,7 +11,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Rust-2021-orange?logo=rust" alt="Rust 2021">
   <img src="https://img.shields.io/badge/lines-53_000+-blue" alt="53,000+ lines">
-  <img src="https://img.shields.io/badge/tests-971-brightgreen" alt="971 tests">
+  <img src="https://img.shields.io/badge/tests-996-brightgreen" alt="996 tests">
   <img src="https://img.shields.io/badge/unsafe-0-red" alt="Zero unsafe">
   <img src="https://img.shields.io/badge/deps-0_(core)-success" alt="Zero core deps">
   <img src="https://img.shields.io/badge/license-MIT-yellow" alt="MIT License">
@@ -48,7 +48,7 @@ Every byte of storage, every archetype migration, every event dispatch — hand-
 
 ## What's Inside
 
-**~53,000 lines** of Rust across **96 source files**. **971 tests** (946 unit + 25 integration). `cargo build --features full` compiles clean with zero errors and zero warnings.
+**~53,000 lines** of Rust across **96 source files**. **996 tests** (971 unit + 25 integration). `cargo build --features full` compiles clean with zero errors and zero warnings.
 
 ### ECS Core
 
@@ -617,9 +617,9 @@ Phase 14 — Chronos Company Demo              📋 TODO
 | Scripting modules | 7 |
 | Asset import modules | 7 |
 | Binaries | 2 (main demo + chronos-editor) |
-| Unit tests | 946 |
+| Unit tests | 971 |
 | Integration tests | 25 |
-| Total tests | 971 |
+| Total tests | 996 |
 | `unsafe` blocks | 0 |
 | Core dependencies | 0 |
 | Feature-gated dependencies | 19 |

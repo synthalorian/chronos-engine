@@ -99,12 +99,8 @@ impl ProjectTemplate {
             ProjectTemplate::Platformer2D => {
                 "2D side-scrolling setup with a main scene and a sample level."
             }
-            ProjectTemplate::Shooter3D => {
-                "3D arena starter with a main scene and an arena map."
-            }
-            ProjectTemplate::RPG => {
-                "Top-down RPG starter with main, overworld, and town scenes."
-            }
+            ProjectTemplate::Shooter3D => "3D arena starter with a main scene and an arena map.",
+            ProjectTemplate::RPG => "Top-down RPG starter with main, overworld, and town scenes.",
         }
     }
 
@@ -267,8 +263,7 @@ impl ProjectManifest {
             )));
         }
         let data = fs::read_to_string(path)?;
-        serde_json::from_str(&data)
-            .map_err(|e| ProjectError::SerializationError(e.to_string()))
+        serde_json::from_str(&data).map_err(|e| ProjectError::SerializationError(e.to_string()))
     }
 
     /// Update `modified_at` to the current wall-clock time.
@@ -421,11 +416,7 @@ impl ProjectManager {
         manager.project_dir = Some(dir.to_path_buf());
         manager.show_welcome = false;
 
-        manager.add_recent(
-            &manifest.name,
-            &dir.to_string_lossy(),
-            manifest.template,
-        );
+        manager.add_recent(&manifest.name, &dir.to_string_lossy(), manifest.template);
 
         Ok(manager)
     }
@@ -499,8 +490,7 @@ impl ProjectManager {
     /// already exists it is removed first (no duplicates). The list is then
     /// trimmed to `max_recent`.
     pub fn add_recent(&mut self, name: &str, path: &str, template: ProjectTemplate) {
-        self.recent_projects
-            .retain(|r| r.path != path);
+        self.recent_projects.retain(|r| r.path != path);
 
         let now = SystemTime::now()
             .duration_since(UNIX_EPOCH)
@@ -528,15 +518,12 @@ impl ProjectManager {
     }
 
     /// Deserialize a recent-projects list from a JSON file.
-    pub fn load_recent_from_file(
-        path: &Path,
-    ) -> Result<Vec<RecentProject>, ProjectError> {
+    pub fn load_recent_from_file(path: &Path) -> Result<Vec<RecentProject>, ProjectError> {
         if !path.exists() {
             return Ok(Vec::new());
         }
         let data = fs::read_to_string(path)?;
-        serde_json::from_str(&data)
-            .map_err(|e| ProjectError::SerializationError(e.to_string()))
+        serde_json::from_str(&data).map_err(|e| ProjectError::SerializationError(e.to_string()))
     }
 
     /// Whether a project is currently loaded.
@@ -670,10 +657,7 @@ mod tests {
 
     #[test]
     fn project_template_default_scenes() {
-        assert_eq!(
-            ProjectTemplate::Empty.default_scenes(),
-            vec!["main.scene"]
-        );
+        assert_eq!(ProjectTemplate::Empty.default_scenes(), vec!["main.scene"]);
         assert_eq!(
             ProjectTemplate::Platformer2D.default_scenes(),
             vec!["main.scene", "level_1.scene"]
@@ -766,8 +750,8 @@ mod tests {
     #[test]
     fn project_manager_create_project() {
         let dir = temp_dir("create_proj");
-        let mgr = ProjectManager::create_project("CoolGame", &dir, ProjectTemplate::Shooter3D)
-            .unwrap();
+        let mgr =
+            ProjectManager::create_project("CoolGame", &dir, ProjectTemplate::Shooter3D).unwrap();
 
         assert!(mgr.is_loaded());
         assert_eq!(mgr.project_name(), "CoolGame");

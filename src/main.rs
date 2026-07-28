@@ -1,14 +1,14 @@
+#[cfg(feature = "render")]
+use chronos_engine::{Camera, RenderSprite, Renderer, SpriteBatch};
 use chronos_engine::{
-    AABB, CircleRadius, CollisionSystem, Damage, DeathCleanupSystem, Event,
-    EventBus, GameLoop, Health, HealthSystem, MovementSystem, Position, Quadtree, QuadtreeObject,
-    Ray, RaycastSystem, Sprite, SystemPhase, TickScheduler, Velocity, World, DebugRenderSystem,
+    CircleRadius, CollisionSystem, Damage, DeathCleanupSystem, DebugRenderSystem, Event, EventBus,
+    GameLoop, Health, HealthSystem, MovementSystem, Position, Quadtree, QuadtreeObject, Ray,
+    RaycastSystem, Sprite, SystemPhase, TickScheduler, Velocity, World, AABB,
 };
 #[cfg(feature = "render")]
-use chronos_engine::{Camera, Renderer, RenderSprite, SpriteBatch};
+use std::sync::Arc;
 #[cfg(feature = "render")]
 use wgpu::util::DeviceExt;
-#[cfg(feature = "render")]
-use std::sync::Arc;
 
 // ──────────────────────────────────────────────
 // Terminal Demo (default, no GPU)
@@ -80,12 +80,19 @@ fn battle_demo() {
         world.get_component::<Position>(turret).unwrap().y,
     );
 
-    println!("  Alive: {} | Capacity: {}", world.entity_count(), world.entity_capacity());
+    println!(
+        "  Alive: {} | Capacity: {}",
+        world.entity_count(),
+        world.entity_capacity()
+    );
 
     // ── Phase 2: Multiple entity lifecycle + slot reuse ──
     println!("\n▶ Phase 2: Entity slot reuse (generational IDs)...");
     let temp_ids: Vec<_> = (0..5).map(|_| world.create_entity()).collect();
-    println!("  Created 5 temp entities (capacity now {})", world.entity_capacity());
+    println!(
+        "  Created 5 temp entities (capacity now {})",
+        world.entity_capacity()
+    );
     for e in &temp_ids {
         world.destroy_entity(*e);
     }
@@ -98,7 +105,11 @@ fn battle_demo() {
         reincarnated.index(),
         reincarnated.generation(),
     );
-    println!("  Alive: {} | Capacity: {}", world.entity_count(), world.entity_capacity());
+    println!(
+        "  Alive: {} | Capacity: {}",
+        world.entity_count(),
+        world.entity_capacity()
+    );
 
     // ── Phase 3: Simulation with collision and combat ──
     println!("\n▶ Phase 3: Simulation — movement + collision + combat\n");
@@ -198,7 +209,11 @@ fn battle_demo() {
     println!("\n▶ Phase 7: Final world state");
     println!("  Remaining entities: {}", world.entity_count());
     println!("  Engine ticks simulated: {}", scheduler.tick_count);
-    println!("  Total slots used: {}/{}", world.entity_count(), world.entity_capacity());
+    println!(
+        "  Total slots used: {}/{}",
+        world.entity_count(),
+        world.entity_capacity()
+    );
 
     println!("\n═══ Demo Complete ═══");
 }
@@ -229,10 +244,7 @@ fn bullet_hell_demo() {
         world.add_component(entity, Position::new(x, y));
         world.add_component(
             entity,
-            Velocity::new(
-                ((i as f32) % 2.0) - 1.0,
-                (((i as f32) / 100.0) % 2.0) - 1.0,
-            ),
+            Velocity::new(((i as f32) % 2.0) - 1.0, (((i as f32) / 100.0) % 2.0) - 1.0),
         );
         world.add_component(entity, CircleRadius(5.0));
         entities.push(entity);
@@ -285,7 +297,10 @@ fn bullet_hell_demo() {
     }
 
     let elapsed = start.elapsed();
-    println!("\n  Total simulation time: {:.2}ms", elapsed.as_secs_f64() * 1000.0);
+    println!(
+        "\n  Total simulation time: {:.2}ms",
+        elapsed.as_secs_f64() * 1000.0
+    );
     println!(
         "  Average per tick: {:.2}ms",
         elapsed.as_secs_f64() * 1000.0 / 100.0
@@ -313,7 +328,13 @@ fn bullet_hell_demo() {
 
     for (i, (x, y)) in query_points.iter().enumerate() {
         let hits = qt.query_circle(*x, *y, 20.0);
-        println!("  Query {}: hits at ({:.0},{:.0}) — {} entities", i + 1, x, y, hits.len());
+        println!(
+            "  Query {}: hits at ({:.0},{:.0}) — {} entities",
+            i + 1,
+            x,
+            y,
+            hits.len()
+        );
     }
 
     println!("\n▶ Phase 4: Raycasting...\n");
@@ -324,7 +345,10 @@ fn bullet_hell_demo() {
 
     println!("  Ray from (0, 250) → right: {} hits", hits.len());
     if let Some((_, hit)) = hits.first() {
-        println!("  First hit: entity {}, distance {:.1}", hit.entity, hit.distance);
+        println!(
+            "  First hit: entity {}, distance {:.1}",
+            hit.entity, hit.distance
+        );
     }
 
     println!("\n═══ Bullet Hell Demo Complete ═══");
@@ -338,10 +362,7 @@ fn rts_scenario() {
 
     // Build the pipeline
     gameloop.add_system(MovementSystem::new(), SystemPhase::Update);
-    gameloop.add_system(
-        CollisionSystem::new(12.0),
-        SystemPhase::Update,
-    );
+    gameloop.add_system(CollisionSystem::new(12.0), SystemPhase::Update);
     gameloop.add_system(HealthSystem::new(), SystemPhase::PostUpdate);
     gameloop.add_system(DeathCleanupSystem::new(), SystemPhase::Cleanup);
     gameloop.add_system(DebugRenderSystem::new(30, 10), SystemPhase::Render);
@@ -352,13 +373,7 @@ fn rts_scenario() {
     }
 
     // Spawn a small squad
-    let squad_positions = [
-        (5.0, 5.0),
-        (8.0, 5.0),
-        (5.0, 8.0),
-        (12.0, 5.0),
-        (5.0, 12.0),
-    ];
+    let squad_positions = [(5.0, 5.0), (8.0, 5.0), (5.0, 8.0), (12.0, 5.0), (5.0, 12.0)];
     let mut squad = Vec::new();
     for (i, (x, y)) in squad_positions.iter().enumerate() {
         let unit = world.create_entity();
@@ -367,12 +382,7 @@ fn rts_scenario() {
         world.add_component(unit, Health::new(50));
         world.add_component(
             unit,
-            Sprite::new(
-                if i == 0 { 'C' } else { 'S' },
-                100,
-                200,
-                255,
-            ),
+            Sprite::new(if i == 0 { 'C' } else { 'S' }, 100, 200, 255),
         );
         squad.push(unit);
     }
@@ -491,7 +501,7 @@ async fn gpu_battle_demo() -> Result<(), String> {
                     .with_title("Chronos Engine — GPU Battle Arena")
                     .with_inner_size(winit::dpi::PhysicalSize::new(1024, 768)),
             )
-            .map_err(|e| format!("Failed to create window: {}", e))?
+            .map_err(|e| format!("Failed to create window: {}", e))?,
     );
 
     // Initialize the ECS

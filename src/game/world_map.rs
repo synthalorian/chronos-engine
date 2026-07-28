@@ -1,8 +1,5 @@
 #[cfg(feature = "game")]
-
-
 // ── Region ──────────────────────────────────────────────────────────────────
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Region {
     Plains,
@@ -220,8 +217,7 @@ impl WorldMap {
     }
 
     pub fn procedural_elevation(x: usize, y: usize, seed: u64) -> f32 {
-        let hash = ((x as u64)
-            .wrapping_mul(73856093)
+        let hash = ((x as u64).wrapping_mul(73856093)
             ^ (y as u64).wrapping_mul(19349663)
             ^ seed.wrapping_mul(83492791))
             % 1000;
@@ -492,7 +488,11 @@ mod tests {
                 regions.insert(cell.region);
             }
         }
-        assert!(regions.len() >= 3, "Expected >=3 regions, got {}", regions.len());
+        assert!(
+            regions.len() >= 3,
+            "Expected >=3 regions, got {}",
+            regions.len()
+        );
     }
 
     #[test]

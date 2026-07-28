@@ -125,8 +125,10 @@ impl Pathfinder {
         let (ex, ey) = end;
 
         // Out of bounds check
-        if sx >= self.grid_width || sy >= self.grid_height
-            || ex >= self.grid_width || ey >= self.grid_height
+        if sx >= self.grid_width
+            || sy >= self.grid_height
+            || ex >= self.grid_width
+            || ey >= self.grid_height
         {
             return None;
         }
@@ -164,8 +166,7 @@ impl Pathfinder {
             // Goal reached
             if current.x == ex && current.y == ey {
                 closed.push((current.x, current.y, current.parent));
-                let waypoints =
-                    self.reconstruct_path(&closed, ex, ey, terrain, cell_size);
+                let waypoints = self.reconstruct_path(&closed, ex, ey, terrain, cell_size);
                 return Some(NavigationPath::new(waypoints));
             }
 
@@ -192,7 +193,10 @@ impl Pathfinder {
                     continue;
                 }
 
-                let move_cost = if matches!(terrain.get_tile(nx, ny), Some(super::terrain::TerrainTile::Hill)) {
+                let move_cost = if matches!(
+                    terrain.get_tile(nx, ny),
+                    Some(super::terrain::TerrainTile::Hill)
+                ) {
                     2.0
                 } else {
                     1.0
@@ -241,8 +245,8 @@ impl Pathfinder {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use super::super::terrain::TerrainTile;
+    use super::*;
 
     fn flat_terrain(w: usize, h: usize) -> TerrainGrid {
         TerrainGrid::new(w, h)

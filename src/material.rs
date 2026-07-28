@@ -230,49 +230,73 @@ impl MaterialDefinition {
 
     /// Convenience: set albedo color (RGBA).
     pub fn with_albedo(mut self, r: f32, g: f32, b: f32, a: f32) -> Self {
-        self.properties.push(MaterialProperty::new("albedo", MaterialValue::Color([r, g, b, a])));
+        self.properties.push(MaterialProperty::new(
+            "albedo",
+            MaterialValue::Color([r, g, b, a]),
+        ));
         self
     }
 
     /// Convenience: set normal-map texture path.
     pub fn with_normal(mut self, path: &str) -> Self {
-        self.properties.push(MaterialProperty::new("normal_map", MaterialValue::Texture(path.to_string())));
+        self.properties.push(MaterialProperty::new(
+            "normal_map",
+            MaterialValue::Texture(path.to_string()),
+        ));
         self
     }
 
     /// Convenience: set metallic factor.
     pub fn with_metallic(mut self, value: f32) -> Self {
-        self.properties.push(MaterialProperty::new("metallic", MaterialValue::Float(value)));
+        self.properties.push(MaterialProperty::new(
+            "metallic",
+            MaterialValue::Float(value),
+        ));
         self
     }
 
     /// Convenience: set roughness factor.
     pub fn with_roughness(mut self, value: f32) -> Self {
-        self.properties.push(MaterialProperty::new("roughness", MaterialValue::Float(value)));
+        self.properties.push(MaterialProperty::new(
+            "roughness",
+            MaterialValue::Float(value),
+        ));
         self
     }
 
     /// Convenience: set emissive color.
     pub fn with_emissive(mut self, r: f32, g: f32, b: f32) -> Self {
-        self.properties.push(MaterialProperty::new("emissive", MaterialValue::Vec3([r, g, b])));
+        self.properties.push(MaterialProperty::new(
+            "emissive",
+            MaterialValue::Vec3([r, g, b]),
+        ));
         self
     }
 
     /// Convenience: set albedo texture.
     pub fn with_albedo_texture(mut self, path: &str) -> Self {
-        self.properties.push(MaterialProperty::new("albedo_map", MaterialValue::Texture(path.to_string())));
+        self.properties.push(MaterialProperty::new(
+            "albedo_map",
+            MaterialValue::Texture(path.to_string()),
+        ));
         self
     }
 
     /// Convenience: set opacity.
     pub fn with_opacity(mut self, value: f32) -> Self {
-        self.properties.push(MaterialProperty::new("opacity", MaterialValue::Float(value)));
+        self.properties.push(MaterialProperty::new(
+            "opacity",
+            MaterialValue::Float(value),
+        ));
         self
     }
 
     /// Look up a property value by name.
     pub fn get_property(&self, name: &str) -> Option<&MaterialValue> {
-        self.properties.iter().find(|p| p.name == name).map(|p| &p.value)
+        self.properties
+            .iter()
+            .find(|p| p.name == name)
+            .map(|p| &p.value)
     }
 
     /// Set a property value by name. Returns an error if the property doesn't
@@ -505,18 +529,24 @@ mod tests {
             mat.get_property("albedo"),
             Some(&MaterialValue::Color([1.0, 0.0, 0.0, 1.0]))
         );
-        assert_eq!(mat.get_property("metallic"), Some(&MaterialValue::Float(0.5)));
+        assert_eq!(
+            mat.get_property("metallic"),
+            Some(&MaterialValue::Float(0.5))
+        );
         assert_eq!(mat.get_property("nonexistent"), None);
 
-        mat.set_property("metallic", MaterialValue::Float(1.0)).unwrap();
-        assert_eq!(mat.get_property("metallic"), Some(&MaterialValue::Float(1.0)));
+        mat.set_property("metallic", MaterialValue::Float(1.0))
+            .unwrap();
+        assert_eq!(
+            mat.get_property("metallic"),
+            Some(&MaterialValue::Float(1.0))
+        );
     }
 
     // --- 3. Property type mismatch error ----------------------------------
     #[test]
     fn test_property_type_mismatch() {
-        let mut mat = MaterialDefinition::new("mat", "pbr")
-            .with_metallic(0.5);
+        let mut mat = MaterialDefinition::new("mat", "pbr").with_metallic(0.5);
 
         let err = mat.set_property("metallic", MaterialValue::Int(1));
         assert!(matches!(err, Err(MaterialError::TypeMismatch(_))));
@@ -655,7 +685,11 @@ mod tests {
         let compiled = mat.compile();
         assert_eq!(compiled.shader_name, "test_shader");
         assert!(!compiled.uniform_data.is_empty());
-        assert_eq!(compiled.uniform_data.len() % 16, 0, "uniform data should be 16-byte aligned");
+        assert_eq!(
+            compiled.uniform_data.len() % 16,
+            0,
+            "uniform data should be 16-byte aligned"
+        );
         assert_eq!(compiled.texture_paths, vec!["textures/a.png"]);
         assert_eq!(compiled.render_state.blend_mode, BlendMode::Opaque);
     }
@@ -663,7 +697,12 @@ mod tests {
     // --- 9. BlendMode and CullMode variants -------------------------------
     #[test]
     fn test_blend_and_cull_variants() {
-        let modes = [BlendMode::Opaque, BlendMode::AlphaBlend, BlendMode::Additive, BlendMode::Multiply];
+        let modes = [
+            BlendMode::Opaque,
+            BlendMode::AlphaBlend,
+            BlendMode::Additive,
+            BlendMode::Multiply,
+        ];
         assert_eq!(modes.len(), 4);
 
         let culls = [CullMode::None, CullMode::Front, CullMode::Back];

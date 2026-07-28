@@ -35,9 +35,7 @@ impl AssetGuid {
     /// string is not a valid UUID.
     pub fn from_string(s: &str) -> Result<Self, MetaError> {
         if uuid::Uuid::parse_str(s).is_ok() {
-            Ok(Self {
-                id: s.to_string(),
-            })
+            Ok(Self { id: s.to_string() })
         } else {
             Err(MetaError::GuidGenerationFailed)
         }
@@ -528,11 +526,23 @@ mod tests {
         let v: serde_json::Value = serde_json::from_str(&raw).expect("parse json");
 
         assert!(v["guid"].is_string(), "guid should be a string");
-        assert!(v["source_path"].is_string(), "source_path should be a string");
+        assert!(
+            v["source_path"].is_string(),
+            "source_path should be a string"
+        );
         assert!(v["asset_type"].is_string(), "asset_type should be a string");
-        assert!(v["import_settings"].is_object(), "import_settings should be an object");
-        assert!(v["last_modified"].is_number(), "last_modified should be a number");
-        assert!(v["last_imported"].is_number(), "last_imported should be a number");
+        assert!(
+            v["import_settings"].is_object(),
+            "import_settings should be an object"
+        );
+        assert!(
+            v["last_modified"].is_number(),
+            "last_modified should be a number"
+        );
+        assert!(
+            v["last_imported"].is_number(),
+            "last_imported should be a number"
+        );
         assert!(v["file_hash"].is_string(), "file_hash should be a string");
 
         // Image-specific settings present.
@@ -592,7 +602,10 @@ mod tests {
 
         // last_imported was set to now, source was touched just before,
         // so it should not be stale. Sleep briefly to ensure ordering.
-        assert!(!mgr.is_stale(&meta), "should not be stale right after generate");
+        assert!(
+            !mgr.is_stale(&meta),
+            "should not be stale right after generate"
+        );
     }
 
     // 12. scan_directory finds assets and generates missing .meta files.

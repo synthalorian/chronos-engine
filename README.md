@@ -633,7 +633,7 @@ MIT — see [LICENSE](LICENSE) for full text.
 ---
 
 <p align="center">
-  Built with 🎹🦞 by <a href="https://github.com/synthalorian">synth</a> + synthclaw<br>
+  Built with 🎹🦞 by <a href="https://github.com/synthalorian">synthalorian 🎹🤺</a> + synthclaw<br>
   <em>Write the future in the present while preserving the past.</em>
 </p>
 ---

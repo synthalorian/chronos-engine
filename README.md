@@ -636,3 +636,10 @@ MIT — see [LICENSE](LICENSE) for full text.
   Built with 🎹🦞 by <a href="https://github.com/synthalorian">synth</a> + synthclaw<br>
   <em>Write the future in the present while preserving the past.</em>
 </p>
+---
+
+## ☕ Support the Developer
+
+If this project saved you time, solved a problem, or just made your day a little more neon, you can fuel the next one:
+
+[![Buy Me A Coffee](https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png)](https://buymeacoffee.com/synthalorian)

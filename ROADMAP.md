@@ -607,4 +607,4 @@ cargo test --features full     # Should pass 906 tests
 
 ---
 
-Built with 🎹🦞 by synthalorian 🎹🤺. Write the future in the present while preserving the past.
+Built with 🎹🦞 by synth. Write the future in the present while preserving the past.

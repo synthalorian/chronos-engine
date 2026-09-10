@@ -14,7 +14,7 @@
   <img src="https://img.shields.io/badge/tests-996-brightgreen" alt="996 tests">
   <img src="https://img.shields.io/badge/unsafe-0-red" alt="Zero unsafe">
   <img src="https://img.shields.io/badge/deps-0_(core)-success" alt="Zero core deps">
-  <img src="https://img.shields.io/badge/license-MIT-yellow" alt="MIT License">
+  <img src="https://img.shields.io/badge/license-Apache_2.0-blue" alt="Apache License 2.0">
 </p>
 
 ---
@@ -306,7 +306,7 @@ cargo test
 ```
 chronos-engine/
 ├── Cargo.toml                  # Feature-gated deps
-├── LICENSE                     # MIT License
+├── LICENSE                     # Apache License 2.0
 ├── README.md                   # This file
 ├── ROADMAP.md                  # Full development plan (Phases 1–14)
 ├── icon.png                    # App icon
@@ -544,7 +544,7 @@ Advanced importers for production asset workflows (feature: `asset-pipeline`).
 
 | Aspect | Chronos Engine | Unity | Unreal | Bevy |
 |--------|---------------|-------|--------|------|
-| **License** | MIT — fully open-source | Proprietary | Proprietary (source) | Open-source |
+| **License** | Apache-2.0 — fully open-source | Proprietary | Proprietary (source) | Open-source |
 | **Language** | Rust | C# | C++/Blueprints | Rust |
 | **Core Dependencies** | **Zero** — pure std | Heavy | Heavy | Heavy |
 | **Deterministic Simulation** | **First-class** — `TickScheduler` | Not guaranteed | Not primary | Not designed for lockstep |
@@ -628,7 +628,7 @@ Phase 14 — Chronos Company Demo              📋 TODO
 
 ## License
 
-MIT — see [LICENSE](LICENSE) for full text.
+Apache-2.0 — see [LICENSE](LICENSE) for full text.
 
 ---
 

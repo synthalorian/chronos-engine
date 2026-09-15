@@ -256,7 +256,7 @@ impl MenuBarPanel {
                     ui.separator();
                     ui.add_space(8.0);
 
-                    ui.label("Built with 🎹🦞 by synth");
+                    ui.label("Built with ⚫🦞 by synth");
 
                     ui.add_space(4.0);
                     ui.label(

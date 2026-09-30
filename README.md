@@ -633,7 +633,7 @@ Apache-2.0 — see [LICENSE](LICENSE) for full text.
 ---
 
 <p align="center">
-  Built with ⚫🦞 by <a href="https://github.com/synthalorian">synth</a> + blackclaw<br>
+  Built by <a href="https://github.com/synthalorian">synth</a><br>
   <em>Write the future in the present while preserving the past.</em>
 </p>
 ---
